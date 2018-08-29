@@ -4,7 +4,8 @@
 
  * basic ui `(wip)`
  * price tag selection `(wip)`
- * highlight current tab mouseover elements `(wip)`
+    * Record button keeps status color subject to highlight (de)activation 
+ * highlight current tab mouseover elements ✅
  * price tracking
  * price tag element saving (per web-app)
  * intelligent price detectionn
