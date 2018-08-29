@@ -2,16 +2,17 @@ console.log("price tag");
 
 const recordBtn = document.getElementById("record-btn");
 
-recordBtn.onclick = () => {
-	//chrome.runtime.sendMessage({greeting: "hello"}, (response) => {
-	//	console.log(response.farewell);
-	//});
+let recordBtnStatus = false;
 
-	chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-		chrome.tabs.executeScript(
-          tab.id,
-          {
-			code: "document.body.style.backgroundColor = \"orange\";" +
-			"document.body.onclick = ({path}) => {const [selection] = path;};"});
+recordBtn.onclick = () => {
+    recordBtnStatus = !recordBtnStatus;
+    chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
+        const {id, url} = tab;
+
+        if (recordBtnStatus) {
+            chrome.runtime.sendMessage({type: "RECORD.PRE_START", payload: {id, url}});
+        } else {
+            chrome.runtime.sendMessage({type: "RECORD.PRE_CANCEL", payload: {id}});
+        }
     });
 };
