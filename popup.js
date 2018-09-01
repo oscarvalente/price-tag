@@ -1,18 +1,23 @@
-console.log("price tag");
+chrome.runtime.sendMessage({type: "RECORD.STATUS"}, onPopupStatus);
 
-const recordBtn = document.getElementById("record-btn");
+const recordButton = document.getElementById("record-btn");
 
-let recordBtnStatus = false;
-
-recordBtn.onclick = () => {
-    recordBtnStatus = !recordBtnStatus;
+recordButton.onclick = () => {
     chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
         const {id, url} = tab;
-
-        if (recordBtnStatus) {
-            chrome.runtime.sendMessage({type: "RECORD.PRE_START", payload: {id, url}});
-        } else {
-            chrome.runtime.sendMessage({type: "RECORD.PRE_CANCEL", payload: {id}});
-        }
+        chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
     });
 };
+
+function onPopupStatus({state}) {
+    const {recordActive} = state;
+    updateRecordButton(recordActive);
+}
+
+function updateRecordButton(buttonActive) {
+    if (buttonActive) {
+        recordButton.style.backgroundColor = "#c4111d";
+    } else {
+        recordButton.style.backgroundColor = "#878a91";
+    }
+}
