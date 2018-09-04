@@ -1,6 +1,11 @@
+const defaultCursorStyle = document.body.style.cursor;
+
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "RECORD.START":
+            let originalBGColor;
+
+            document.body.style.cursor = 'pointer';
             window.focus();
             document.body.onclick = ({target}) => {
                 const {url} = payload;
@@ -26,8 +31,9 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     sendResponse({status: -2});
                 }
 
+                target.style.backgroundColor = originalBGColor;
+                document.body.style.cursor = defaultCursorStyle;
                 document.body.removeEventListener("click", this);
-                debugger;
                 document.body.onmouseover = null;
 
                 sendResponse({status: 1, url, domain, selection, price});
@@ -38,12 +44,13 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     target.style.backgroundColor = originalBGColor;
                     target.removeEventListener("mouseout", this);
                 });
-                let originalBGColor = target.style.backgroundColor;
+                originalBGColor = target.style.backgroundColor;
                 target.style.backgroundColor = "#c9ecfc";
             };
 
             return true;
         case "RECORD.CANCEL":
+            document.body.style.cursor = defaultCursorStyle;
             document.body.onclick = null;
             document.body.onmouseover = null;
 

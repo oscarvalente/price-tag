@@ -1,6 +1,7 @@
-chrome.runtime.sendMessage({type: "RECORD.STATUS"}, onPopupStatus);
+chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
 
 const recordButton = document.getElementById("record-btn");
+const recordButtonImage = document.querySelector("#record-btn .analysis");
 
 recordButton.onclick = () => {
     chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
@@ -16,8 +17,8 @@ function onPopupStatus({state}) {
 
 function updateRecordButton(buttonActive) {
     if (buttonActive) {
-        recordButton.style.backgroundColor = "#c4111d";
+        recordButtonImage.style.fill = "#c4111d";
     } else {
-        recordButton.style.backgroundColor = "#878a91";
+        recordButtonImage.style.fill = "#878a91";
     }
 }
