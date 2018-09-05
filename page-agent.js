@@ -56,14 +56,16 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             sendResponse({});
             break;
         case "AUTO_SAVE.CHECK_STATUS":
-            const {selection} = payload;
+            debugger;
+            const {selection, url} = payload;
+            const domain = location.hostname;
             const target = document.body.querySelector(selection);
             const innerText = target ? target.innerText : null;
             if (innerText) {
                 const innerTextMatch = innerText.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
                 if (innerTextMatch) {
                     [, price] = innerTextMatch;
-                    sendResponse({status: 1});
+                    sendResponse({status: 1, url, domain, selection, price});
                 } else {
                     sendResponse({status: -2});
                 }

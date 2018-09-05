@@ -17,15 +17,7 @@ const ICONS = {
 function onRecordDone(payload) {
     const {status, domain, url, selection, price} = payload;
     if (status > 0) {
-        chrome.storage.sync.get([domain], result => {
-            const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-            items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime()};
-
-            chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
-                State = disableAutoSave(State);
-                // TODO: sendResponse("done"); // foi gravado ou não
-            });
-        });
+        savePrice(domain, url, selection, price);
     }
 
     State.recordActive = false;
@@ -35,12 +27,25 @@ function onRecordCancel() {
     State.recordActive = false;
 }
 
-function onCheckStatus(sendResponse, {status}) {
+function onCheckStatus(sendResponse, {status, url, domain, selection, price}) {
     if (status >= 0) {
+        State = setSelectionInfo(State, url, domain, selection, price);
         sendResponse(true);
     } else {
         sendResponse(false);
     }
+}
+
+function savePrice(domain, url, selection, price, sendResponse) {
+    chrome.storage.sync.get([domain], result => {
+        const items = result && result[domain] ? JSON.parse(result[domain]) : {};
+        items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime()};
+
+        chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
+            State = disableAutoSave(State);
+            // TODO: sendResponse("done"); // foi gravado ou não
+        });
+    });
 }
 
 function resetNotifications(state) {
@@ -64,6 +69,16 @@ function disableAutoSave(state) {
     return {
         ...state,
         autoSaveEnabled: false
+    };
+}
+
+function setSelectionInfo(state, url, domain, selection, price) {
+    return {
+        ...state,
+        url,
+        domain,
+        selection,
+        price
     };
 }
 
@@ -229,14 +244,16 @@ function attachEvents() {
                 case "AUTO_SAVE.STATUS":
                     chrome.tabs.sendMessage(id, {
                         type: "AUTO_SAVE.CHECK_STATUS",
-                        payload: {url, selection: State.selection}
+                        payload: {url: payload.url, selection: State.selection}
                     }, onCheckStatus.bind(null, sendResponse));
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
+                    debugger;
+                    const {domain, url, selection, price} = State;
                     if (State.autoSaveEnabled) {
-
+                        savePrice(domain, url, selection, price);
                     }
-                    break;
+                    return true;
             }
         });
 

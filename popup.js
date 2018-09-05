@@ -4,16 +4,8 @@ const recordButton = document.getElementById("record-btn");
 const autoSaveButton = document.getElementById("auto-save-btn");
 
 recordButton.onclick = () => {
-    chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-        const {id, url} = tab;
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
         chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
-    });
-};
-
-autoSaveButton.onclick = () => {
-    chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-        const {id, url} = tab;
-        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id, url}}, onPopupStatus);
     });
 };
 
@@ -22,8 +14,7 @@ function onPopupStatus({state}) {
     updateRecordButton(recordActive);
     if (autoSaveEnabled) {
         setPendingAutoSave();
-        chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-            const {id, url} = tab;
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
             chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id, url}},
                 updateAutoSaveButton);
         });
@@ -41,11 +32,20 @@ function updateRecordButton(buttonActive) {
     }
 }
 
+function onAutoSaveClick() {
+    debugger;
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id, url}}, onPopupStatus);
+    });
+}
+
 function updateAutoSaveButton(buttonEnabled) {
     console.log(buttonEnabled);
     if (buttonEnabled) {
         autoSaveButton.style.fill = "#4e9b5f";
+        autoSaveButton.onclick = onAutoSaveClick;
     } else {
+        autoSaveButton.removeEventListener("click", onAutoSaveClick);
         autoSaveButton.style.fill = "#878a91";
     }
 }
