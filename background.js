@@ -2,7 +2,8 @@ let State = {
     recordActive: false,
     notifications: {},
     notificationsCounter: 0,
-    autoSaveEnabled: false
+    autoSaveEnabled: false,
+    selection: null
 };
 
 // const CHECKING_INTERVAL = 180000;
@@ -21,6 +22,7 @@ function onRecordDone(payload) {
             items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime()};
 
             chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
+                State = disableAutoSave(State);
                 // TODO: sendResponse("done"); // foi gravado ou não
             });
         });
@@ -33,11 +35,35 @@ function onRecordCancel() {
     State.recordActive = false;
 }
 
+function onCheckStatus(sendResponse, {status}) {
+    if (status >= 0) {
+        sendResponse(true);
+    } else {
+        sendResponse(false);
+    }
+}
+
 function resetNotifications(state) {
     return {
         ...state,
         notifications: {},
         notificationsCounter: 0
+    };
+}
+
+function enableAutoSave(state, selection) {
+    selection = selection || state.selection;
+    return {
+        ...state,
+        autoSaveEnabled: true,
+        selection
+    };
+}
+
+function disableAutoSave(state) {
+    return {
+        ...state,
+        autoSaveEnabled: false
     };
 }
 
@@ -54,7 +80,7 @@ function checkForPriceChanges() {
                     // TODO: const oldPrice
                     let oldPrice = domainItems[url].price;
 
-                    request.onload = function (e) {
+                    request.onload = function () {
                         const template = createHTMLTemplate(this.response);
                         try {
                             let newPrice = null;
@@ -110,10 +136,7 @@ function checkForPriceChanges() {
 function clearNotification(notifId) {
     chrome.notifications.clear(notifId, wasCleared => {
         if (wasCleared) {
-            console.log('cleared', notifId);
             delete State.notifications[notifId];
-        } else {
-            console.log('not cleared', notifId);
         }
     });
 }
@@ -152,30 +175,48 @@ function setupTrackingPolling() {
     setInterval(checkForPriceChanges, CHECKING_INTERVAL);
 }
 
+// TODO: break this down into smaller functions
 function attachEvents() {
     chrome.runtime.onInstalled.addListener(() => {
         console.log("Price tag installed.");
     });
 
+    chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
+        chrome.tabs.getSelected(windowId, ({url}) => {
+            if (url.startsWith("http")) {
+                const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
+                chrome.storage.sync.get([domain], result => {
+                    const items = result && result[domain] ? JSON.parse(result[domain]) : null;
+                    if (items && !items[url]) {
+                        const urlFromDomain = Object.keys(items)[0];
+                        if (items[urlFromDomain] && items[urlFromDomain].selection) {
+                            State = enableAutoSave(State, items[urlFromDomain].selection);
+                        }
+                    } else {
+                        State = disableAutoSave(State);
+                    }
+                });
+            }
+        });
+    });
+
     chrome.tabs.onUpdated.addListener((tabId, {status}, {active, url}) => {
         if (url.startsWith("http") && active && status === "complete") {
-            chrome.tabs.executeScript(tabId,
-                {
-                    file: "detect-selection.js"
-                });
-
-            // chrome.storage.sync.get([])
+            chrome.tabs.executeScript(tabId, {
+                file: "page-agent.js"
+            });
         }
     });
 
     chrome.runtime.onMessage.addListener(
-        ({type, payload}, sender, sendResponse) => {
+        ({type, payload = {}}, sender, sendResponse) => {
+            const {id, url} = payload;
             switch (type) {
                 case "POPUP.STATUS":
-                    sendResponse({status: 1, state: {recordActive: State.recordActive}});
+                    const {recordActive, autoSaveEnabled} = State;
+                    sendResponse({status: 1, state: {recordActive, autoSaveEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    const {id, url} = payload;
                     State.recordActive = !State.recordActive;
 
                     if (State.recordActive) {
@@ -184,6 +225,17 @@ function attachEvents() {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
                     }
                     sendResponse({status: 1, state: {recordActive: State.recordActive}});
+                    break;
+                case "AUTO_SAVE.STATUS":
+                    chrome.tabs.sendMessage(id, {
+                        type: "AUTO_SAVE.CHECK_STATUS",
+                        payload: {url, selection: State.selection}
+                    }, onCheckStatus.bind(null, sendResponse));
+                    return true;
+                case "AUTO_SAVE.ATTEMPT":
+                    if (State.autoSaveEnabled) {
+
+                    }
                     break;
             }
         });

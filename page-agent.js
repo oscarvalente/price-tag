@@ -24,7 +24,6 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     if (innerTextMatch) {
                         [, price] = innerTextMatch;
                     } else {
-
                         sendResponse({status: -3});
                     }
                 } else {
@@ -55,6 +54,22 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             document.body.onmouseover = null;
 
             sendResponse({});
+            break;
+        case "AUTO_SAVE.CHECK_STATUS":
+            const {selection} = payload;
+            const target = document.body.querySelector(selection);
+            const innerText = target ? target.innerText : null;
+            if (innerText) {
+                const innerTextMatch = innerText.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                if (innerTextMatch) {
+                    [, price] = innerTextMatch;
+                    sendResponse({status: 1});
+                } else {
+                    sendResponse({status: -2});
+                }
+            } else {
+                sendResponse({status: -1});
+            }
             break;
     }
 });

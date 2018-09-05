@@ -1,4 +1,20 @@
-#record-btn {
+.tracking-container .tracking-buttons {
+    list-style: none;
+    margin: 0;
+    padding: 2px 6px;
+    min-width: 70px;
+    border: 1px solid #d2cccc;
+    -webkit-border-radius: 4px;
+}
+
+.tracking-container .tracking-buttons > li {
+    display: inline-block;
     height: 30px;
     width: 30px;
+    padding-bottom: 2px;
+}
+
+.tracking-buttons > li:not(:last-child) {
+    padding-right: 4px;
+    border-right: 1px solid #b5a8a8;
 }
