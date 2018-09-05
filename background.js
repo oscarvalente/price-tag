@@ -36,13 +36,16 @@ function onCheckStatus(sendResponse, {status, url, domain, selection, price}) {
     }
 }
 
-function savePrice(domain, url, selection, price, sendResponse) {
+function savePrice(domain, url, selection, price, sendResponse, response) {
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
         items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime()};
 
         chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
             State = disableAutoSave(State);
+            if (sendResponse) {
+                response !== null ? sendResponse(response) : sendResponse();
+            }
             // TODO: sendResponse("done"); // foi gravado ou não
         });
     });
@@ -190,6 +193,21 @@ function setupTrackingPolling() {
     setInterval(checkForPriceChanges, CHECKING_INTERVAL);
 }
 
+function updateAutoSaveStatus(url) {
+    const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
+    chrome.storage.sync.get([domain], result => {
+        const items = result && result[domain] ? JSON.parse(result[domain]) : null;
+        if (items && !items[url]) {
+            const urlFromDomain = Object.keys(items)[0];
+            if (items[urlFromDomain] && items[urlFromDomain].selection) {
+                State = enableAutoSave(State, items[urlFromDomain].selection);
+            }
+        } else {
+            State = disableAutoSave(State);
+        }
+    });
+}
+
 // TODO: break this down into smaller functions
 function attachEvents() {
     chrome.runtime.onInstalled.addListener(() => {
@@ -199,33 +217,26 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
-                chrome.storage.sync.get([domain], result => {
-                    const items = result && result[domain] ? JSON.parse(result[domain]) : null;
-                    if (items && !items[url]) {
-                        const urlFromDomain = Object.keys(items)[0];
-                        if (items[urlFromDomain] && items[urlFromDomain].selection) {
-                            State = enableAutoSave(State, items[urlFromDomain].selection);
-                        }
-                    } else {
-                        State = disableAutoSave(State);
-                    }
-                });
+                updateAutoSaveStatus(url);
             }
         });
     });
 
     chrome.tabs.onUpdated.addListener((tabId, {status}, {active, url}) => {
-        if (url.startsWith("http") && active && status === "complete") {
-            chrome.tabs.executeScript(tabId, {
-                file: "page-agent.js"
-            });
+        if (url.startsWith("http")) {
+            if (active && status === "complete") {
+                chrome.tabs.executeScript(tabId, {
+                    file: "page-agent.js"
+                });
+            }
+
+            updateAutoSaveStatus(url);
         }
     });
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
-            const {id, url} = payload;
+            const {id} = payload;
             switch (type) {
                 case "POPUP.STATUS":
                     const {recordActive, autoSaveEnabled} = State;
@@ -235,6 +246,7 @@ function attachEvents() {
                     State.recordActive = !State.recordActive;
 
                     if (State.recordActive) {
+                        const {url} = payload;
                         chrome.tabs.sendMessage(id, {type: "RECORD.START", payload: {url}}, onRecordDone);
                     } else {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
@@ -242,18 +254,20 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive: State.recordActive}});
                     break;
                 case "AUTO_SAVE.STATUS":
+                    const {url} = payload;
                     chrome.tabs.sendMessage(id, {
                         type: "AUTO_SAVE.CHECK_STATUS",
-                        payload: {url: payload.url, selection: State.selection}
+                        payload: {url, selection: State.selection}
                     }, onCheckStatus.bind(null, sendResponse));
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
-                    debugger;
-                    const {domain, url, selection, price} = State;
+                    const {domain, url: stateUrl, selection, price} = State;
                     if (State.autoSaveEnabled) {
-                        savePrice(domain, url, selection, price);
+                        savePrice(domain, stateUrl, selection, price, sendResponse, false);
+                        return true;
+                    } else {
+                        sendResponse(false);
                     }
-                    return true;
             }
         });
 

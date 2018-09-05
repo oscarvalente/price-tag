@@ -33,18 +33,17 @@ function updateRecordButton(buttonActive) {
 }
 
 function onAutoSaveClick() {
-    debugger;
     chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id, url}}, onPopupStatus);
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id, url}}, updateAutoSaveButton);
     });
 }
 
 function updateAutoSaveButton(buttonEnabled) {
     console.log(buttonEnabled);
-    if (buttonEnabled) {
+    if (buttonEnabled === true) {
         autoSaveButton.style.fill = "#4e9b5f";
         autoSaveButton.onclick = onAutoSaveClick;
-    } else {
+    } else if (buttonEnabled === false) {
         autoSaveButton.removeEventListener("click", onAutoSaveClick);
         autoSaveButton.style.fill = "#878a91";
     }

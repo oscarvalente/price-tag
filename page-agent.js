@@ -56,7 +56,6 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             sendResponse({});
             break;
         case "AUTO_SAVE.CHECK_STATUS":
-            debugger;
             const {selection, url} = payload;
             const domain = location.hostname;
             const target = document.body.querySelector(selection);
