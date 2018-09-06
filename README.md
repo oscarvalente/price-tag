@@ -12,8 +12,9 @@
  * price tag element saving (per web-app) - auto-save button `(wip)`
     * enabled when item from same domain is already being tracked ✅
     * change auto-save button color ✅
-    * price tracking element selection suggestion (same url pages) ✅
-    * when enabled, highlight price element on hover (w/ same color) `(wip)`
+    * price tracking element selection saving (same url pages) ✅
+    * when enabled, highlight price element on hover (w/ same color) ✅
+ * ui correct update: search vs auto-save click mix **(urgent!)**
  * extension icon displaying page is being tracked
  * price tracking suggestion
     * intelligent price detection

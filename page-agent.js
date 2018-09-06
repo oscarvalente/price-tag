@@ -72,5 +72,30 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 sendResponse({status: -1});
             }
             break;
+        case "AUTO_SAVE.HIGHLIGHT.START":
+            const {selection: elementSelection} = payload;
+            const elementToHighlight = document.body.querySelector(elementSelection);
+            if (elementToHighlight) {
+                const originalBackgroundColor = elementToHighlight.style.backgroundColor;
+                elementToHighlight.style.backgroundColor = "#c9ecfc";
+                sendResponse({status: 1, isHighlighted: true, originalBackgroundColor});
+            } else {
+                sendResponse({status: -1});
+            }
+            break;
+        case "AUTO_SAVE.HIGHLIGHT.STOP":
+            const {selection: elementHighlighted} = payload;
+            let {originalBackgroundColor} = payload;
+            originalBackgroundColor = originalBackgroundColor || "";
+            const elementToStopHighlight = document.body.querySelector(elementHighlighted);
+            if (elementToStopHighlight) {
+                console.log(originalBackgroundColor);
+                debugger;
+                elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
+                sendResponse({status: 1, isHighlighted: false});
+            } else {
+                sendResponse({status: -1});
+            }
+            break;
     }
 });

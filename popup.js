@@ -38,12 +38,30 @@ function onAutoSaveClick() {
     });
 }
 
+function onAutoSaveMouseOver() {
+    console.log('xxx');
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_START", payload: {id, url}});
+    });
+}
+
+function onAutoSaveMouseOut() {
+    debugger;
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id, url}});
+    });
+}
+
 function updateAutoSaveButton(buttonEnabled) {
     if (buttonEnabled === true) {
-        autoSaveButton.style.fill = "#4e9b5f";
         autoSaveButton.onclick = onAutoSaveClick;
+        autoSaveButton.onmouseover = onAutoSaveMouseOver;
+        autoSaveButton.onmouseout = onAutoSaveMouseOut;
+        autoSaveButton.style.fill = "#4e9b5f";
     } else if (buttonEnabled === false) {
         autoSaveButton.removeEventListener("click", onAutoSaveClick);
+        autoSaveButton.removeEventListener("mouseover", onAutoSaveMouseOver);
+        autoSaveButton.removeEventListener("mouseout", onAutoSaveMouseOut);
         autoSaveButton.style.fill = "#878a91";
     }
 }

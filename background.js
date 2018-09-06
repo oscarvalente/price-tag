@@ -3,7 +3,9 @@ let State = {
     notifications: {},
     notificationsCounter: 0,
     autoSaveEnabled: false,
-    selection: null
+    selection: null,
+    isSiblingTargetHighlighted: false,
+    originalBackgroundColor: null
 };
 
 // const CHECKING_INTERVAL = 180000;
@@ -33,6 +35,12 @@ function onCheckStatus(sendResponse, {status, url, domain, selection, price}) {
         sendResponse(true);
     } else {
         sendResponse(false);
+    }
+}
+
+function onSiblingTargetHighlight({status, isHighlighted: isSiblingTargetHighlighted, originalBackgroundColor = null}) {
+    if (status >= 0) {
+        State = setSiblingTargetHighlight(State, isSiblingTargetHighlighted, originalBackgroundColor);
     }
 }
 
@@ -82,6 +90,14 @@ function setSelectionInfo(state, url, domain, selection, price) {
         domain,
         selection,
         price
+    };
+}
+
+function setSiblingTargetHighlight(state, isSiblingTargetHighlighted, originalBackgroundColor) {
+    return {
+        ...state,
+        isSiblingTargetHighlighted,
+        originalBackgroundColor
     };
 }
 
@@ -268,6 +284,25 @@ function attachEvents() {
                     } else {
                         sendResponse(false);
                     }
+                    break;
+                case "AUTO_SAVE.HIGHLIGHT.PRE_START":
+                    if (State.autoSaveEnabled) {
+                        const {selection} = State;
+                        chrome.tabs.sendMessage(id, {
+                            type: "AUTO_SAVE.HIGHLIGHT.START",
+                            payload: {selection}
+                        }, onSiblingTargetHighlight);
+                    }
+                    break;
+                case "AUTO_SAVE.HIGHLIGHT.PRE_STOP":
+                    if (State.autoSaveEnabled) {
+                        const {selection, originalBackgroundColor} = State;
+                        chrome.tabs.sendMessage(id, {
+                            type: "AUTO_SAVE.HIGHLIGHT.STOP",
+                            payload: {selection, originalBackgroundColor}
+                        }, onSiblingTargetHighlight);
+                    }
+                    break;
             }
         });
 
