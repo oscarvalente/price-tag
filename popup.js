@@ -39,7 +39,6 @@ function onAutoSaveClick() {
 }
 
 function updateAutoSaveButton(buttonEnabled) {
-    console.log(buttonEnabled);
     if (buttonEnabled === true) {
         autoSaveButton.style.fill = "#4e9b5f";
         autoSaveButton.onclick = onAutoSaveClick;
