@@ -1,22 +1,16 @@
 let recordButton;
 let autoSaveButton;
-let trackedItemsButton;
 
 function bootstrap() {
     chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
 
     recordButton = document.getElementById("record-btn");
     autoSaveButton = document.getElementById("auto-save-btn");
-    trackedItemsButton = document.getElementById("tracked-items-btn");
 
     recordButton.onclick = () => {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
             chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
         });
-    };
-
-    trackedItemsButton.onclick = () => {
-        window.location.href = "tracked-items.html";
     };
 }
 

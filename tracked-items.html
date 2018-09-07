@@ -9,13 +9,17 @@
     <script id="items-list" type="text/x-handlebars-template">
         <ol id="tracked-items-list">
             {{#each trackedItems as |item|}}
-            <li>
-                <a href="{{item.url}}" target="_blank">{{item.price}} - {{item.time}}</a>
+            <li class="tracked-item">
+                <a href="{{item.url}}" target="_blank">
+                    <span class="item-label price">{{item.price}}</span>
+                    <span class="item-label">{{item.dateTime}}</span>
+                </a>
             </li>
             {{/each}}
         </ol>
     </script>
 </section>
+<a href="popup.html">< Back</a>
 
 <script type="text/javascript" src="vendor/handlebars.min.js"></script>
 <script type="text/javascript" src="tracked-items.js"></script>

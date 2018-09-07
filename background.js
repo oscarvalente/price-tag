@@ -189,8 +189,8 @@ function getTrackedItems(callback) {
                     trackedItems = [...trackedItems, ...sortedDomainItems];
                 }
             }
-            callback(trackedItems);
         });
+        callback(trackedItems);
     });
 }
 

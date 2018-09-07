@@ -6,10 +6,15 @@ function loadTemplate(elementId) {
     return Handlebars.compile(elementHTML);
 }
 
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+}
+
 function onTrackedItems(rawItems) {
     const trackedItems = rawItems.map(item => ({
         ...item,
-        time: new Date(item.timestamp)
+        dateTime: formatDate(item.timestamp)
     }));
     trackedItemsList.innerHTML = listItemsLoader({trackedItems});
     // trackedItems = [{url: "x", price: 2}];
