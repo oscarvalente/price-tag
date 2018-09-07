@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="tracked-items.css">
+</head>
+<body>
+<!-- Tracked items list -->
+<section id="tracked-items-container">
+    <script id="items-list" type="text/x-handlebars-template">
+        <ol id="tracked-items-list">
+            {{#each trackedItems as |item|}}
+            <li>
+                <a href="{{item.url}}" target="_blank">{{item.price}} - {{item.time}}</a>
+            </li>
+            {{/each}}
+        </ol>
+    </script>
+</section>
+
+<script type="text/javascript" src="vendor/handlebars.min.js"></script>
+<script type="text/javascript" src="tracked-items.js"></script>
+</body>
+</html>

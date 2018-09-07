@@ -1,0 +1,61 @@
+body {
+    font-family: "Arial Rounded MT", sans-serif;
+    font-weight: normal;
+    font-stretch: normal;
+    font-variant: all-petite-caps;
+    font-size: 14px;
+}
+
+.tracking-container .tracking-buttons {
+    width: 50%;
+    min-width: 80px;
+    list-style: none;
+    margin: 0 auto;
+    padding: 0 8px;
+    border: 3px double #d2cccc;
+    -webkit-border-radius: 4px;
+}
+
+.tracking-container .tracking-buttons > li {
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+    padding-bottom: 2px;
+}
+
+.tracking-buttons > li:not(:last-child) {
+    padding: 6px 5px 6px;
+    border-right: 1px solid #b5a8a8;
+}
+
+#tracked-items-btn {
+    line-height: 18px;
+    height: 18px;
+    margin-top: 10px;
+    min-width: 116px;
+    cursor: pointer;
+}
+
+#tracked-items-btn {
+    /* Hack for span blank space */
+    font-size: 0;
+}
+
+#tracked-items-title {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+#tracked-items-btn:hover {
+    text-decoration: underline;
+}
+
+#tracked-items-btn > * {
+    vertical-align: middle;
+}
+
+#tracked-items-icon {
+    height: 16px;
+    width: 16px;
+    padding-right: 6px;
+}

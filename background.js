@@ -167,6 +167,33 @@ function checkForPriceChanges() {
     });
 }
 
+function getTrackedItems(callback) {
+    chrome.storage.sync.get(null, result => {
+        let trackedItems = [];
+        Object.keys(result).map(key => {
+            if (matchesDomain(key)) {
+                const domainData = result[key];
+                const domainItems = JSON.parse(domainData) || null;
+                if (domainItems) {
+                    const sortedDomainItems = [];
+                    Object.keys(domainItems).map(itemKey => {
+                        if (matchesHostname(itemKey)) {
+                            const item = {
+                                ...domainItems[itemKey],
+                                url: itemKey
+                            };
+                            sortedDomainItems.push(item);
+                        }
+                    });
+                    sortedDomainItems.sort(sortItemsByTime);
+                    trackedItems = [...trackedItems, ...sortedDomainItems];
+                }
+            }
+            callback(trackedItems);
+        });
+    });
+}
+
 function clearNotification(notifId) {
     chrome.notifications.clear(notifId, wasCleared => {
         if (wasCleared) {
@@ -202,6 +229,18 @@ function createHTMLTemplate(html) {
     html = html.trim();
     template.innerHTML = html;
     return template.content;
+}
+
+function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
+    return tsA > tsB ? 1 : 0;
+}
+
+function matchesDomain(string) {
+    return /^([\w-_]+\.?)+\w$/.test(string);
+}
+
+function matchesHostname(string) {
+    return /https?:\/\/([\w.]+)\/*/.test(string);
 }
 
 function setupTrackingPolling() {
@@ -303,6 +342,9 @@ function attachEvents() {
                         }, onSiblingTargetHighlight);
                     }
                     break;
+                case "TRACKED_ITEMS.GET":
+                    getTrackedItems(sendResponse);
+                    return true;
             }
         });
 

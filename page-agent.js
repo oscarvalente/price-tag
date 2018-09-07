@@ -89,8 +89,6 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             originalBackgroundColor = originalBackgroundColor || "";
             const elementToStopHighlight = document.body.querySelector(elementHighlighted);
             if (elementToStopHighlight) {
-                console.log(originalBackgroundColor);
-                debugger;
                 elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
                 sendResponse({status: 1, isHighlighted: false});
             } else {

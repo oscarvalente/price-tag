@@ -1,13 +1,24 @@
-chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
+let recordButton;
+let autoSaveButton;
+let trackedItemsButton;
 
-const recordButton = document.getElementById("record-btn");
-const autoSaveButton = document.getElementById("auto-save-btn");
+function bootstrap() {
+    chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
 
-recordButton.onclick = () => {
-    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-        chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
-    });
-};
+    recordButton = document.getElementById("record-btn");
+    autoSaveButton = document.getElementById("auto-save-btn");
+    trackedItemsButton = document.getElementById("tracked-items-btn");
+
+    recordButton.onclick = () => {
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
+            chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
+        });
+    };
+
+    trackedItemsButton.onclick = () => {
+        window.location.href = "tracked-items.html";
+    };
+}
 
 function onPopupStatus({state}) {
     const {recordActive, autoSaveEnabled} = state;
@@ -39,14 +50,12 @@ function onAutoSaveClick() {
 }
 
 function onAutoSaveMouseOver() {
-    console.log('xxx');
     chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
         chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_START", payload: {id, url}});
     });
 }
 
 function onAutoSaveMouseOut() {
-    debugger;
     chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
         chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id, url}});
     });
@@ -69,3 +78,6 @@ function updateAutoSaveButton(buttonEnabled) {
 function setPendingAutoSave() {
     autoSaveButton.style.fill = "#62656c";
 }
+
+bootstrap();
+
