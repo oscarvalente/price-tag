@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.5.0
+* Higher/lower price status display
+
 # v0.4.1
 * Selection bugfixes
 
