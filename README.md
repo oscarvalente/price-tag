@@ -21,6 +21,7 @@
     * delete ✅
     * execution manifest review ✅
     * watched/not_found & price increase items statuses (with matching icon) ✅
+    * price increase/decrease status `(wip)`
     * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked

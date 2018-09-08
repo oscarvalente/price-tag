@@ -26,8 +26,8 @@ function onTrackedItems(rawItems) {
         dateTime: formatDate(item.timestamp),
         isWatched: item.statuses.indexOf(ITEM_STATUS.WATCHED) > -1,
         isNotFound: item.statuses.indexOf(ITEM_STATUS.NOT_FOUND) > -1,
-        hasDecreased: item.statuses.indexOf(ITEM_STATUS.DECREASED) > -1,
-        hasIncreased: item.statuses.indexOf(ITEM_STATUS.INCREASED) > -1,
+        isHigher: item.statuses.indexOf(ITEM_STATUS.INCREASED) > -1,
+        isLower: item.statuses.indexOf(ITEM_STATUS.DECREASED) > -1
     }));
     trackedItemsContainer.innerHTML = listItemsLoader({trackedItems});
 

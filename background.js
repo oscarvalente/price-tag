@@ -175,6 +175,12 @@ function checkForPriceChanges() {
                                                     createNotification(notificationId, ICONS.PRICE_UPDATE, "Lower price!!",
                                                         `Lower price ${newPrice} (previous ${oldPrice})`, url, url);
                                                 });
+                                            } else if (newPrice > oldPrice) {
+                                                domainItems[url] = updateItem(domainItems[url], null,
+                                                    [ITEM_STATUS.INCREASED], [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND]);
+                                                chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    // TODO: sendResponse("done"); // foi actualizado ou não
+                                                });
                                             }
                                         }
                                     }
