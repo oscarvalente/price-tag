@@ -2,17 +2,14 @@
 
 ### Intended features / TODO
 
- * basic ui `(wip)`
+ * basic ui ✅
  * price tag selection ✅
     * Page viewport is focused on record click ✅
     * Record button keeps status color subject to highlight (de)activation ✅
     * add timestamp to tracked item object ✅
  * highlight current tab mouseover elements ✅
- * price tracking ✅
+ * price tracking - part i ✅
     * check and update price changes ✅
-    * stop following when price decreases (notification)
-    * price increase alert
-        * user review possibility
  * price tag element saving (per web-app) - auto-save button ✅
     * enabled when item from same domain is already being tracked ✅
     * change auto-save button color ✅
@@ -24,9 +21,13 @@
     * delete ✅
     * execution manifest review ✅
     * watched/not_found & price increase items statuses (with matching icon) ✅
-    * unfollow instead of delete (to keep background history) - unwatched status ❗
+    * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked
+ price tracking - part ii
+     * price increase alert ❗
+        * user review possibility
+     * stop following when price decreases (through notification)
  * keep tracked items object in state
  * saved money info (calc icon)
  * price tracking suggestion
