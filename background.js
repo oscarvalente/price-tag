@@ -16,10 +16,40 @@ const ICONS = {
     PRICE_FIX: "./assets/coin.svg"
 };
 
+const ITEM_STATUS = {
+    WATCHED: "WATCHED",
+    NOT_FOUND: "NOT_FOUND",
+    INCREASED: "INCREASED",
+    DECREASED: "DECREASED",
+    FIXED: "FIXED"
+};
+
+const ALL_ITEM_STATUSES = Object.values(ITEM_STATUS);
+
+function removeStatuses(item, statusesToRemove = []) {
+    return statusesToRemove.length > 0 && item.statuses.length > 0 ?
+        item.statuses.filter(status => statusesToRemove.indexOf(status) === -1) :
+        item.statuses;
+}
+
+function updateItem(item, price, statusesToAdd, statusesToRemove) {
+    const statuses = [removeStatuses(item, statusesToRemove), ...statusesToAdd];
+    const updatedItem = {
+        ...item,
+        statuses
+    };
+
+    if (price) {
+        updatedItem.price = price;
+    }
+
+    return updatedItem;
+}
+
 function onRecordDone(payload) {
     const {status, domain, url, selection, price} = payload;
     if (status > 0) {
-        savePrice(domain, url, selection, price);
+        savePrice(domain, url, selection, price, [ITEM_STATUS.WATCHED]);
     }
 
     State.recordActive = false;
@@ -44,10 +74,11 @@ function onSiblingTargetHighlight({status, isHighlighted: isSiblingTargetHighlig
     }
 }
 
-function savePrice(domain, url, selection, price, sendResponse, response) {
+// TODO: price becomes a class
+function savePrice(domain, url, selection, price, status, sendResponse, response) {
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime()};
+        items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime(), status};
 
         chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
             State = disableAutoSave(State);
@@ -127,13 +158,17 @@ function checkForPriceChanges() {
                                             newPrice = toPrice(newPrice);
 
                                             if (!oldPrice) {
+                                                domainItems[url] = updateItem(domainItems[url], newPrice,
+                                                    [ITEM_STATUS.FIXED]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
                                                     createNotification(notificationId, ICONS.PRICE_FIX, "Fixed price",
                                                         `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url);
                                                 });
                                             } else if (newPrice < oldPrice) {
-                                                domainItems[url].price = newPrice;
+                                                domainItems[url] = updateItem(domainItems[url], newPrice,
+                                                    [ITEM_STATUS.DECREASED], [ITEM_STATUS.INCREASED]);
+
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
                                                     const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
@@ -145,17 +180,29 @@ function checkForPriceChanges() {
                                     }
 
                                     if (domainItems[url].price && !newPrice) {
+                                        domainItems[url] = updateItem(domainItems[url], null,
+                                            [ITEM_STATUS.NOT_FOUND],
+                                            [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED]);
+
+                                        chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                            // TODO: sendResponse("done"); // foi actualizado ou não
+                                            const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                                            const previousPrice = oldPrice ? ` (previous ${oldPrice})` : "";
+                                            createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
+                                                `Price tag no longer found${previousPrice}`, url, url);
+                                        });
+                                    }
+                                } catch (e) {
+                                    console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
+                                    domainItems[url] = updateItem(domainItems[url], newPrice,
+                                        [ITEM_STATUS.NOT_FOUND], ALL_ITEM_STATUSES);
+
+                                    chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                         const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
                                         const previousPrice = oldPrice ? ` (previous ${oldPrice})` : "";
                                         createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
                                             `Price tag no longer found${previousPrice}`, url, url);
-                                    }
-                                } catch (e) {
-                                    console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
-                                    const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
-                                    const previousPrice = oldPrice ? ` (previous ${oldPrice})` : "";
-                                    createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
-                                        `Price tag no longer found${previousPrice}`, url, url);
+                                    });
                                 }
                             };
 
@@ -344,7 +391,7 @@ function attachEvents() {
                 case "AUTO_SAVE.ATTEMPT":
                     const {domain, url: stateUrl, selection, price} = State;
                     if (State.autoSaveEnabled) {
-                        savePrice(domain, stateUrl, selection, price, sendResponse, false);
+                        savePrice(domain, stateUrl, selection, price, [ITEM_STATUS.WATCHED], sendResponse, false);
                         return true;
                     } else {
                         sendResponse(false);

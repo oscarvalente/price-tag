@@ -9,6 +9,7 @@
     * add timestamp to tracked item object ✅
  * highlight current tab mouseover elements ✅
  * price tracking ✅
+    * check and update price changes ✅
     * stop following when price decreases (notification)
     * price increase alert
         * user review possibility
@@ -22,7 +23,8 @@
     * basic ui ✅
     * delete ✅
     * execution manifest review ✅
-    * watched/not_found & price increase items statuses (with matching icon) ❗
+    * watched/not_found & price increase items statuses (with matching icon) `(wip)`
+    * unfollow instead of delete (to keep background history) - unwatched status ❗
  * extension icon displaying page is being tracked
  * keep tracked items object in state
  * saved money info (calc icon)
@@ -43,3 +45,4 @@
  * minor improvements to the ui (styling minor issues)
  * style ui (major)
  * todos list in code
+ * add project bundle build tool
