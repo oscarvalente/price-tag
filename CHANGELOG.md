@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.4.0
+* Items status persistence
+* Items status display
+
 # v0.3.0
 * Management panel
     * Access items

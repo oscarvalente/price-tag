@@ -8,7 +8,7 @@ body {
 
 #tracked-items-list {
     padding: 2px 4px;
-    width: 200px;
+    width: 260px;
     list-style: none;
 }
 
@@ -17,6 +17,16 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
+}
+
+.tracked-item-container .status-container {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 54px;
+}
+
+.tracked-item-container .status-container > svg:not(:last-child) {
+    padding-right: 3px;
 }
 
 #tracked-items-list .tracked-item-label {
@@ -38,7 +48,14 @@ body {
 .tracked-item-label .item-label.date {
 }
 
-.tracked-item-container .item-delete {
+.tracked-item-container .item-watch,
+.tracked-item-container .item-notfound {
+    align-self: center;
+}
+
+.tracked-item-container .item-delete,
+.tracked-item-container .item-watch,
+.tracked-item-container .item-notfound {
     width: 14px;
     height: 14px;
 }

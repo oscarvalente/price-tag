@@ -3,7 +3,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
         case "RECORD.START":
             let originalBGColor;
 
-            document.body.style.cursor = 'pointer';
+            document.body.style.cursor = "pointer";
             window.focus();
             document.body.onclick = ({target}) => {
                 const {url} = payload;

@@ -4,7 +4,7 @@ let State = {
     notificationsCounter: 0,
     autoSaveEnabled: false,
     selection: null,
-    isSiblingTargetHighlighted: false,
+    isSimilarElementHighlighted: false,
     originalBackgroundColor: null
 };
 
@@ -33,7 +33,7 @@ function removeStatuses(item, statusesToRemove = []) {
 }
 
 function updateItem(item, price, statusesToAdd, statusesToRemove) {
-    const statuses = [removeStatuses(item, statusesToRemove), ...statusesToAdd];
+    const statuses = [...removeStatuses(item, statusesToRemove), ...statusesToAdd];
     const updatedItem = {
         ...item,
         statuses
@@ -68,22 +68,22 @@ function onCheckStatus(sendResponse, {status, url, domain, selection, price}) {
     }
 }
 
-function onSiblingTargetHighlight({status, isHighlighted: isSiblingTargetHighlighted, originalBackgroundColor = null}) {
+function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
     if (status >= 0) {
-        State = setSiblingTargetHighlight(State, isSiblingTargetHighlighted, originalBackgroundColor);
+        State = setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
     }
 }
 
 // TODO: price becomes a class
-function savePrice(domain, url, selection, price, status, sendResponse, response) {
+function savePrice(domain, url, selection, price, statuses, callback) {
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime(), status};
+        items[url] = {selection, price: toPrice(price), timestamp: new Date().getTime(), statuses};
 
         chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
             State = disableAutoSave(State);
-            if (sendResponse) {
-                response !== null ? sendResponse(response) : sendResponse();
+            if (callback) {
+                callback();
             }
             // TODO: sendResponse("done"); // foi gravado ou não
         });
@@ -124,10 +124,10 @@ function setSelectionInfo(state, url, domain, selection, price) {
     };
 }
 
-function setSiblingTargetHighlight(state, isSiblingTargetHighlighted, originalBackgroundColor) {
+function setSimilarElementHighlight(state, isSimilarElementHighlighted, originalBackgroundColor) {
     return {
         ...state,
-        isSiblingTargetHighlighted,
+        isSimilarElementHighlighted,
         originalBackgroundColor
     };
 }
@@ -180,6 +180,7 @@ function checkForPriceChanges() {
                                     }
 
                                     if (domainItems[url].price && !newPrice) {
+                                        debugger;
                                         domainItems[url] = updateItem(domainItems[url], null,
                                             [ITEM_STATUS.NOT_FOUND],
                                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED]);
@@ -389,9 +390,17 @@ function attachEvents() {
                     }, onCheckStatus.bind(null, sendResponse));
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
-                    const {domain, url: stateUrl, selection, price} = State;
                     if (State.autoSaveEnabled) {
-                        savePrice(domain, stateUrl, selection, price, [ITEM_STATUS.WATCHED], sendResponse, false);
+                        const {domain, url: stateUrl, selection, price, originalBackgroundColor} = State;
+                        savePrice(domain, stateUrl, selection, price, [ITEM_STATUS.WATCHED], () => {
+                            chrome.tabs.sendMessage(id, {
+                                type: "AUTO_SAVE.HIGHLIGHT.STOP",
+                                payload: {selection, originalBackgroundColor}
+                            }, onSimilarElementHighlight);
+
+                            sendResponse(false);
+                        });
+
                         return true;
                     } else {
                         sendResponse(false);
@@ -403,7 +412,7 @@ function attachEvents() {
                         chrome.tabs.sendMessage(id, {
                             type: "AUTO_SAVE.HIGHLIGHT.START",
                             payload: {selection}
-                        }, onSiblingTargetHighlight);
+                        }, onSimilarElementHighlight);
                     }
                     break;
                 case "AUTO_SAVE.HIGHLIGHT.PRE_STOP":
@@ -412,7 +421,7 @@ function attachEvents() {
                         chrome.tabs.sendMessage(id, {
                             type: "AUTO_SAVE.HIGHLIGHT.STOP",
                             payload: {selection, originalBackgroundColor}
-                        }, onSiblingTargetHighlight);
+                        }, onSimilarElementHighlight);
                     }
                     break;
                 case "TRACKED_ITEMS.GET":

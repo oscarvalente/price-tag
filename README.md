@@ -23,8 +23,9 @@
     * basic ui ✅
     * delete ✅
     * execution manifest review ✅
-    * watched/not_found & price increase items statuses (with matching icon) `(wip)`
+    * watched/not_found & price increase items statuses (with matching icon) ✅
     * unfollow instead of delete (to keep background history) - unwatched status ❗
+    * minor styling ❗
  * extension icon displaying page is being tracked
  * keep tracked items object in state
  * saved money info (calc icon)
