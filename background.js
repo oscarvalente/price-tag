@@ -180,7 +180,6 @@ function checkForPriceChanges() {
                                     }
 
                                     if (domainItems[url].price && !newPrice) {
-                                        debugger;
                                         domainItems[url] = updateItem(domainItems[url], null,
                                             [ITEM_STATUS.NOT_FOUND],
                                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED]);
