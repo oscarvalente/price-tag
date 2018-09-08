@@ -8,7 +8,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             document.body.onclick = ({target}) => {
                 const {url} = payload;
                 const {localName, className, id, innerText} = target;
-                const selection = className ? `${localName}.${className}` :
+                const selection = className ? `${localName}.${className.replace(/\s/g, '.')}` :
                     id ? `${localName}#${className}` : localName; // TODO: Use document.querySelector
                 let domain = null;
                 let price = null;

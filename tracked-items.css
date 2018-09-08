@@ -12,26 +12,42 @@ body {
     list-style: none;
 }
 
-#tracked-items-list .tracked-item-container {
+#tracked-items-list .item-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: nowrap;
 }
 
-.tracked-item-container .status-container {
+.item-container .status-container {
     display: flex;
     flex-wrap: nowrap;
     width: 54px;
 }
 
-.tracked-item-container .status-container > svg:not(:last-child) {
+.item-container .status-container > svg:not(:last-child) {
     padding-right: 3px;
 }
 
 #tracked-items-list .tracked-item-label {
     display: flex;
     align-items: flex-end;
+}
+
+#tracked-items-title-container {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+#tracked-items-title-container .tracked-items-title-icon {
+    width: 18px;
+    height: 18px;
+}
+
+#tracked-items-title-container .tracked-items-title {
+    display: inline;
+    margin: 0 0 0 4px;
+    font-size: 18px;
 }
 
 .tracked-item-label .item-label {
@@ -45,17 +61,18 @@ body {
     padding-right: 12px;
 }
 
-.tracked-item-label .item-label.date {
-}
-
-.tracked-item-container .item-watch,
-.tracked-item-container .item-notfound {
+#tracked-items-title-container > *,
+.tracked-item-label .item-label.date,
+.item-container .item-watch,
+.item-container .item-notfound {
     align-self: center;
 }
 
-.tracked-item-container .item-delete,
-.tracked-item-container .item-watch,
-.tracked-item-container .item-notfound {
+.item-container .item-delete,
+.item-container .item-watch,
+.item-container .item-notfound,
+.item-container .item-priceup,
+.item-container .item-pricedown {
     width: 14px;
     height: 14px;
 }

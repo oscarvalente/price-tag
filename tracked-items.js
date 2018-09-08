@@ -32,7 +32,7 @@ function onTrackedItems(rawItems) {
     trackedItemsContainer.innerHTML = listItemsLoader({trackedItems});
 
     trackedItemsList = document.getElementById("tracked-items-list");
-    addRemoveEvents(".tracked-item-container .item-delete");
+    addRemoveEvents(".item-container .item-delete");
 }
 
 function addRemoveEvents(selection) {

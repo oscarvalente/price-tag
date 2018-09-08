@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.4.1
+* Selection bugfixes
+
 # v0.4.0
 * Items status persistence
 * Items status display

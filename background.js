@@ -159,7 +159,7 @@ function checkForPriceChanges() {
 
                                             if (!oldPrice) {
                                                 domainItems[url] = updateItem(domainItems[url], newPrice,
-                                                    [ITEM_STATUS.FIXED]);
+                                                    [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
                                                     createNotification(notificationId, ICONS.PRICE_FIX, "Fixed price",
@@ -167,7 +167,7 @@ function checkForPriceChanges() {
                                                 });
                                             } else if (newPrice < oldPrice) {
                                                 domainItems[url] = updateItem(domainItems[url], newPrice,
-                                                    [ITEM_STATUS.DECREASED], [ITEM_STATUS.INCREASED]);
+                                                    [ITEM_STATUS.DECREASED], [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND]);
 
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
@@ -194,8 +194,8 @@ function checkForPriceChanges() {
                                     }
                                 } catch (e) {
                                     console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
-                                    domainItems[url] = updateItem(domainItems[url], newPrice,
-                                        [ITEM_STATUS.NOT_FOUND], ALL_ITEM_STATUSES);
+                                    domainItems[url] = updateItem(domainItems[url], null,
+                                        [ITEM_STATUS.NOT_FOUND], [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED]);
 
                                     chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                         const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
