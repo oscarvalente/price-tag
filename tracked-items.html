@@ -6,14 +6,15 @@
 <body>
 <!-- Tracked items list -->
 <section id="tracked-items-container">
-    <script id="items-list" type="text/x-handlebars-template">
+    <script id="items-list" type="text/x-handlebars-template" nonce="973C9130A9534BC5DE5E5980ED60E8B91687EFCB38D4362DA2A8774E9F1F7813">
         <ol id="tracked-items-list">
             {{#each trackedItems as |item|}}
-            <li class="tracked-item">
-                <a href="{{item.url}}" target="_blank">
+            <li class="tracked-item-container">
+                <a class="tracked-item-label" href="{{item.url}}" target="_blank">
                     <span class="item-label price">{{item.price}}</span>
-                    <span class="item-label">{{item.dateTime}}</span>
+                    <span class="item-label date">{{item.dateTime}}</span>
                 </a>
+                <svg class="item-delete" data-item-url="{{item.url}}" height="512pt" viewBox="0 0 512 512" width="512pt" xmlns="http://www.w3.org/2000/svg"><path d="m432 0h-352c-44.160156.0546875-79.9453125 35.839844-80 80v352c.0546875 44.160156 35.839844 79.945312 80 80h352c44.160156-.054688 79.945312-35.839844 80-80v-352c-.054688-44.160156-35.839844-79.9453125-80-80zm48 432c0 26.507812-21.492188 48-48 48h-352c-26.507812 0-48-21.492188-48-48v-352c0-26.507812 21.492188-48 48-48h352c26.507812 0 48 21.492188 48 48zm0 0"/><path d="m380.449219 108.929688-124.449219 124.445312-124.449219-124.445312-22.621093 22.621093 124.445312 124.449219-124.445312 124.449219 22.621093 22.621093 124.449219-124.445312 124.449219 124.445312 22.621093-22.621093-124.445312-124.449219 124.445312-124.449219zm0 0"/></svg>
             </li>
             {{/each}}
         </ol>
@@ -22,6 +23,6 @@
 <a href="popup.html">< Back</a>
 
 <script type="text/javascript" src="vendor/handlebars.min.js"></script>
-<script type="text/javascript" src="tracked-items.js"></script>
+<script type="text/javascript" src="tracked-items.js" nonce="jo6znjn5ik"></script>
 </body>
 </html>

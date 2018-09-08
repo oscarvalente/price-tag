@@ -170,13 +170,13 @@ function checkForPriceChanges() {
 function getTrackedItems(callback) {
     chrome.storage.sync.get(null, result => {
         let trackedItems = [];
-        Object.keys(result).map(key => {
+        Object.keys(result).forEach(key => {
             if (matchesDomain(key)) {
                 const domainData = result[key];
                 const domainItems = JSON.parse(domainData) || null;
                 if (domainItems) {
                     const sortedDomainItems = [];
-                    Object.keys(domainItems).map(itemKey => {
+                    Object.keys(domainItems).forEach(itemKey => {
                         if (matchesHostname(itemKey)) {
                             const item = {
                                 ...domainItems[itemKey],
@@ -191,6 +191,29 @@ function getTrackedItems(callback) {
             }
         });
         callback(trackedItems);
+    });
+}
+
+function removeTrackedItem(url, callback) {
+    let found = false;
+    chrome.storage.sync.get(null, result => {
+        Object.keys(result).forEach(domain => {
+            if (matchesDomain(domain)) {
+                const domainData = result[domain];
+                const domainItems = JSON.parse(domainData) || null;
+                if (domainItems[url]) {
+                    found = true;
+                    // TODO: change status
+                    delete domainItems[url];
+                    chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, (v) => {
+                        callback(true);
+                    });
+                }
+            }
+        });
+        if (!found) {
+            callback(false);
+        }
     });
 }
 
@@ -344,6 +367,10 @@ function attachEvents() {
                     break;
                 case "TRACKED_ITEMS.GET":
                     getTrackedItems(sendResponse);
+                    return true;
+                case "TRACKED_ITEMS.UNFOLLOW":
+                    const {url: itemUrl} = payload;
+                    removeTrackedItem(itemUrl, sendResponse);
                     return true;
             }
         });

@@ -1,5 +1,3 @@
-const defaultCursorStyle = document.body.style.cursor;
-
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "RECORD.START":
@@ -31,7 +29,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 }
 
                 target.style.backgroundColor = originalBGColor;
-                document.body.style.cursor = defaultCursorStyle;
+                document.body.style.cursor = "";
                 document.body.removeEventListener("click", this);
                 document.body.onmouseover = null;
 
@@ -49,7 +47,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
 
             return true;
         case "RECORD.CANCEL":
-            document.body.style.cursor = defaultCursorStyle;
+            document.body.style.cursor = "";
             document.body.onclick = null;
             document.body.onmouseover = null;
 

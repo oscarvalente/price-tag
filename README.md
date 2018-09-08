@@ -14,9 +14,16 @@
     * change auto-save button color ✅
     * price tracking element selection saving (same url pages) ✅
     * when enabled, highlight price element on hover (w/ same color) ✅
+    * spa url change defaultCursor bug ✅
  * extension icon displaying page is being tracked
  * tracked items management panel `(wip)`
-    * delete
+    * basic ui ✅
+    * delete ✅
+    * csp policy ✅
+    * watched/not_found items status and icon **(next)**
+ * csp inline execution manifest review ✅
+ * keep in items object in state
+ * saved money info (calc icon)
  * price tracking suggestion
     * intelligent price detection
     * extension icon displaying page has prices (change extension style)
@@ -25,7 +32,9 @@
  * price alert setting
     * percentage threshold
     * value threshold
- * price increase alert - user review possibility
+ * price increase alert
+    * user review possibility
  * extension user tour
- * style ui
+ * minor improvements to the ui (styling minor issues)
+ * style ui (major)
  * todos list in code
