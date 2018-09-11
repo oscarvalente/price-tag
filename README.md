@@ -21,11 +21,14 @@
     * delete ✅
     * execution manifest review ✅
     * watched/not_found & price increase items statuses (with matching icon) ✅
-    * price increase/decrease status `(wip)`
+    * price increase/decrease status ✅
+    * fix duplicated items (bug) + duplicated statuses + click price tag w/ href or event ✅
+    * fix target selection (add more class) ✅
     * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked
- price tracking - part ii
+ * price tracking - part ii
+     * dismiss notifications
      * price increase alert ❗
         * user review possibility
      * stop following when price decreases (through notification)

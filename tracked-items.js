@@ -24,10 +24,10 @@ function onTrackedItems(rawItems) {
     const trackedItems = rawItems.map(item => ({
         ...item,
         dateTime: formatDate(item.timestamp),
-        isWatched: item.statuses.indexOf(ITEM_STATUS.WATCHED) > -1,
-        isNotFound: item.statuses.indexOf(ITEM_STATUS.NOT_FOUND) > -1,
-        isHigher: item.statuses.indexOf(ITEM_STATUS.INCREASED) > -1,
-        isLower: item.statuses.indexOf(ITEM_STATUS.DECREASED) > -1
+        isWatched: item.statuses.includes(ITEM_STATUS.WATCHED),
+        isNotFound: item.statuses.includes(ITEM_STATUS.NOT_FOUND),
+        isHigher: item.statuses.includes(ITEM_STATUS.INCREASED),
+        isLower: item.statuses.includes(ITEM_STATUS.DECREASED)
     }));
     trackedItemsContainer.innerHTML = listItemsLoader({trackedItems});
 

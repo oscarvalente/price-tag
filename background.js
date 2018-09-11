@@ -24,16 +24,26 @@ const ITEM_STATUS = {
     FIXED: "FIXED"
 };
 
-const ALL_ITEM_STATUSES = Object.values(ITEM_STATUS);
-
 function removeStatuses(item, statusesToRemove = []) {
     return statusesToRemove.length > 0 && item.statuses.length > 0 ?
-        item.statuses.filter(status => statusesToRemove.indexOf(status) === -1) :
+        item.statuses.filter(status => !statusesToRemove.includes(status)) :
         item.statuses;
 }
 
+function toUnique(array) {
+    return Array.from(new Set(array));
+}
+
 function updateItem(item, price, statusesToAdd, statusesToRemove) {
-    const statuses = [...removeStatuses(item, statusesToRemove), ...statusesToAdd];
+    if (!statusesToAdd) {
+        statusesToAdd = [];
+    }
+
+    if (!statusesToRemove) {
+        statusesToRemove = [];
+    }
+
+    const statuses = toUnique([...removeStatuses(item, statusesToRemove), ...statusesToAdd]);
     const updatedItem = {
         ...item,
         statuses
@@ -44,6 +54,10 @@ function updateItem(item, price, statusesToAdd, statusesToRemove) {
     }
 
     return updatedItem;
+}
+
+function isNotFound(item) {
+    return item.statuses.includes(ITEM_STATUS.NOT_FOUND);
 }
 
 function onRecordDone(payload) {
@@ -137,7 +151,7 @@ function checkForPriceChanges() {
     chrome.storage.sync.get(null, items => {
             const domains = Object.keys(items);
             chrome.storage.sync.get(domains, trackedItems => {
-                for (domain of domains) {
+                for (let domain of domains) {
                     const domainItems = JSON.parse(trackedItems[domain]);
 
                     for (let url in domainItems) {
@@ -149,11 +163,11 @@ function checkForPriceChanges() {
                                 const template = createHTMLTemplate(this.response);
                                 try {
                                     let newPrice = null;
-                                    const innerText = template.querySelector(domainItems[url].selection).innerText;
-                                    if (innerText) {
-                                        const innerTextMatch = innerText.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
-                                        if (innerTextMatch) {
-                                            [, newPrice] = innerTextMatch;
+                                    const textContent = template.querySelector(domainItems[url].selection).textContent;
+                                    if (textContent) {
+                                        const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                                        if (textContentMatch) {
+                                            [, newPrice] = textContentMatch;
 
                                             newPrice = toPrice(newPrice);
 
@@ -178,6 +192,11 @@ function checkForPriceChanges() {
                                             } else if (newPrice > oldPrice) {
                                                 domainItems[url] = updateItem(domainItems[url], null,
                                                     [ITEM_STATUS.INCREASED], [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND]);
+                                                chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    // TODO: sendResponse("done"); // foi actualizado ou não
+                                                });
+                                            } else if (isNotFound(domainItems[url])) { // NOTE: Here, price is the same
+                                                domainItems[url] = updateItem(domainItems[url], null, null, [ITEM_STATUS.NOT_FOUND]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
                                                 });

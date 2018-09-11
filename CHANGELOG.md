@@ -1,5 +1,11 @@
 ### CHANGELOG
 
+# v0.5.1
+* Fix duplicated items bugs
+* Fix duplicated statuses
+* Stop propagation prevent default click price tag w/ href or event
+* Fix target selection (for sites w/ identical elements selections)
+
 # v0.5.0
 * Higher/lower price status display
 

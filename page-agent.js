@@ -1,3 +1,19 @@
+function buildElementSelection(path, maxElements) {
+    const pathSelection = [];
+    let elemCount = 1;
+    for (let {localName, className, id} of path) {
+        if (maxElements >= elemCount) {
+            const pathElementSelection = className ? `${localName}.${className.replace(/\s/g, '.')}` :
+                id ? `${localName}#${id}` : localName;
+            pathSelection.push(pathElementSelection);
+        } else {
+            break;
+        }
+        elemCount++;
+    }
+    return pathSelection.reverse().join(" ");
+}
+
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "RECORD.START":
@@ -5,11 +21,14 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
 
             document.body.style.cursor = "pointer";
             window.focus();
-            document.body.onclick = ({target}) => {
+            document.body.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                const {target, path} = event;
                 const {url} = payload;
-                const {localName, className, id, innerText} = target;
-                const selection = className ? `${localName}.${className.replace(/\s/g, '.')}` :
-                    id ? `${localName}#${className}` : localName; // TODO: Use document.querySelector
+                debugger;
+                const {textContent} = target;
+                const selection = buildElementSelection(path, 3);
                 let domain = null;
                 let price = null;
                 if (url) {
@@ -17,10 +36,10 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 } else {
                     sendResponse({status: -1});
                 }
-                if (innerText) {
-                    const innerTextMatch = innerText.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
-                    if (innerTextMatch) {
-                        [, price] = innerTextMatch;
+                if (textContent) {
+                    const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                    if (textContentMatch) {
+                        [, price] = textContentMatch;
                     } else {
                         sendResponse({status: -3});
                     }
@@ -30,7 +49,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
 
                 target.style.backgroundColor = originalBGColor;
                 document.body.style.cursor = "";
-                document.body.removeEventListener("click", this);
+                document.body.onclick = null;
                 document.body.onmouseover = null;
 
                 sendResponse({status: 1, url, domain, selection, price});
@@ -57,11 +76,11 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             const {selection, url} = payload;
             const domain = location.hostname;
             const target = document.body.querySelector(selection);
-            const innerText = target ? target.innerText : null;
-            if (innerText) {
-                const innerTextMatch = innerText.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
-                if (innerTextMatch) {
-                    [, price] = innerTextMatch;
+            const textContent = target ? target.textContent : null;
+            if (textContent) {
+                const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                if (textContentMatch) {
+                    [, price] = textContentMatch;
                     sendResponse({status: 1, url, domain, selection, price});
                 } else {
                     sendResponse({status: -2});
