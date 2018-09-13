@@ -1,5 +1,10 @@
 ### CHANGELOG
 
+# v0.6.0
+* Starting price comparison
+* Dismiss lower price notification
+* Lower pricer - update and track lower price
+
 # v0.5.1
 * Fix duplicated items bugs
 * Fix duplicated statuses

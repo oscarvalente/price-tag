@@ -24,14 +24,17 @@
     * price increase/decrease status ✅
     * fix duplicated items (bug) + duplicated statuses + click price tag w/ href or event ✅
     * fix target selection (add more class) ✅
+    * fix item sort ❗
     * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked
  * price tracking - part ii
-     * dismiss notifications
+     * dismiss notifications ❗
+        * lower price ✅
      * price increase alert ❗
         * user review possibility
-     * stop following when price decreases (through notification)
+     * stop following when price decreases (through notification) ❗
+     * Allow naming item ❗
  * keep tracked items object in state
  * saved money info (calc icon)
  * price tracking suggestion

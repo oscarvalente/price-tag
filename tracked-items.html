@@ -146,7 +146,7 @@
                     {{#if item.isHigher}}
                     <svg class="item-priceup" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 511.999 511.999" style="enable-background:new 0 0 511.999 511.999;" xml:space="preserve">
-                        <title>Higher price - price is higher than when you started tracking this item</title>
+                        <title>Higher price - price is higher than when you started tracking this item ({{item.currentPrice}})</title>
 <g>
 	<g>
 		<path d="M436.275,39.807H304.797C300.155,17.119,280.039,0,256,0s-44.156,17.119-48.798,39.807H75.725
@@ -233,7 +233,7 @@
                     {{#if item.isLower}}
                     <svg class="item-pricedown" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
-                        <title>Save money - price is lower than when you started tracking this item</title>
+                        <title>Save money - price is lower than when you started tracking this item ({{item.startingPrice}})</title>
 <g>
 	<g>
 		<path d="M435.553,286.345c1.133-0.279,2.302-0.551,3.548-0.809c5.433-1.12,8.929-6.432,7.808-11.865
