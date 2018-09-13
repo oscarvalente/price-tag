@@ -293,21 +293,21 @@ function getTrackedItems(callback) {
                 const domainData = result[key];
                 const domainItems = JSON.parse(domainData) || null;
                 if (domainItems) {
-                    const sortedDomainItems = [];
+                    let items = [];
                     Object.keys(domainItems).forEach(itemKey => {
                         if (matchesHostname(itemKey)) {
                             const item = {
                                 ...domainItems[itemKey],
                                 url: itemKey
                             };
-                            sortedDomainItems.push(item);
+                            items.push(item);
                         }
                     });
-                    sortedDomainItems.sort(sortItemsByTime);
-                    trackedItems = [...trackedItems, ...sortedDomainItems];
+                    trackedItems = [...trackedItems, ...items];
                 }
             }
         });
+        trackedItems.sort(sortItemsByTime);
         callback(trackedItems);
     });
 }

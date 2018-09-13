@@ -24,13 +24,19 @@
     * price increase/decrease status ✅
     * fix duplicated items (bug) + duplicated statuses + click price tag w/ href or event ✅
     * fix target selection (add more class) ✅
-    * fix item sort ❗
+    * fix item sort ✅
+    * improve item sorting ❗
+        * by time ✅
+        * by price ❗
+        * by domain, time
+        * by domain, price
     * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked
  * price tracking - part ii
      * dismiss notifications ❗
         * lower price ✅
+        * higher price ❗
      * price increase alert ❗
         * user review possibility
      * stop following when price decreases (through notification) ❗

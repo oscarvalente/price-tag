@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.6.1
+* Fix item sorting by time
+
 # v0.6.0
 * Starting price comparison
 * Dismiss lower price notification
