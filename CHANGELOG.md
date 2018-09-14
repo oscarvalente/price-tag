@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.7.0
+* Higher price follow (humble price follow)
+* Higher price dismiss
+
 # v0.6.1
 * Fix item sorting by time
 
