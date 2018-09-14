@@ -25,24 +25,35 @@
     * fix duplicated items (bug) + duplicated statuses + click price tag w/ href or event ✅
     * fix target selection (add more class) ✅
     * fix item sort ✅
+    * refresh view while opened ❗❗❗
+    * un-follow instead of delete (to keep background history) - unwatched status ❗
+    * show current price vs target one ❗
+    * show amount intended to save (subject to target) ❗
     * improve item sorting ❗
         * by time ✅
         * by price ❗
         * by domain, time
         * by domain, price
-    * un-follow instead of delete (to keep background history) - unwatched status ❗
     * minor styling ❗
  * extension icon displaying page is being tracked
- * price tracking - part ii
-     * dismiss notifications ❗
+ * price tracking - part ii `(wip)`
+     * dismiss notifications ✅
         * lower price ✅
-        * higher price ❗
-     * price increase alert ❗
-        * user review possibility
-     * stop following when price decreases (through notification) ❗
-     * Allow naming item ❗
+        * higher price ✅
+     * price increase alert
+        * user review possibility (tune price increase) ✅
+        * toggle off
+     * stop following when price decreases (through notification) ❗❗
+     * show if item is being tracked ❗❗
+     * allow naming item ❗
  * keep tracked items object in state
  * saved money info (calc icon)
+ * price alert setting
+    * percentage threshold
+    * value threshold
+    * has threshold defined status
+    * price decrease status but not yet reach threshold (and icon)
+ * auto-save animation
  * price tracking suggestion
     * intelligent price detection
     * extension icon displaying page has prices (change extension style)
@@ -51,13 +62,8 @@
     * migrate persisted state to IndexedDB ❕
     * graph button on management panel
     * new view
- * price alert setting
-    * percentage threshold
-    * value threshold
-    * has threshold defined status
-    * price decrease status but not yet reach threshold (and icon)
  * extension user tour
  * minor improvements to the ui (styling minor issues)
- * style ui (major)
+ * style ui (major) ❗
  * todos list in code
  * add project bundle build tool

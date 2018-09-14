@@ -36,7 +36,17 @@ function toUnique(array) {
     return Array.from(new Set(array));
 }
 
-function updateItem(item, newPrice, statusesToAdd, statusesToRemove, currentPrice, forceStartingPrice = false) {
+function updateItemCurrentPrice(item, newPrice) {
+    const previousPrice = item.currentPrice;
+
+    return {
+        ...item,
+        previousPrice,
+        currentPrice: newPrice
+    };
+}
+
+function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
     if (!statusesToAdd) {
         statusesToAdd = [];
     }
@@ -55,12 +65,6 @@ function updateItem(item, newPrice, statusesToAdd, statusesToRemove, currentPric
         updatedItem.startingPrice = item.price;
     }
 
-    updatedItem.previousPrice = item.price;
-
-    if (currentPrice) {
-        updatedItem.currentPrice = currentPrice;
-    }
-
     if (newPrice) {
         updatedItem.price = newPrice;
     }
@@ -74,6 +78,10 @@ function isNotFound(item) {
 
 function hasAcknowledgeDecrease(item) {
     return item.statuses.includes(ITEM_STATUS.ACK_DECREASE);
+}
+
+function hasAcknowledgeIncrease(item) {
+    return item.statuses.includes(ITEM_STATUS.ACK_INCREASE);
 }
 
 function onRecordDone(payload) {
@@ -188,7 +196,7 @@ function checkForPriceChanges() {
                     for (let url in domainItems) {
                         if (domainItems.hasOwnProperty(url)) {
                             const request = new XMLHttpRequest();
-                            const {price: targetPrice, previousPrice} = domainItems[url];
+                            const {price: targetPrice, currentPrice} = domainItems[url];
 
                             request.onload = function () {
                                 const template = createHTMLTemplate(this.response);
@@ -203,7 +211,7 @@ function checkForPriceChanges() {
                                             newPrice = toPrice(newPrice);
 
                                             if (!targetPrice) {
-                                                domainItems[url] = updateItem(domainItems[url], newPrice,
+                                                domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice,
                                                     [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
@@ -211,7 +219,8 @@ function checkForPriceChanges() {
                                                         `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
                                                 });
                                             } else if (newPrice < targetPrice) {
-                                                domainItems[url] = updateItem(domainItems[url], newPrice,
+                                                const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice); // update current price and previous
+                                                domainItems[url] = updateItemTrackStatus(updatedItem, newPrice,
                                                     [ITEM_STATUS.DECREASED],
                                                     [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
 
@@ -220,24 +229,43 @@ function checkForPriceChanges() {
                                                     if (!hasAcknowledgeDecrease(domainItems[url])) {
                                                         const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
                                                         createNotification(notificationId, ICONS.PRICE_UPDATE, "Lower price!!",
-                                                            `${newPrice} (previous ${targetPrice})`, url, url, domain, {
+                                                            `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED,
+                                                            {
                                                                 buttons: [
                                                                     {
-                                                                        title: `Keep tracking w/ new price (${newPrice})`
+                                                                        title: `Keep tracking but w/ new price (${newPrice})`
                                                                     }
                                                                 ]
                                                             });
                                                     }
                                                 });
-                                            } else if (newPrice > targetPrice) {
-                                                domainItems[url] = updateItem(domainItems[url], null,
+                                            } else if (newPrice > currentPrice) {
+                                                const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice); // update current price and previous
+                                                domainItems[url] = updateItemTrackStatus(updatedItem, null,
                                                     [ITEM_STATUS.INCREASED],
-                                                    [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE], newPrice);
+                                                    [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE]);
+
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
+
+                                                    if (!hasAcknowledgeIncrease(domainItems[url])) {
+                                                        const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                                                        const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ?
+                                                            {
+                                                                buttons: [
+                                                                    {
+                                                                        title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
+                                                                    }
+                                                                ]
+                                                            } :
+                                                            undefined;
+                                                        createNotification(notificationId, ICONS.PRICE_UPDATE, "Price increase",
+                                                            `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED,
+                                                            notificationOptions);
+                                                    }
                                                 });
                                             } else if (isNotFound(domainItems[url])) { // NOTE: Here, price is the same
-                                                domainItems[url] = updateItem(domainItems[url], null,
+                                                domainItems[url] = updateItemTrackStatus(domainItems[url], null,
                                                     null, [ITEM_STATUS.NOT_FOUND]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
@@ -247,7 +275,7 @@ function checkForPriceChanges() {
                                     }
 
                                     if (domainItems[url].price && !newPrice) {
-                                        domainItems[url] = updateItem(domainItems[url], null,
+                                        domainItems[url] = updateItemTrackStatus(domainItems[url], null,
                                             [ITEM_STATUS.NOT_FOUND],
                                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
 
@@ -261,7 +289,7 @@ function checkForPriceChanges() {
                                     }
                                 } catch (e) {
                                     console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
-                                    domainItems[url] = updateItem(domainItems[url], null,
+                                    domainItems[url] = updateItemTrackStatus(domainItems[url], null,
                                         [ITEM_STATUS.NOT_FOUND],
                                         [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
 
@@ -321,7 +349,7 @@ function removeTrackedItem(url, callback) {
                 const domainItems = JSON.parse(domainData) || null;
                 if (domainItems[url]) {
                     found = true;
-                    // TODO: change status
+                    // TODO: change status instead of deleting
                     delete domainItems[url];
                     chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, (v) => {
                         callback(true);
@@ -338,10 +366,18 @@ function removeTrackedItem(url, callback) {
 function clearNotification(notifId, wasClearedByUser) {
     chrome.notifications.clear(notifId, () => {
         if (wasClearedByUser) {
-            const {domain, url} = State.notifications[notifId];
+            const {domain, url, type} = State.notifications[notifId];
             chrome.storage.sync.get([domain], result => {
                 const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
-                domainItems[url] = updateItem(domainItems[url], null, [ITEM_STATUS.ACK_DECREASE]);
+                switch (type) {
+                    case ITEM_STATUS.DECREASED:
+                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_DECREASE]);
+                        break;
+                    case ITEM_STATUS.INCREASED:
+                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_INCREASE]);
+                        break;
+                }
+
                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
             });
         }
@@ -350,7 +386,7 @@ function clearNotification(notifId, wasClearedByUser) {
     });
 }
 
-function createNotification(notifId, iconUrl, title, message, contextMessage = "", url, domain, extraOptions = {}) {
+function createNotification(notifId, iconUrl, title, message, contextMessage = "", url, domain, type, extraOptions = {}) {
     const options = {
         type: "basic",
         title,
@@ -364,7 +400,8 @@ function createNotification(notifId, iconUrl, title, message, contextMessage = "
     chrome.notifications.create(notifId, options, id => {
         State.notifications[id] = {
             url,
-            domain
+            domain,
+            type
         };
     });
 
@@ -521,17 +558,32 @@ function attachEvents() {
 
     // TODO: update and keep tracking
     chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
-        switch(buttonIndex) {
+        const {domain, url, type} = State.notifications[notifId];
+        switch (buttonIndex) {
             case 0:
-                const {domain, url} = State.notifications[notifId];
-                chrome.storage.sync.get([domain], result => {
-                    const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                    if (domainItems[url]) {
-                        const {price: newPrice} = domainItems[url];
-                        domainItems[url] = updateItem(domainItems[url], newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], newPrice, true);
-                        chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
-                    }
-                });
+                switch(type) {
+                    case ITEM_STATUS.DECREASED:
+                        chrome.storage.sync.get([domain], result => {
+                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+                            if (domainItems[url]) {
+                                const {price: newPrice} = domainItems[url];
+                                domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
+                                chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
+                            }
+                        });
+                        break;
+                    case ITEM_STATUS.INCREASED:
+                        debugger;
+                        chrome.storage.sync.get([domain], result => {
+                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+                            if (domainItems[url]) {
+                                const {previousPrice: priceBeforeIncreasing} = domainItems[url];
+                                domainItems[url] = updateItemTrackStatus(domainItems[url], priceBeforeIncreasing, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
+                                chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
+                            }
+                        });
+                        break;
+                }
                 break;
         }
     });
