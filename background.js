@@ -152,14 +152,6 @@ function createItem(domain, url, selection, price, statuses, callback) {
     });
 }
 
-function resetNotifications(state) {
-    return {
-        ...state,
-        notifications: {},
-        notificationsCounter: 0
-    };
-}
-
 function enableAutoSave(state, selection) {
     selection = selection || state.selection;
     return {
@@ -195,7 +187,6 @@ function setSimilarElementHighlight(state, isSimilarElementHighlighted, original
 }
 
 function checkForPriceChanges() {
-    State = resetNotifications(State);
     chrome.storage.sync.get(null, items => {
             const domains = Object.keys(items);
             chrome.storage.sync.get(domains, trackedItems => {

@@ -44,8 +44,8 @@
         * user review possibility (tune price increase) ✅
         * toggle off
      * BUG: auto-save after delete should not be disabled ❗❗❗❗
-     * BUG: when chrome is unfocused background State is lost ❗❗❗❗
-     * stop following when price decreases (through notification) ✅ 
+     * BUG: when chrome is unfocused background State is lost ✅
+     * stop following when price decreases (through notification) ✅
      * show if item is being tracked ❗❗
      * allow naming item ❗
  * keep tracked items object in state **perhaps not good, review this**

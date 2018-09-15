@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.8.1
+* Notifications state reset bug
+
 # v0.8.0
 * Stop following option (either higher or lower price alerts)
 * Track management panel - periodic refresh 
