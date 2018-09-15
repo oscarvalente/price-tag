@@ -3,7 +3,7 @@ function buildElementSelection(path, maxElements) {
     let elemCount = 1;
     for (let {localName, className, id} of path) {
         if (maxElements >= elemCount) {
-            const pathElementSelection = className ? `${localName}.${className.replace(/\s/g, '.')}` :
+            const pathElementSelection = className ? `${localName}.${className.replace(/\s/g, ".")}` :
                 id ? `${localName}#${id}` : localName;
             pathSelection.push(pathElementSelection);
         } else {
@@ -14,6 +14,17 @@ function buildElementSelection(path, maxElements) {
     return pathSelection.reverse().join(" ");
 }
 
+function getFaviconPath() {
+    let favicon = null;
+    const nodeList = document.getElementsByTagName("link");
+    for (let node of nodeList) {
+        if (node.getAttribute("rel") === "icon" || node.getAttribute("rel") === "shortcut icon") {
+            return node.getAttribute("href");
+        }
+    }
+    return favicon;
+}
+
 function evaluateAutoSave(selection, url, domain, sendResponse){
     const target = document.body.querySelector(selection);
     const textContent = target ? target.textContent : null;
@@ -21,7 +32,7 @@ function evaluateAutoSave(selection, url, domain, sendResponse){
         const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
         if (textContentMatch) {
             const [, price] = textContentMatch;
-            sendResponse({status: 1, url, domain, selection, price});
+            sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconPath()});
         } else {
             sendResponse({status: -2});
         }
@@ -55,6 +66,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
                     if (textContentMatch) {
                         [, price] = textContentMatch;
+                        sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconPath()});
                     } else {
                         sendResponse({status: -3});
                     }
@@ -66,8 +78,6 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 document.body.style.cursor = "";
                 document.body.onclick = null;
                 document.body.onmouseover = null;
-
-                sendResponse({status: 1, url, domain, selection, price});
             };
 
             document.body.onmouseover = ({target}) => {
@@ -90,7 +100,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
         case "AUTO_SAVE.CHECK_STATUS":
             const {selection, url} = payload;
             const domain = location.hostname;
-            if (document.readyState !== 'complete') {
+            if (document.readyState !== "complete") {
                 window.onload = () => {
                     evaluateAutoSave(selection, url, domain, sendResponse);
 

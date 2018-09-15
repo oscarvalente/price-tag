@@ -91,9 +91,9 @@ function hasAcknowledgeIncrease(item) {
 }
 
 function onRecordDone(payload) {
-    const {status, domain, url, selection, price} = payload;
+    const {status, domain, url, selection, price, faviconURL} = payload;
     if (status > 0) {
-        createItem(domain, url, selection, price, [ITEM_STATUS.WATCHED]);
+        createItem(domain, url, selection, price, faviconURL, [ITEM_STATUS.WATCHED]);
     }
 
     State.recordActive = false;
@@ -103,9 +103,9 @@ function onRecordCancel() {
     State.recordActive = false;
 }
 
-function onCheckStatus(sendResponse, {status, url, domain, selection, price}) {
+function onCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL}) {
     if (status >= 0) {
-        State = setSelectionInfo(State, url, domain, selection, price);
+        State = setSelectionInfo(State, url, domain, selection, price, faviconURL);
         sendResponse(true);
     } else {
         sendResponse(false);
@@ -118,7 +118,7 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     }
 }
 
-function createTrackedItem(selection, trackedPrice, previousPrice, statuses) {
+function createTrackedItem(selection, trackedPrice, previousPrice, faviconURL, statuses) {
     if (!previousPrice) {
         previousPrice = null;
     }
@@ -131,16 +131,23 @@ function createTrackedItem(selection, trackedPrice, previousPrice, statuses) {
         currentPrice: price,
         startingPrice: price,
         previousPrice,
+        faviconURL,
         timestamp: new Date().getTime(),
         statuses
     };
 }
 
 // TODO: price becomes a class
-function createItem(domain, url, selection, price, statuses, callback) {
+function createItem(domain, url, selection, price, faviconURL, statuses, callback) {
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = createTrackedItem(selection, price, undefined, statuses);
+        let faviconURLFormatted;
+        if (faviconURL.startsWith("https")) {
+            faviconURLFormatted = faviconURL;
+        } else {
+            faviconURLFormatted = `https://${domain}${faviconURL}`;
+        }
+        items[url] = createTrackedItem(selection, price, undefined, faviconURLFormatted, statuses);
 
         chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
             State = disableAutoSave(State);
@@ -168,13 +175,14 @@ function disableAutoSave(state) {
     };
 }
 
-function setSelectionInfo(state, url, domain, selection, price) {
+function setSelectionInfo(state, url, domain, selection, price, faviconURL) {
     return {
         ...state,
         url,
         domain,
         selection,
-        price
+        price,
+        faviconURL
     };
 }
 
@@ -520,8 +528,8 @@ function attachEvents() {
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
-                        const {domain, url: stateUrl, selection, price, originalBackgroundColor} = State;
-                        createItem(domain, stateUrl, selection, price, [ITEM_STATUS.WATCHED], () => {
+                        const {domain, url: stateUrl, selection, price, faviconURL, originalBackgroundColor} = State;
+                        createItem(domain, stateUrl, selection, price, faviconURL, [ITEM_STATUS.WATCHED], () => {
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.HIGHLIGHT.STOP",
                                 payload: {selection, originalBackgroundColor}

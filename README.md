@@ -27,6 +27,7 @@
     * fix item sort ✅
     * refresh view while opened ✅
     * un-follow instead of delete (to keep background history) - remove watched status ✅
+    * show favicon image next to item ✅
     * show current price vs target one ❗
     * show amount intended to save (subject to target) ❗
     * improve item sorting ❗

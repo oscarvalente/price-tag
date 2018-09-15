@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.9.0
+* Track panel - favicon next to item
+
 # v0.8.2
 * Auto-save - open extension during page refresh
 

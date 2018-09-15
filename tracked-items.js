@@ -64,7 +64,7 @@ function bootstrap() {
     listItemsLoader = loadTemplate("items-list");
 
     updateTrackedItems();
-    window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    // window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function onItemRemoved(listItemElement, wasRemoved) {
