@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.8.2
+* Auto-save - open extension during page refresh
+
 # v0.8.1
 * Notifications state reset bug
 

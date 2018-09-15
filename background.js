@@ -360,8 +360,10 @@ function removeTrackedItem(url, callback) {
                 if (domainItems[url]) {
                     found = true;
                     // TODO: change status instead of deleting
-                    delete domainItems[url];
-                    chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, (v) => {
+
+                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
+                    chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
+                        updateAutoSaveStatus(url);
                         callback(true);
                     });
                 }
@@ -432,7 +434,7 @@ function createHTMLTemplate(html) {
 }
 
 function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
-    return tsA > tsB ? 1 : 0;
+    return tsA - tsB;
 }
 
 function matchesDomain(string) {
@@ -452,7 +454,8 @@ function updateAutoSaveStatus(url) {
     const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : null;
-        if (items && !items[url]) {
+        const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
+        if (items && isItemNullOrUnwatched) {
             const urlFromDomain = Object.keys(items)[0];
             if (items[urlFromDomain] && items[urlFromDomain].selection) {
                 State = enableAutoSave(State, items[urlFromDomain].selection);
@@ -477,9 +480,9 @@ function attachEvents() {
         });
     });
 
-    chrome.tabs.onUpdated.addListener((tabId, {status}, {active, url}) => {
+    chrome.tabs.onUpdated.addListener((tabId, _, {active, url}) => {
         if (url.startsWith("http")) {
-            if (active && status === "complete") {
+            if (active) {
                 chrome.tabs.executeScript(tabId, {
                     file: "page-agent.js"
                 });
@@ -600,7 +603,7 @@ function attachEvents() {
                         chrome.storage.sync.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
                             if (domainItems[url]) {
-                                domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES, true); // stop watching
+                                domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
                             }
                         });

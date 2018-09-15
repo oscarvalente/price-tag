@@ -14,6 +14,22 @@ function buildElementSelection(path, maxElements) {
     return pathSelection.reverse().join(" ");
 }
 
+function evaluateAutoSave(selection, url, domain, sendResponse){
+    const target = document.body.querySelector(selection);
+    const textContent = target ? target.textContent : null;
+    if (textContent) {
+        const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+        if (textContentMatch) {
+            const [, price] = textContentMatch;
+            sendResponse({status: 1, url, domain, selection, price});
+        } else {
+            sendResponse({status: -2});
+        }
+    } else {
+        sendResponse({status: -1});
+    }
+}
+
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "RECORD.START":
@@ -74,20 +90,17 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
         case "AUTO_SAVE.CHECK_STATUS":
             const {selection, url} = payload;
             const domain = location.hostname;
-            const target = document.body.querySelector(selection);
-            const textContent = target ? target.textContent : null;
-            if (textContent) {
-                const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
-                if (textContentMatch) {
-                    [, price] = textContentMatch;
-                    sendResponse({status: 1, url, domain, selection, price});
-                } else {
-                    sendResponse({status: -2});
-                }
+            if (document.readyState !== 'complete') {
+                window.onload = () => {
+                    evaluateAutoSave(selection, url, domain, sendResponse);
+
+                    window.onload = null;
+                };
+                return true;
             } else {
-                sendResponse({status: -1});
+                evaluateAutoSave(selection, url, domain, sendResponse);
+                return false;
             }
-            break;
         case "AUTO_SAVE.HIGHLIGHT.START":
             const {selection: elementSelection} = payload;
             const elementToHighlight = document.body.querySelector(elementSelection);
