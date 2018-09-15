@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.8.0
+* Stop following option (either higher or lower price alerts)
+* Track management panel - periodic refresh 
+
 # v0.7.0
 * Higher price follow (humble price follow)
 * Higher price dismiss

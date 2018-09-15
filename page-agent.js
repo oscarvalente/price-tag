@@ -26,7 +26,6 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 event.stopPropagation();
                 const {target, path} = event;
                 const {url} = payload;
-                debugger;
                 const {textContent} = target;
                 const selection = buildElementSelection(path, 3);
                 let domain = null;

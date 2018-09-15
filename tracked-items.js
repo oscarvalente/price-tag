@@ -10,6 +10,8 @@ const ITEM_STATUS = {
     FIXED: "FIXED"
 };
 
+const REFRESH_INTERVAL = 14000;
+
 function loadTemplate(elementId) {
     const elementHTML = document.getElementById(elementId).innerHTML;
     return Handlebars.compile(elementHTML);
@@ -47,14 +49,22 @@ function addRemoveEvents(selection) {
 }
 
 function removeItem(url, listItemElement) {
-    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.UNFOLLOW", payload: {url}}, onItemRemoved.bind(null, listItemElement));
+    chrome.runtime.sendMessage({
+        type: "TRACKED_ITEMS.UNFOLLOW",
+        payload: {url}
+    }, onItemRemoved.bind(null, listItemElement));
+}
+
+function updateTrackedItems() {
+    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, onTrackedItems);
 }
 
 function bootstrap() {
     trackedItemsContainer = document.getElementById("tracked-items-container");
     listItemsLoader = loadTemplate("items-list");
 
-    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, onTrackedItems);
+    updateTrackedItems();
+    window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function onItemRemoved(listItemElement, wasRemoved) {

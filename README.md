@@ -16,7 +16,7 @@
     * price tracking element selection saving (same url pages) ✅
     * when enabled, highlight price element on hover (w/ same color) ✅
     * spa url change defaultCursor bug ✅
- * tracked items management panel `(wip)`
+ * tracked items management panel `(wip)` ❗
     * basic ui ✅
     * delete ✅
     * execution manifest review ✅
@@ -25,8 +25,8 @@
     * fix duplicated items (bug) + duplicated statuses + click price tag w/ href or event ✅
     * fix target selection (add more class) ✅
     * fix item sort ✅
-    * refresh view while opened ❗❗❗
-    * un-follow instead of delete (to keep background history) - unwatched status ❗
+    * refresh view while opened ✅
+    * un-follow instead of delete (to keep background history) - remove watched status ✅
     * show current price vs target one ❗
     * show amount intended to save (subject to target) ❗
     * improve item sorting ❗
@@ -36,17 +36,19 @@
         * by domain, price
     * minor styling ❗
  * extension icon displaying page is being tracked
- * price tracking - part ii `(wip)`
+ * price tracking - part ii `(wip)` ❗❗❗❗
      * dismiss notifications ✅
         * lower price ✅
         * higher price ✅
      * price increase alert
         * user review possibility (tune price increase) ✅
         * toggle off
-     * stop following when price decreases (through notification) ❗❗
+     * BUG: auto-save after delete should not be disabled ❗❗❗❗
+     * BUG: when chrome is unfocused background State is lost ❗❗❗❗
+     * stop following when price decreases (through notification) ✅ 
      * show if item is being tracked ❗❗
      * allow naming item ❗
- * keep tracked items object in state
+ * keep tracked items object in state **perhaps not good, review this**
  * saved money info (calc icon)
  * price alert setting
     * percentage threshold

@@ -26,6 +26,8 @@ const ITEM_STATUS = {
     FIXED: "FIXED"
 };
 
+const ALL_ITEM_STATUSES = Object.values(ITEM_STATUS);
+
 function removeStatuses(item, statusesToRemove = []) {
     return statusesToRemove.length > 0 && item.statuses.length > 0 ?
         item.statuses.filter(status => !statusesToRemove.includes(status)) :
@@ -72,6 +74,10 @@ function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, 
     return updatedItem;
 }
 
+function isWatched(item) {
+    return item.statuses.includes(ITEM_STATUS.WATCHED);
+}
+
 function isNotFound(item) {
     return item.statuses.includes(ITEM_STATUS.NOT_FOUND);
 }
@@ -112,15 +118,18 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     }
 }
 
-function createTrackedItem(selection, price, previousPrice, timeStamp, statuses, startingPrice) {
+function createTrackedItem(selection, trackedPrice, previousPrice, statuses) {
     if (!previousPrice) {
         previousPrice = null;
     }
 
+    const price = toPrice(trackedPrice);
+
     return {
         selection,
-        price: toPrice(price),
-        startingPrice,
+        price,
+        currentPrice: price,
+        startingPrice: price,
         previousPrice,
         timestamp: new Date().getTime(),
         statuses
@@ -131,7 +140,7 @@ function createTrackedItem(selection, price, previousPrice, timeStamp, statuses,
 function createItem(domain, url, selection, price, statuses, callback) {
     chrome.storage.sync.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = createTrackedItem(selection, price, undefined, new Date().getTime(), statuses, price);
+        items[url] = createTrackedItem(selection, price, undefined, statuses);
 
         chrome.storage.sync.set({[domain]: JSON.stringify(items)}, () => {
             State = disableAutoSave(State);
@@ -194,7 +203,7 @@ function checkForPriceChanges() {
                     const domainItems = JSON.parse(trackedItems[domain]);
 
                     for (let url in domainItems) {
-                        if (domainItems.hasOwnProperty(url)) {
+                        if (domainItems.hasOwnProperty(url) && isWatched(domainItems[url])) {
                             const request = new XMLHttpRequest();
                             const {price: targetPrice, currentPrice} = domainItems[url];
 
@@ -234,6 +243,9 @@ function checkForPriceChanges() {
                                                                 buttons: [
                                                                     {
                                                                         title: `Keep tracking but w/ new price (${newPrice})`
+                                                                    },
+                                                                    {
+                                                                        title: "Stop watching"
                                                                     }
                                                                 ]
                                                             });
@@ -258,7 +270,14 @@ function checkForPriceChanges() {
                                                                     }
                                                                 ]
                                                             } :
-                                                            undefined;
+                                                            {
+                                                                buttons: []
+                                                            };
+                                                        notificationOptions.buttons.push(
+                                                            {
+                                                                title: "Stop watching"
+                                                            }
+                                                        );
                                                         createNotification(notificationId, ICONS.PRICE_UPDATE, "Price increase",
                                                             `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED,
                                                             notificationOptions);
@@ -322,11 +341,11 @@ function getTrackedItems(callback) {
                 const domainItems = JSON.parse(domainData) || null;
                 if (domainItems) {
                     let items = [];
-                    Object.keys(domainItems).forEach(itemKey => {
-                        if (matchesHostname(itemKey)) {
+                    Object.keys(domainItems).forEach(url => {
+                        if (matchesHostname(url) && isWatched(domainItems[url])) {
                             const item = {
-                                ...domainItems[itemKey],
-                                url: itemKey
+                                ...domainItems[url],
+                                url: url
                             };
                             items.push(item);
                         }
@@ -363,9 +382,9 @@ function removeTrackedItem(url, callback) {
     });
 }
 
-function clearNotification(notifId, wasClearedByUser) {
-    chrome.notifications.clear(notifId, () => {
-        if (wasClearedByUser) {
+function clearNotification(notifId, wasClosedByUser) {
+    chrome.notifications.clear(notifId, wasClickedByUser => {
+        if (wasClickedByUser || wasClosedByUser) {
             const {domain, url, type} = State.notifications[notifId];
             chrome.storage.sync.get([domain], result => {
                 const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
@@ -561,7 +580,7 @@ function attachEvents() {
         const {domain, url, type} = State.notifications[notifId];
         switch (buttonIndex) {
             case 0:
-                switch(type) {
+                switch (type) {
                     case ITEM_STATUS.DECREASED:
                         chrome.storage.sync.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
@@ -573,12 +592,24 @@ function attachEvents() {
                         });
                         break;
                     case ITEM_STATUS.INCREASED:
-                        debugger;
                         chrome.storage.sync.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
                             if (domainItems[url]) {
                                 const {previousPrice: priceBeforeIncreasing} = domainItems[url];
                                 domainItems[url] = updateItemTrackStatus(domainItems[url], priceBeforeIncreasing, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
+                                chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
+                            }
+                        });
+                        break;
+                }
+                break;
+            case 1:
+                switch (type) {
+                    case ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED:
+                        chrome.storage.sync.get([domain], result => {
+                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+                            if (domainItems[url]) {
+                                domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES, true); // stop watching
                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)});
                             }
                         });
