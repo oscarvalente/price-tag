@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.10.1
+* Change not found hover info
+* Not ready document investigated (see unsolvable issues)
+
 # v0.10.0
 * Track panel - item title in favicon hover
 * Price not found notification dismiss

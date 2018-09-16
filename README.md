@@ -1,5 +1,8 @@
 # price-tag
 
+price-tag project consists in a chrome extension that allows online items price tracking/monitoring. When price changes user is alerted,
+but there's a lot more, and more to come.
+
 ### Intended features / TODO
 
  * basic ui ✅
@@ -37,7 +40,7 @@
         * by domain, price
     * minor styling ❗
  * extension icon displaying page is being tracked
- * price tracking - part ii `(wip)` ❗❗❗❗
+ * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
         * lower price ✅
         * higher price ✅
@@ -48,7 +51,7 @@
      * BUG: auto-save after delete should not be disabled / sometimes doesn't work ✅
      * BUG: sometimes notifications State is lost ✅
      * stop following when price decreases (through notification) ✅
-     * BUG: review async xhr pages (www.zara.com) ❗❗❗❗
+     * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
      * show if item is being tracked ❗
      * use doc title as favicon title ✅
      * use doc title as item name ❗
@@ -73,3 +76,12 @@
  * style ui (major) ❗
  * todos list in code
  * add project bundle build tool
+ 
+ **Legend:**
+ * ❗️ urgent/priority development
+ * ⚠️ unsolvable issue
+ * ✅️ solved
+ 
+ 
+ #### Incompatible websites (so far)
+ * Zara - www.zara.com
