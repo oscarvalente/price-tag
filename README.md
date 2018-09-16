@@ -37,18 +37,21 @@
         * by domain, price
     * minor styling ❗
  * extension icon displaying page is being tracked
- * price tracking - part ii `(wip)` ❗❗
+ * price tracking - part ii `(wip)` ❗❗❗❗
      * dismiss notifications ✅
         * lower price ✅
         * higher price ✅
+        * price gone ✅
      * price increase alert
         * user review possibility (tune price increase) ✅
         * toggle off
      * BUG: auto-save after delete should not be disabled / sometimes doesn't work ✅
      * BUG: sometimes notifications State is lost ✅
      * stop following when price decreases (through notification) ✅
-     * show if item is being tracked ❗❗
-     * allow naming item ❗
+     * BUG: review async xhr pages (www.zara.com) ❗❗❗❗
+     * show if item is being tracked ❗
+     * use doc title as favicon title ✅
+     * use doc title as item name ❗
  * keep tracked items object in state
  * saved money info (calc icon)
  * price alert setting

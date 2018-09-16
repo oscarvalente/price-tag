@@ -206,7 +206,6 @@ function checkForPriceChanges() {
                                 const template = createHTMLTemplate(this.response);
                                 try {
                                     let newPrice = null;
-                                    debugger;
                                     const textContent = template.querySelector(domainItems[url].selection).textContent;
                                     if (textContent) {
                                         const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
@@ -279,7 +278,7 @@ function checkForPriceChanges() {
                                                             notificationOptions);
                                                     }
                                                 });
-                                            } else if (isNotFound(domainItems[url])) { // NOTE: Here, price is the same
+                                            } else if (!isNotFound(domainItems[url])) { // NOTE: Here, price is the same
                                                 domainItems[url] = updateItemTrackStatus(domainItems[url], null,
                                                     null, [ITEM_STATUS.NOT_FOUND]);
                                                 chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
@@ -290,31 +289,34 @@ function checkForPriceChanges() {
                                     }
 
                                     if (domainItems[url].price && !newPrice) {
+                                        if (!isNotFound(domainItems[url])) {
+                                            domainItems[url] = updateItemTrackStatus(domainItems[url], null,
+                                                [ITEM_STATUS.NOT_FOUND],
+                                                [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+
+                                            chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                // TODO: sendResponse("done"); // foi actualizado ou não
+                                                const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                                                const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
+                                                createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
+                                                    `Price tag no longer found${previousPrice}`, url, url, domain);
+                                            });
+                                        }
+                                    }
+                                } catch (e) {
+                                    if (!isNotFound(domainItems[url])) {
+                                        console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
                                         domainItems[url] = updateItemTrackStatus(domainItems[url], null,
                                             [ITEM_STATUS.NOT_FOUND],
                                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
 
                                         chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                            // TODO: sendResponse("done"); // foi actualizado ou não
                                             const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
                                             const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
                                             createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
                                                 `Price tag no longer found${previousPrice}`, url, url, domain);
                                         });
                                     }
-                                } catch (e) {
-                                    debugger;
-                                    console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
-                                    domainItems[url] = updateItemTrackStatus(domainItems[url], null,
-                                        [ITEM_STATUS.NOT_FOUND],
-                                        [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
-
-                                    chrome.storage.sync.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                        const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
-                                        const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
-                                        createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone",
-                                            `Price tag no longer found${previousPrice}`, url, url, domain);
-                                    });
                                 }
                             };
 

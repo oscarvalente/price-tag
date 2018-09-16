@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.10.0
+* Track panel - item title in favicon hover
+* Price not found notification dismiss
+
 # v0.9.0
 * Track panel - favicon next to item
 
