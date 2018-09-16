@@ -25,14 +25,28 @@ function getFaviconPath() {
     return favicon;
 }
 
-function evaluateAutoSave(selection, url, domain, sendResponse){
+function getFaviconURL() {
+    const faviconPath = getFaviconPath();
+    if (faviconPath) {
+        if (faviconPath.startsWith(location.protocol) || faviconPath.startsWith("//")) {
+            return faviconPath;
+        } else if (faviconPath.startsWith("/")) {
+            return `${location.protocol}//${location.hostname}${faviconPath}`;
+        } else {
+            return `${location.href}/${faviconPath}`;
+        }
+    }
+    return null;
+}
+
+function evaluateAutoSave(selection, url, domain, sendResponse) {
     const target = document.body.querySelector(selection);
     const textContent = target ? target.textContent : null;
     if (textContent) {
         const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
         if (textContentMatch) {
             const [, price] = textContentMatch;
-            sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconPath()});
+            sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconURL(), faviconAlt: document.title});
         } else {
             sendResponse({status: -2});
         }
@@ -66,7 +80,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
                     if (textContentMatch) {
                         [, price] = textContentMatch;
-                        sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconPath()});
+                        sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconURL(), faviconAlt: document.title});
                     } else {
                         sendResponse({status: -3});
                     }

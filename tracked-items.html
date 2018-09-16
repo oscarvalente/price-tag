@@ -19,7 +19,11 @@
         <ol id="tracked-items-list">
             {{#each trackedItems as |item|}}
             <li class="item-container">
-				<img class="item-icon" src="{{item.faviconURL}}" />
+                <div class="item-icon-container">
+                    {{#if item.faviconURL}}
+                    <img class="item-icon" src="{{item.faviconURL}}" title="{{item.faviconAlt}}"/>
+                    {{/if}}
+                </div>
                 <div class="status-container">
                     {{#if item.isWatched}}
                     <svg class="item-watch" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"

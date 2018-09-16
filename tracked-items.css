@@ -71,6 +71,10 @@ body {
     align-self: center;
 }
 
+.item-container .item-icon-container {
+    width: 20px;
+}
+
 .item-container .item-delete,
 .item-container .item-watch,
 .item-container .item-notfound,
@@ -79,6 +83,7 @@ body {
     width: 14px;
     height: 14px;
 }
+
 
 #back-btn {
     margin: 10px 0 0 8px;
