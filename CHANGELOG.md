@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.10.2
+* Use storage.local: for the time being extension has bugs using storage.sync
+
 # v0.10.1
 * Change not found hover info
 * Not ready document investigated (see unsolvable issues)

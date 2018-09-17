@@ -31,14 +31,14 @@ but there's a lot more, and more to come.
     * refresh view while opened ✅
     * un-follow instead of delete (to keep background history) - remove watched status ✅
     * show favicon image next to item ✅
-    * show current price vs target one ❗
-    * show amount intended to save (subject to target) ❗
+    * show amount intended to save (subject to target) / show current price vs target one ❗
     * improve item sorting ❗
         * by time ✅
         * by price ❗
         * by domain, time
         * by domain, price
     * minor styling ❗
+ * periodical save in storage.sync: no conflicts resolution version ❗❗
  * extension icon displaying page is being tracked
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
@@ -55,6 +55,8 @@ but there's a lot more, and more to come.
      * show if item is being tracked ❗
      * use doc title as favicon title ✅
      * use doc title as item name ❗
+     * allow naming item ❗
+        * toggle on
  * keep tracked items object in state
  * saved money info (calc icon)
  * price alert setting
