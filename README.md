@@ -38,7 +38,7 @@ but there's a lot more, and more to come.
         * by domain, time
         * by domain, price
     * minor styling ❗
- * periodical save in storage.sync: no conflicts resolution version ❗❗
+ * periodical save in storage.sync: no conflicts resolution - simple version ❗
  * extension icon displaying page is being tracked
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅

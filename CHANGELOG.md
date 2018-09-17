@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.10.3
+* Fix _v0.10.2_ mentioned bug and use storage.sync again
+
 # v0.10.2
 * Use storage.local: for the time being extension has bugs using storage.sync
 
