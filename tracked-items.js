@@ -93,7 +93,7 @@ function bootstrap() {
 
     updateTrackedItems();
     // TODO: uncomment to refresh
-    // window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function onItemRemoved(listItemElement, wasRemoved) {

@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.11.0
+* Save/waste percentage in track panel
+
 # v0.10.3
 * Fix _v0.10.2_ mentioned bug and use storage.sync again
 
