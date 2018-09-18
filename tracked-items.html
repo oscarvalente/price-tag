@@ -238,7 +238,7 @@
                     {{#if item.isLower}}
                     <svg class="item-pricedown" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
-                        <title>Save money - price is lower than when you started tracking this item ({{item.startingPrice}})</title>
+                        <title>Save money - price is lower than when you started tracking this item ({{item.startingPrice}}). Now {{item.currentPrice}}</title>
 <g>
 	<g>
 		<path d="M435.553,286.345c1.133-0.279,2.302-0.551,3.548-0.809c5.433-1.12,8.929-6.432,7.808-11.865
@@ -348,11 +348,27 @@
 <g>
 </g>
 </svg>
-
                     {{/if}}
                 </div>
                 <a class="tracked-item-label" href="{{item.url}}" title="{{item.url}}" target="_blank">
-                    <span class="item-label price">{{item.price}}</span>
+                    <span class="item-label price">{{item.currentPrice}}</span>
+					<div class="item-diffperc-container">
+						{{#if item.diffPercentage}}
+						<svg version="1.1" class="item-diffperc" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+<g>
+	<g>
+		<path fill="{{item.diffPercBackground}}" d="M512,256l-44.285-48.343l18.977-62.763l-60.93-24.254L415.626,55.85l-65.416,4.481L312.962,6.364L256,38.888    L199.038,6.364l-37.247,53.967l-65.416-4.482l-10.137,64.789l-60.93,24.254l18.977,62.763L0,256l44.285,48.343l-18.977,62.763    l60.93,24.254l10.137,64.789l65.416-4.481l37.247,53.967L256,473.112l56.962,32.522l37.247-53.967l65.416,4.482l10.136-64.789    l60.93-24.254l-18.977-62.763L512,256z"/>
+	</g>
+</g>
+<g>
+	<g>
+		{{diffPercentage item.diffPercentage}}
+	</g>
+</g>
+</svg>
+						{{/if}}
+					</div>
                     <span class="item-label date">{{item.dateTime}}</span>
                 </a>
                 <svg class="item-delete" data-item-url="{{item.url}}" height="512pt" viewBox="0 0 512 512" width="512pt"

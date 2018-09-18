@@ -31,7 +31,8 @@ but there's a lot more, and more to come.
     * refresh view while opened ✅
     * un-follow instead of delete (to keep background history) - remove watched status ✅
     * show favicon image next to item ✅
-    * show amount intended to save (subject to target) / show current price vs target one ❗
+    * show diff percentage ✅
+    * show current price vs target one ❗
     * improve item sorting ❗
         * by time ✅
         * by price ❗
@@ -62,6 +63,7 @@ but there's a lot more, and more to come.
  * price alert setting
     * percentage threshold
     * value threshold
+    * show amount intended to save (subject to target)
     * has threshold defined status
     * price decrease status but not yet reach threshold (and icon)
  * auto-save animation
@@ -84,6 +86,9 @@ but there's a lot more, and more to come.
  * ⚠️ unsolvable issue
  * ✅️ solved
  
+ 
+ #### Temporary issues
+ * `chrome.storage.local` while polling is shorter in development
  
  #### Incompatible websites (so far)
  * Zara - www.zara.com

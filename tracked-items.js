@@ -29,7 +29,8 @@ function onTrackedItems(rawItems) {
         isWatched: item.statuses.includes(ITEM_STATUS.WATCHED),
         isNotFound: item.statuses.includes(ITEM_STATUS.NOT_FOUND),
         isHigher: item.statuses.includes(ITEM_STATUS.INCREASED),
-        isLower: item.statuses.includes(ITEM_STATUS.DECREASED)
+        isLower: item.statuses.includes(ITEM_STATUS.DECREASED),
+        diffPercBackground: item.diffPercentage && item.diffPercentage > 0 ? "red" : "green"
     }));
     trackedItemsContainer.innerHTML = listItemsLoader({trackedItems});
 
@@ -59,11 +60,39 @@ function updateTrackedItems() {
     chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, onTrackedItems);
 }
 
+function registerHelpers() {
+    Handlebars.registerHelper('diffPercentage', value => {
+        let percentage = parseInt(value, 10);
+        // default: 1 digit
+        let x = 110;
+        let fontSize = 180;
+        if (percentage >= 10 || percentage <= -10) {
+            x = 50;
+            fontSize = 175;
+        }
+        if (percentage >= 100 || percentage <= -100) {
+            x = 60;
+            fontSize = 170;
+        }
+        if (percentage > 0) {
+            percentage = `+${percentage}`;
+        }
+        return new Handlebars.SafeString(
+            `<text x="${x}" y="310" font-family="Verdana" font-weight="bold" font-size="${fontSize}" fill="#fff1cb" letter-spacing="-10">
+                ${percentage}%
+            </text>`
+        );
+    });
+}
+
 function bootstrap() {
+    registerHelpers();
+
     trackedItemsContainer = document.getElementById("tracked-items-container");
     listItemsLoader = loadTemplate("items-list");
 
     updateTrackedItems();
+    // TODO: uncomment to refresh
     // window.setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
