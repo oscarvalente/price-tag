@@ -298,6 +298,10 @@ function checkForPriceChanges() {
                                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                 // TODO: sendResponse("done"); // foi actualizado ou não
                                             });
+                                        } else {
+                                            domainItems[url] = updateItemTrackStatus(domainItems[url], null,
+                                                null, [ITEM_STATUS.NOT_FOUND]);
+                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
                                         }
                                     }
                                 }

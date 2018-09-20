@@ -32,7 +32,7 @@ but there's a lot more, and more to come.
     * un-follow instead of delete (to keep background history) - remove watched status ✅
     * show favicon image next to item ✅
     * show diff percentage ✅
-    * show current price vs target one ❗
+    * show current price vs target one ✅
     * improve item sorting ❗
         * by time ✅
         * by price ❗
@@ -40,7 +40,7 @@ but there's a lot more, and more to come.
         * by domain, price
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
- * extension icon displaying page is being tracked
+ * extension icon displaying page is being tracked ❗
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅

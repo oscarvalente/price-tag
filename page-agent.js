@@ -3,8 +3,11 @@ function buildElementSelection(path, maxElements) {
     let elemCount = 1;
     for (let {localName, className, id} of path) {
         if (maxElements >= elemCount) {
-            const pathElementSelection = className ? `${localName}.${className.replace(/\s/g, ".")}` :
-                id ? `${localName}#${id}` : localName;
+            const pathElementSelection = className ?
+                `${localName.trim()}.${className.trim().replace(/\s/g, ".")}` :
+                id ?
+                    `${localName.trim()}#${id}` :
+                    localName.trim();
             pathSelection.push(pathElementSelection);
         } else {
             break;
@@ -46,7 +49,15 @@ function evaluateAutoSave(selection, url, domain, sendResponse) {
         const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
         if (textContentMatch) {
             const [, price] = textContentMatch;
-            sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconURL(), faviconAlt: document.title});
+            sendResponse({
+                status: 1,
+                url,
+                domain,
+                selection,
+                price,
+                faviconURL: getFaviconURL(),
+                faviconAlt: document.title
+            });
         } else {
             sendResponse({status: -2});
         }
@@ -80,7 +91,15 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
                     if (textContentMatch) {
                         [, price] = textContentMatch;
-                        sendResponse({status: 1, url, domain, selection, price, faviconURL: getFaviconURL(), faviconAlt: document.title});
+                        sendResponse({
+                            status: 1,
+                            url,
+                            domain,
+                            selection,
+                            price,
+                            faviconURL: getFaviconURL(),
+                            faviconAlt: document.title
+                        });
                     } else {
                         sendResponse({status: -3});
                     }

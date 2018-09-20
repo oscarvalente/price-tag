@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.13.1
+* Fix element path selector, needed trim
+* Once not found always never found bug fix
+
 # v0.13.0
 * Display not highlighted target price
 
