@@ -5,8 +5,12 @@ let State = {
     autoSaveEnabled: false,
     selection: null,
     isSimilarElementHighlighted: false,
-    originalBackgroundColor: null
+    originalBackgroundColor: null,
+    isCurrentPageTracked: false
 };
+
+const DEFAULT_TITLE = "Price Tag";
+const TRACKED_ITEM_TITLE = "Price Tag - This item being tracked";
 
 const CHECKING_INTERVAL = 180000;
 // const CHECKING_INTERVAL = 10000;
@@ -112,13 +116,14 @@ function onRecordDone(payload) {
     }
 
     State.recordActive = false;
+    updateExtensionAppearance(domain, url, true);
 }
 
 function onRecordCancel() {
     State.recordActive = false;
 }
 
-function onCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt}) {
+function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt}) {
     if (status >= 0) {
         State = setSelectionInfo(State, url, domain, selection, price, faviconURL, faviconAlt);
         sendResponse(true);
@@ -167,6 +172,16 @@ function createItem(domain, url, selection, price, faviconURL, faviconAlt, statu
             // TODO: sendResponse("done"); // foi gravado ou não
         });
     });
+}
+
+function setDefaultAppearance() {
+    State.isCurrentPageTracked = false;
+    chrome.browserAction.setTitle({title: DEFAULT_TITLE});
+}
+
+function setTrackedItemAppearance() {
+    State.isCurrentPageTracked = true;
+    chrome.browserAction.setTitle({title: TRACKED_ITEM_TITLE});
 }
 
 function enableAutoSave(state, selection) {
@@ -388,6 +403,8 @@ function removeTrackedItem(url, callback) {
                     domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         updateAutoSaveStatus(url);
+                        // TODO: completar isto
+                        updateExtensionAppearance(,,false);
                         callback(true);
                     });
                 }
@@ -490,6 +507,44 @@ function updateAutoSaveStatus(url) {
     });
 }
 
+function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingTo) {
+    if (forcePageTrackingTo === true) {
+        setTrackedItemAppearance();
+    } else if (forcePageTrackingTo === false) {
+        setDefaultAppearance();
+    } else if (!forcePageTrackingTo) {
+        if (!currentDomain) {
+            chrome.storage.local.get(null, result => {
+                const storageState = filterAllTrackedItems(result);
+                let wasFound = false;
+                for (let domain in storageState) {
+                    const domainState = storageState[domain];
+                    const item = domainState[currentUrl];
+                    if (item && isWatched(item)) {
+                        setTrackedItemAppearance();
+                        wasFound = true;
+                        break;
+                    }
+                }
+                if (!wasFound) {
+                    setDefaultAppearance();
+                }
+            });
+        } else {
+            chrome.storage.local.get([currentDomain], domainResult => {
+                const domainState = JSON.parse(domainResult);
+                const item = domainState[currentUrl];
+                if (item && isWatched(item)) {
+                    setTrackedItemAppearance();
+                } else {
+                    setDefaultAppearance();
+                }
+            });
+        }
+    }
+}
+
+
 // TODO: break this down into smaller functions
 function attachEvents() {
     chrome.runtime.onInstalled.addListener(() => {
@@ -500,6 +555,7 @@ function attachEvents() {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
                 updateAutoSaveStatus(url);
+                updateExtensionAppearance(null, url);
             }
         });
     });
@@ -540,16 +596,18 @@ function attachEvents() {
                     chrome.tabs.sendMessage(id, {
                         type: "AUTO_SAVE.CHECK_STATUS",
                         payload: {url, selection: State.selection}
-                    }, onCheckStatus.bind(null, sendResponse));
+                    }, onAutoSaveCheckStatus.bind(null, sendResponse));
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
                         const {domain, url: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
-                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, () => {
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.HIGHLIGHT.STOP",
                                 payload: {selection, originalBackgroundColor}
                             }, onSimilarElementHighlight);
+
+                            updateExtensionAppearance(domain, stateUrl, true);
 
                             sendResponse(false);
                         });

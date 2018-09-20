@@ -38,9 +38,11 @@ but there's a lot more, and more to come.
         * by price ❗
         * by domain, time
         * by domain, price
+    * back button always visible
+    * BUG: after delete all items doesnt display 'no tracked items'
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
- * extension icon displaying page is being tracked ❗
+ * extension icon displaying page is being tracked `(wip)` ❗
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅

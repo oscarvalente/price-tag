@@ -86,8 +86,7 @@ body {
 }
 
 .item-container .item-targetprice-container {
-    /*display: inline-flex;*/
-    padding-right: 12px;
+    padding-right: 14px;
     width: 36px;
 }
 
