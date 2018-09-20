@@ -8,8 +8,9 @@ let State = {
     originalBackgroundColor: null
 };
 
-// const CHECKING_INTERVAL = 180000;
-const CHECKING_INTERVAL = 10000;
+const CHECKING_INTERVAL = 180000;
+// const CHECKING_INTERVAL = 10000;
+const SYNCHING_INTERVAL = 120000;
 const ICONS = {
     PRICE_UPDATE: "./assets/time-is-money.svg",
     PRICE_NOT_FOUND: "./assets/time.svg",
@@ -206,9 +207,9 @@ function setSimilarElementHighlight(state, isSimilarElementHighlighted, original
 
 function checkForPriceChanges() {
     chrome.storage.local.get(null, result => {
-        for (let domain of result) {
-            if (matchesDomain(domain)) {
-                const domainItems = JSON.parse(trackedItems[domain]);
+        for (let domain in result) {
+            if (result.hasOwnProperty(domain) && matchesDomain(domain)) {
+                const domainItems = JSON.parse(result[domain]);
 
                 for (let url in domainItems) {
                     if (domainItems.hasOwnProperty(url) && isWatched(domainItems[url])) {
@@ -457,7 +458,7 @@ function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
 }
 
 function matchesDomain(string) {
-    return /^([\w-_]+\.?)+\w$/.test(string);
+    return /^([\w-]+\.)+[\w-]+\w$/.test(string);
 }
 
 function matchesHostname(string) {
@@ -635,53 +636,75 @@ function attachEvents() {
     chrome.notifications.onClosed.addListener(clearNotification);
 }
 
-function filterAllTrackedItems(acc, domainResult, domain) {
-    if (matchesDomain(domain)) {
-        const domainItems = JSON.parse(domainResult);
-        return {
-            ...acc,
-            [domain]: domainItems
-        };
+function filterAllTrackedItems(result) {
+    let filteredResult = {};
+    for (let domain in result) {
+        if (result.hasOwnProperty(domain) && matchesDomain(domain) && result[domain]) {
+            const domainItems = JSON.parse(result[domain]);
+            filteredResult = {
+                ...filteredResult,
+                [domain]: domainItems
+            };
+        }
     }
-    return acc;
+    return filteredResult;
+}
+
+function toStorageStateFormat(state) {
+    return Object.keys(state).reduce((newState, domain) => {
+        return {
+            ...newState,
+            [domain]: JSON.stringify(state[domain])
+        }
+    }, {});
 }
 
 function syncStorageState() {
-    chrome.storage.local.get(null, result => {
-        const localState = result.reduce(filterAllTrackedItems);
+    chrome.storage.local.get(null, localResult => {
+        const localState = filterAllTrackedItems(localResult);
 
-        chrome.storage.sync.get(null, result => {
-            const syncState = result.reduce(filterAllTrackedItems);
-            const freshState = {};
+        chrome.storage.sync.get(null, syncResult => {
+                const syncState = filterAllTrackedItems(syncResult);
+                // TODO: replace this with a lodash cloneDeep !!
+                const freshState = JSON.parse(JSON.stringify(localState));
 
-            for (let domain in syncState) {
-                if (syncState.hasOwnProperty(domain)) {
-                    freshState[domain] = {};
-                    const freshStateDomain = {};
-                    const syncStateDomain = syncState[domain];
-                    const localStateDomain = localState[domain];
-                    for (let url in syncStateDomain) {
-                        if (syncStateDomain.hasOwnProperty(url)) {
-                            const syncStateItem = syncStateDomain[url];
-                            const localStateItem = localStateDomain[url];
-                            if (localStateItem &&
-                                localStateItem.lastUpdateTimestamp > syncStateItem.lastUpdateTimestamp) {
-                                freshStateDomain[url] = localStateItem;
-                            } else {
-                                freshStateDomain[url] = syncStateItem;
+                for (let syncDomain in syncState) {
+                    if (syncState.hasOwnProperty(syncDomain) && matchesDomain(syncDomain)) {
+                        const syncStateDomain = syncState[syncDomain];
+                        if (!freshState[syncDomain]) {
+                            // TODO: replace this with a lodash cloneDeep !!
+                            freshState[syncDomain] = JSON.parse(JSON.stringify(syncStateDomain));
+                        } else {
+                            for (let syncUrl in syncStateDomain) {
+                                if (syncStateDomain.hasOwnProperty(syncUrl)) {
+                                    const syncItem = syncStateDomain[syncUrl];
+                                    if (!freshState[syncDomain][syncUrl]) {
+                                        freshState[syncDomain][syncUrl] = Object.assign({}, syncItem);
+                                    } else if (syncItem.lastUpdateTimestamp > freshState[syncDomain][syncUrl].lastUpdateTimestamp) {
+                                        // TODO: replace this with a lodash cloneDeep !!
+                                        freshState[syncDomain][syncUrl] = JSON.parse(JSON.stringify(syncItem));
+                                    }
+                                }
                             }
                         }
+
                     }
-                    freshStateDomain
                 }
+
+                chrome.storage.local.set(toStorageStateFormat(freshState));
+                chrome.storage.sync.set(toStorageStateFormat(freshState));
             }
-            chrome.storage.sync.set({[domain]: JSON});
-        });
+        );
     });
 }
 
-function bootstrap() {
+function setupSyncStorageState() {
     syncStorageState();
+    setInterval(syncStorageState, SYNCHING_INTERVAL);
+}
+
+function bootstrap() {
+    setupSyncStorageState();
     setupTrackingPolling();
     attachEvents();
 }

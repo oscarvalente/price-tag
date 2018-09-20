@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.12.0
+* Periodical synching between storage.sync and storage.local (2 in 2min)
+* Improve domain match regex
+
 # v0.11.0
 * Save/waste percentage in track panel
 
