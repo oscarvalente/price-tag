@@ -85,9 +85,15 @@ function registerHelpers() {
     });
     Handlebars.registerHelper('targetPrice', function registerTargetPrice(){
         return this.price !== this.currentPrice ?
-            new Handlebars.SafeString(`<span class="item-label target-price" title="Price when you marked the item">${this.price}</span>`) :
+            new Handlebars.SafeString(`<span class="item-label target-price" title="Price the last time you marked it">${this.price}</span>`) :
             "";
     });
+}
+
+function setupUpdateTrackedItems() {
+    updateTrackedItems();
+    // TODO: uncomment to refresh
+    setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function bootstrap() {
@@ -96,9 +102,7 @@ function bootstrap() {
     trackedItemsContainer = document.getElementById("tracked-items-container");
     listItemsLoader = loadTemplate("items-list");
 
-    updateTrackedItems();
-    // TODO: uncomment to refresh
-    setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    setupUpdateTrackedItems();
 }
 
 function onItemRemoved(listItemElement, wasRemoved) {

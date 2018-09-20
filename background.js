@@ -473,7 +473,7 @@ function setupTrackingPolling() {
 function updateAutoSaveStatus(url) {
     const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
     chrome.storage.local.get([domain], result => {
-        const items = result && result[domain] ? JSON.parse(result[domain]) : null;
+        const items = result && result[domain] ? JSON.parse(result[domain]) : {};
         const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
         if (items && isItemNullOrUnwatched) {
             const urlFromDomain = Object.keys(items)[0];

@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.13.0
+* Display not highlighted target price
+
 # v0.12.0
 * Periodical synching between storage.sync and storage.local (2 in 2min)
 * Improve domain match regex
