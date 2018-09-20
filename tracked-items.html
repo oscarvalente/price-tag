@@ -352,6 +352,9 @@
                 </div>
                 <a class="tracked-item-label" href="{{item.url}}" title="{{item.url}}" target="_blank">
                     <span class="item-label price">{{item.currentPrice}}</span>
+					<div class="item-targetprice-container">
+						{{targetPrice}}
+					</div>
 					<div class="item-diffperc-container">
 						{{#if item.diffPercentage}}
 						<svg version="1.1" class="item-diffperc" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
