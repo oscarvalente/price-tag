@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.14.1
+* Round to relevant percentage when difference is near 0%
+
 # v0.14.0
 * Icon and title change on pages that are being tracked
 * on tab update performance improvement

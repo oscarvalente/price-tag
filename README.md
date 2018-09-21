@@ -43,7 +43,7 @@ but there's a lot more, and more to come.
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
- * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ❗❗
+ * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ✅
  * major improvement: use tab title and tab favicon url from onUpdate tab callback ❗❗
  * bug: auto-save disabled when opening extension while tab loads ❗
  * warn when URL is very similar and user wants to track (probably same item) ❗

@@ -61,6 +61,12 @@ function updateItemCurrentPrice(item, newPrice) {
         diffPercentage = newItem.currentPrice > newItem.price ?
             +diffPerc :
             -diffPerc;
+
+        if (diffPercentage > 0 && diffPercentage < 1) {
+            diffPercentage = Math.ceil(diffPercentage);
+        } else if (diffPercentage > -1 && diffPercentage < 0) {
+            diffPercentage = Math.floor(diffPercentage);
+        }
     }
 
     newItem.diffPercentage = diffPercentage;
@@ -261,15 +267,15 @@ function checkForPriceChanges() {
                                                 createNotification(notificationId, ICONS.PRICE_FIX, "Fixed price",
                                                     `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
                                             });
-                                        } else if (newPrice < currentPrice && newPrice < targetPrice) {
-                                            const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice); // update current price and previous
+                                        } else if (newPrice < currentPrice) {
+                                            const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice);
                                             domainItems[url] = updateItemTrackStatus(updatedItem, null,
                                                 [ITEM_STATUS.DECREASED],
                                                 [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
 
                                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                 // TODO: sendResponse("done"); // foi actualizado ou não
-                                                if (!hasAcknowledgeDecrease(domainItems[url])) {
+                                                if (newPrice < targetPrice && !hasAcknowledgeDecrease(domainItems[url])) {
                                                     const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
                                                     createNotification(notificationId, ICONS.PRICE_UPDATE, "Lower price!!",
                                                         `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED,
