@@ -6,7 +6,9 @@ let State = {
     selection: null,
     isSimilarElementHighlighted: false,
     originalBackgroundColor: null,
-    isCurrentPageTracked: false
+    isCurrentPageTracked: false,
+    faviconURL: null,
+    _faviconURLMap: {},
 };
 
 const DEFAULT_ICON = "assets/icon_48.png";
@@ -120,7 +122,8 @@ function hasAcknowledgeIncrease(item) {
 function onRecordDone(payload) {
     const {status, domain, url, selection, price, faviconURL, faviconAlt} = payload;
     if (status > 0) {
-        createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+        State.faviconURL = State.faviconURL || faviconURL;
+        createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
         updateExtensionAppearance(domain, url, true);
     }
 
@@ -133,7 +136,8 @@ function onRecordCancel() {
 
 function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt}) {
     if (status >= 0) {
-        State = setSelectionInfo(State, url, domain, selection, price, faviconURL, faviconAlt);
+        State.faviconURL = State.faviconURL || faviconURL;
+        State = setSelectionInfo(State, url, domain, selection, price, State.faviconURL, faviconAlt);
         sendResponse(true);
     } else {
         sendResponse(false);
@@ -577,13 +581,14 @@ function attachEvents() {
             if (url.startsWith("http")) {
                 updateAutoSaveStatus(url);
                 updateExtensionAppearance(null, url);
+                State.faviconURL = State._faviconURLMap[tabId] || null;
             } else {
                 setDefaultAppearance();
             }
         });
     });
 
-    chrome.tabs.onUpdated.addListener((tabId, {status}, {active, url}) => {
+    chrome.tabs.onUpdated.addListener((tabId, {status, favIconUrl}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
                 chrome.tabs.executeScript(tabId, {
@@ -593,6 +598,11 @@ function attachEvents() {
                 if (status === "loading") {
                     updateAutoSaveStatus(url);
                     updateExtensionAppearance(null, url);
+                }
+
+                if (favIconUrl) {
+                    State._faviconURLMap[tabId] = favIconUrl;
+                    State.faviconURL = favIconUrl;
                 }
             }
         } else {

@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.14.2
+* Use on tab update smart favicon URL provided by chrome as primary favicon URL
+
 # v0.14.1
 * Round to relevant percentage when difference is near 0%
 
