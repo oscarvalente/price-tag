@@ -26,7 +26,6 @@ function onPopupStatus({state}) {
     } else {
         updateAutoSaveButton(autoSaveEnabled);
     }
-
 }
 
 function updateRecordButton(buttonActive) {

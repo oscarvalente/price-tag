@@ -1,5 +1,10 @@
 ### CHANGELOG
 
+# v0.14.0
+* Icon and title change on pages that are being tracked
+* on tab update performance improvement
+* Update README.md with spotted issues
+
 # v0.13.1
 * Fix element path selector, needed trim
 * Once not found always never found bug fix

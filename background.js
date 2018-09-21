@@ -9,8 +9,10 @@ let State = {
     isCurrentPageTracked: false
 };
 
+const DEFAULT_ICON = "assets/icon_48.png";
+const TRACKED_ITEM_ICON = "assets/icon_active_48.png";
 const DEFAULT_TITLE = "Price Tag";
-const TRACKED_ITEM_TITLE = "Price Tag - This item being tracked";
+const TRACKED_ITEM_TITLE = "Price Tag - This item is being tracked";
 
 const CHECKING_INTERVAL = 180000;
 // const CHECKING_INTERVAL = 10000;
@@ -113,10 +115,10 @@ function onRecordDone(payload) {
     const {status, domain, url, selection, price, faviconURL, faviconAlt} = payload;
     if (status > 0) {
         createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+        updateExtensionAppearance(domain, url, true);
     }
 
     State.recordActive = false;
-    updateExtensionAppearance(domain, url, true);
 }
 
 function onRecordCancel() {
@@ -174,14 +176,22 @@ function createItem(domain, url, selection, price, faviconURL, faviconAlt, statu
     });
 }
 
-function setDefaultAppearance() {
+function disableCurrentPageTracked() {
     State.isCurrentPageTracked = false;
+}
+
+function enableCurrentPageTracked() {
+    State.isCurrentPageTracked = true;
+}
+
+function setDefaultAppearance() {
     chrome.browserAction.setTitle({title: DEFAULT_TITLE});
+    chrome.browserAction.setIcon({path: DEFAULT_ICON});
 }
 
 function setTrackedItemAppearance() {
-    State.isCurrentPageTracked = true;
     chrome.browserAction.setTitle({title: TRACKED_ITEM_TITLE});
+    chrome.browserAction.setIcon({path: TRACKED_ITEM_ICON});
 }
 
 function enableAutoSave(state, selection) {
@@ -403,8 +413,7 @@ function removeTrackedItem(url, callback) {
                     domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         updateAutoSaveStatus(url);
-                        // TODO: completar isto
-                        updateExtensionAppearance(,,false);
+                        updateExtensionAppearance(domain, url, false);
                         callback(true);
                     });
                 }
@@ -510,8 +519,10 @@ function updateAutoSaveStatus(url) {
 function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingTo) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
+        enableCurrentPageTracked();
     } else if (forcePageTrackingTo === false) {
         setDefaultAppearance();
+        disableCurrentPageTracked();
     } else if (!forcePageTrackingTo) {
         if (!currentDomain) {
             chrome.storage.local.get(null, result => {
@@ -522,12 +533,14 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                     const item = domainState[currentUrl];
                     if (item && isWatched(item)) {
                         setTrackedItemAppearance();
+                        enableCurrentPageTracked();
                         wasFound = true;
                         break;
                     }
                 }
                 if (!wasFound) {
                     setDefaultAppearance();
+                    disableCurrentPageTracked();
                 }
             });
         } else {
@@ -536,8 +549,10 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                 const item = domainState[currentUrl];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
+                    enableCurrentPageTracked()
                 } else {
                     setDefaultAppearance();
+                    disableCurrentPageTracked();
                 }
             });
         }
@@ -556,19 +571,26 @@ function attachEvents() {
             if (url.startsWith("http")) {
                 updateAutoSaveStatus(url);
                 updateExtensionAppearance(null, url);
+            } else {
+                setDefaultAppearance();
             }
         });
     });
 
-    chrome.tabs.onUpdated.addListener((tabId, _, {active, url}) => {
+    chrome.tabs.onUpdated.addListener((tabId, {status}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
                 chrome.tabs.executeScript(tabId, {
                     file: "page-agent.js"
                 });
-            }
 
-            updateAutoSaveStatus(url);
+                if (status === "loading") {
+                    updateAutoSaveStatus(url);
+                    updateExtensionAppearance(null, url);
+                }
+            }
+        } else {
+            setDefaultAppearance();
         }
     });
 
@@ -601,7 +623,7 @@ function attachEvents() {
                 case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
                         const {domain, url: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
-                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, () => {
+                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.HIGHLIGHT.STOP",
                                 payload: {selection, originalBackgroundColor}
