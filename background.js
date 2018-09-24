@@ -134,7 +134,7 @@ function onRecordCancel() {
     State.recordActive = false;
 }
 
-function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt}) {
+function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
         State.faviconURL = State.faviconURL || faviconURL;
         State = setSelectionInfo(State, url, domain, selection, price, State.faviconURL, faviconAlt);
@@ -591,11 +591,11 @@ function attachEvents() {
     chrome.tabs.onUpdated.addListener((tabId, {status, favIconUrl}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
-                chrome.tabs.executeScript(tabId, {
-                    file: "page-agent.js"
-                });
 
                 if (status === "loading") {
+                    chrome.tabs.executeScript(tabId, {
+                        file: "page-agent.js"
+                    });
                     updateAutoSaveStatus(url);
                     updateExtensionAppearance(null, url);
                 }

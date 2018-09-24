@@ -45,7 +45,7 @@ but there's a lot more, and more to come.
  * extension icon and title displaying page is being tracked ✅
  * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ✅
  * major improvement: use tab favicon url from onUpdate tab callback ✅
- * bug: auto-save disabled when opening extension while tab loads ❗
+ * bug: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
  * warn when URL is very similar and user wants to track (probably same item) ❗
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
@@ -60,7 +60,8 @@ but there's a lot more, and more to come.
      * BUG: sometimes notifications State is lost ✅
      * stop following when price decreases (through notification) ✅
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
-     * show if item is being tracked ❗
+     * show if item is being tracked in popup.js ❗
+     * allow price update if item is being tracked (visiting its page) ❗
      * use doc title as favicon title ✅
      * use doc title as item name ❗
      * allow naming item ❗
