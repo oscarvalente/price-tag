@@ -47,7 +47,6 @@ but there's a lot more, and more to come.
  * major improvement: use tab favicon url from onUpdate tab callback ✅
  * bug: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
  * bug: auto-save disabled & icon appearance to default when delete any item _(it should be disabled just if deleted url is the current one)_ ✅
- * bug: auto-save hover doesn't highlight when going back from track panel to main popup ❗❗❗
  * warn when URL is very similar and user wants to track (probably same item) ❗
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
@@ -89,7 +88,10 @@ but there's a lot more, and more to come.
  * minor improvements to the ui (styling minor issues)
  * style ui (major) ❗
  * todos list in code
- * add project bundle build tool
+ * add project bundle build tool ❗
+    * add yarn as package manager ❗
+    * add rollup/webpack to build ❗
+    * swap HandlebarsJS for React
  
  **Legend:**
  * ❗️ urgent/priority development

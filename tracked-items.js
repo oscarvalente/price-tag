@@ -61,7 +61,7 @@ function updateTrackedItems() {
 }
 
 function registerHelpers() {
-    Handlebars.registerHelper('diffPercentage', value => {
+    Handlebars.registerHelper("diffPercentage", value => {
         let percentage = parseInt(value, 10);
         // default: 1 digit
         let x = 110;
@@ -83,7 +83,7 @@ function registerHelpers() {
             </text>`
         );
     });
-    Handlebars.registerHelper('targetPrice', function registerTargetPrice(){
+    Handlebars.registerHelper("targetPrice", function registerTargetPrice(){
         return this.price !== this.currentPrice ?
             new Handlebars.SafeString(`<span class="item-label target-price" title="Price the last time you marked it">${this.price}</span>`) :
             "";
@@ -93,7 +93,7 @@ function registerHelpers() {
 function setupUpdateTrackedItems() {
     updateTrackedItems();
     // TODO: uncomment to refresh
-    // setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function bootstrap() {

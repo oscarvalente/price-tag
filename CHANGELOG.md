@@ -1,13 +1,13 @@
 ### CHANGELOG
 
-# v0.14.2
-* Use on tab update smart favicon URL provided by chrome as primary favicon URL
+# v0.14.4
+* Minor styling in tracking toolbar
 
 # v0.14.3
 * Inject content script once ("loading" active tab)
 
 # v0.14.2
-* Use primary favicon url provided by tab update listener 
+* Use on tab update smart favicon URL provided by chrome as primary favicon URL
 
 # v0.14.1
 * Round to relevant percentage when difference is near 0%

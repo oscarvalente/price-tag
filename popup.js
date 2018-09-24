@@ -60,6 +60,7 @@ function updateAutoSaveButton(buttonEnabled) {
         autoSaveButton.onmouseover = onAutoSaveMouseOver;
         autoSaveButton.onmouseout = onAutoSaveMouseOut;
         autoSaveButton.style.fill = "#4e9b5f";
+        autoSaveButton.style.cursor = "pointer";
     } else if (buttonEnabled === false) {
         autoSaveButton.removeEventListener("click", onAutoSaveClick);
         autoSaveButton.removeEventListener("mouseover", onAutoSaveMouseOver);
