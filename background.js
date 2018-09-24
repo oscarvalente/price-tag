@@ -9,6 +9,7 @@ let State = {
     isCurrentPageTracked: false,
     faviconURL: null,
     _faviconURLMap: {},
+    currentURL: null
 };
 
 const DEFAULT_ICON = "assets/icon_48.png";
@@ -192,6 +193,10 @@ function disableCurrentPageTracked() {
 
 function enableCurrentPageTracked() {
     State.isCurrentPageTracked = true;
+}
+
+function updateCurrentURL(url) {
+    State.currentURL = url;
 }
 
 function setDefaultAppearance() {
@@ -409,7 +414,7 @@ function getTrackedItems(callback) {
     });
 }
 
-function removeTrackedItem(url, callback) {
+function removeTrackedItem(url, currentURL, callback) {
     let found = false;
     chrome.storage.local.get(null, result => {
         Object.keys(result).forEach(domain => {
@@ -422,8 +427,10 @@ function removeTrackedItem(url, callback) {
 
                     domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                        updateAutoSaveStatus(url);
-                        updateExtensionAppearance(domain, url, false);
+                        if (currentURL === url) {
+                            updateAutoSaveStatus(url);
+                            updateExtensionAppearance(domain, url, false);
+                        }
                         callback(true);
                     });
                 }
@@ -579,6 +586,7 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
+                updateCurrentURL(url);
                 updateAutoSaveStatus(url);
                 updateExtensionAppearance(null, url);
                 State.faviconURL = State._faviconURLMap[tabId] || null;
@@ -591,6 +599,7 @@ function attachEvents() {
     chrome.tabs.onUpdated.addListener((tabId, {status, favIconUrl}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
+                updateCurrentURL(url);
 
                 if (status === "loading") {
                     chrome.tabs.executeScript(tabId, {
@@ -678,7 +687,7 @@ function attachEvents() {
                     return true;
                 case "TRACKED_ITEMS.UNFOLLOW":
                     const {url: itemUrl} = payload;
-                    removeTrackedItem(itemUrl, sendResponse);
+                    removeTrackedItem(itemUrl, State.currentURL, sendResponse);
                     return true;
             }
         });
