@@ -26,6 +26,17 @@ const ICONS = {
     PRICE_FIX: "./assets/coin.svg"
 };
 
+const MATCHES = {
+    PRICE: /((?:\d+[.,])?\d+(?:[.,]\d+)?)/,
+    HOSTNAME: /https?:\/\/([\w.]+)\/*/,
+    DOMAIN: /^([\w-]+\.)+[\w-]+\w$/,
+    URL: /^https?:\/\/([\w-]+\.)+[\w-]+\w(\/[\w-=.]+)+\/?(\?([\w]+=?[\w-%!@()\\["#\]]+&?)*)?/,
+    CAPTURE: {
+        DOMAIN_IN_URL: /https?:\/\/([\w.]+)\/*/,
+        HOST_AND_PATH: /^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,
+    }
+};
+
 const ITEM_STATUS = {
     WATCHED: "WATCHED",
     NOT_FOUND: "NOT_FOUND",
@@ -262,7 +273,7 @@ function checkForPriceChanges() {
                                 let newPrice = null;
                                 const textContent = template.querySelector(domainItems[url].selection).textContent;
                                 if (textContent) {
-                                    const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                                    const textContentMatch = textContent.match(MATCHES.PRICE);
                                     if (textContentMatch) {
                                         [, newPrice] = textContentMatch;
 
@@ -505,11 +516,15 @@ function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
 }
 
 function matchesDomain(string) {
-    return /^([\w-]+\.)+[\w-]+\w$/.test(string);
+    return MATCHES.DOMAIN.test(string);
 }
 
 function matchesHostname(string) {
-    return /https?:\/\/([\w.]+)\/*/.test(string);
+    return MATCHES.HOSTNAME.test(string);
+}
+
+function matchesURL(string) {
+    return MATCHES.URL.test(string);
 }
 
 function setupTrackingPolling() {
@@ -518,7 +533,7 @@ function setupTrackingPolling() {
 }
 
 function updateAutoSaveStatus(url) {
-    const [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
+    const [, domain] = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
         const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
@@ -576,6 +591,73 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
     }
 }
 
+function captureHostAndPathFromURL(url) {
+    const captureHostAndPath = url.match(MATCHES.CAPTURE.HOST_AND_PATH);
+    let hostAndPath = null;
+    if (captureHostAndPath) {
+        [, hostAndPath] = captureHostAndPath;
+    }
+    return hostAndPath;
+}
+
+function getEqualPathItem(domainState, currentURL, callback) {
+    const currentHostAndPath = captureHostAndPathFromURL(currentURL);
+    let foundOne = false;
+    for (let url in domainState) {
+        if (matchesURL(url) && domainState.hasOwnProperty(url)) {
+            const hostAndPath = captureHostAndPathFromURL(url);
+            if (hostAndPath === currentHostAndPath) {
+                foundOne = foundOne === false;
+                callback(url);
+                return;
+            }
+        }
+    }
+
+    callback(null);
+}
+
+function checkForURLSimilarity(tabId, domain, currentURL, callback) {
+    chrome.storage.local.get([domain], result => {
+        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+        if (domainState) {
+            if (domainState._isPathEnoughToTrack === true) {
+                // since it's true we can say that that domain items' path is enough to track items in this domain
+                callback(true);
+            } else {
+                // it's the first time user is being inquired about items similarity in this domain
+                getEqualPathItem(domain, currentURL, similarURL => {
+                    if (similarURL) {
+                        // found an URL whose host and path are equals to the currentURL trying to be saved
+                        // prompt user to confirm if the item is the same
+
+                        // const isSaved = askSaveConfirmation(currentURL, similarURL);
+                        // TODO: Currently this is limited, it needs:
+                        // TODO: Option to say "if URL differs then item is different, stop annoying me!"
+
+                        chrome.tabs.sendMessage(tabId, {type: "SIMILAR_ITEM.START_CONFIRMATION_DISPLAY"}, ({status}) => {
+                            if (status === 1) {
+                                // TODO: send other message now to the modal.js
+                                // finally is its response call the callback
+                                    if (isSaved) {
+                                        domainState._isPathEnoughToTrack = true;
+                                        chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                    }
+                                    callback(isSaved);
+                            }
+                        });
+                    } else {
+                        // no URL has host and path equals to the currentURL
+                        callback(false);
+                    }
+                });
+            }
+        } else {
+            // this means it's the first item being saved belonging to this domain
+            callback(false);
+        }
+    });
+}
 
 // TODO: break this down into smaller functions
 function attachEvents() {
@@ -648,6 +730,8 @@ function attachEvents() {
                 case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
                         const {domain, url: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
+
+                        // checkForURLSimilarity(id, domain, url)
                         createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.HIGHLIGHT.STOP",

@@ -66,6 +66,31 @@ function evaluateAutoSave(selection, url, domain, sendResponse) {
     }
 }
 
+function displaySaveConfirmation(title, message, buttons = [], sendResponse) {
+    const extensionOrigin = `chrome-extension://${chrome.runtime.id}`;
+    if (!location.ancestorOrigins.contains(extensionOrigin)) {
+        const modalElement = document.createElement("iframe");
+        modalElement.setAttribute("id", "price-tag--save-confirmation-modal");
+
+        // Must be declared at web_accessible_resources in manifest.json
+        modalElement.src = chrome.runtime.getURL("views/modal.html");
+        modalElement.onload = () => {
+            sendResponse({status: 1});
+        };
+
+        modalElement.style.cssText = "position:fixed;top:0;left:0;display:block;" +
+            "width:700px;height:100%;z-index:1000;border:0;";
+
+        document.body.appendChild(modalElement);
+
+        return true;
+    }
+
+    sendResponse({status: -1});
+
+    return false;
+}
+
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "RECORD.START":
@@ -167,5 +192,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 sendResponse({status: -1});
             }
             break;
+        case "SIMILAR_ITEM.START_CONFIRMATION_DISPLAY":
+            return displaySaveConfirmation(sendResponse);
     }
 });
