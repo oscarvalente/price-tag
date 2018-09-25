@@ -684,9 +684,6 @@ function attachEvents() {
                 updateCurrentURL(url);
 
                 if (status === "loading") {
-                    chrome.tabs.executeScript(tabId, {
-                        file: "page-agent.js"
-                    });
                     updateAutoSaveStatus(url);
                     updateExtensionAppearance(null, url);
                 }

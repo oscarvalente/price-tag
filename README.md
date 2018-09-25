@@ -50,8 +50,7 @@ but there's a lot more, and more to come.
  * when URL is very similar (probably same item) ❗
     * warn user and ask if wants to track `(wip)` ❗ 
     * canonical usage ❗
- * bug: duplicated content script - SPA's url update (www.amazon.es) ❗❗
-    * insert declaratively in manifest?
+ * bug: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
