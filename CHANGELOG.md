@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.14.5
+* Inject content script declaratively instead of on tab update 
+
 # v0.14.4
 * Minor styling in tracking toolbar
 
