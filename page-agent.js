@@ -66,11 +66,13 @@ function evaluateAutoSave(selection, url, domain, sendResponse) {
     }
 }
 
-function displaySaveConfirmation(title, message, buttons = [], sendResponse) {
+function displaySaveConfirmation(elementId, sendResponse) {
     const extensionOrigin = `chrome-extension://${chrome.runtime.id}`;
     if (!location.ancestorOrigins.contains(extensionOrigin)) {
         const modalElement = document.createElement("iframe");
-        modalElement.setAttribute("id", "price-tag--save-confirmation-modal");
+        if (elementId) {
+            modalElement.setAttribute("id", elementId);
+        }
 
         // Must be declared at web_accessible_resources in manifest.json
         modalElement.src = chrome.runtime.getURL("views/modal.html");
@@ -192,7 +194,17 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 sendResponse({status: -1});
             }
             break;
-        case "SIMILAR_ITEM.START_CONFIRMATION_DISPLAY":
-            return displaySaveConfirmation(sendResponse);
+        case "CONFIRMATION_DISPLAY.CREATE":
+            payload = payload || {};
+            const {elementId: idToCreate} = payload;
+            return displaySaveConfirmation(idToCreate, sendResponse);
+        case "CONFIRMATION_DISPLAY.REMOVE":
+            payload = payload || {};
+            const {elementId: idToRemove} = payload;
+            const confirmationModal = document.getElementById(idToRemove);
+            if (confirmationModal) {
+                confirmationModal.remove();
+            }
+            break;
     }
 });

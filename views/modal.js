@@ -1,12 +1,25 @@
-chrome.runtime.onMessage.addListener((type) => {
-    console.log('anda sandra!');
-    /*const saveConfirmationModal = document.querySelector("#price-tag--save-confirmation-modal");
-    saveConfirmationModal.querySelector("#modal #title").innerText = title;
-    saveConfirmationModal.querySelector("#modal #message").innerText = message;
+chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
+    debugger;
+    switch (type) {
+        case "CONFIRMATION_DISPLAY.LOAD":
+            const {documentTitle, title, message, buttons} = payload;
 
-    buttons.forEach(({title, onclick}) => {
-        let button = document.createElement("button");
-        button.onclick = onclick;
-        saveConfirmationModal.querySelector("#modal #modal-footer").innerHTML = button;
-    });*/
+            document.querySelector("#document-title").innerText = documentTitle;
+            document.querySelector("#modal #title").innerText = title;
+            document.querySelector("#modal #message").innerText = message;
+
+            buttons.forEach((title, index) => {
+                let button = document.createElement("button");
+                button.innerText = title;
+                button.className = "button";
+                document.querySelector("#modal #modal-footer").appendChild(button);
+                button.onclick = function onClick() {
+                    sendResponse({status: 1, index});
+                };
+            });
+
+            return true;
+        default:
+            return false;
+    }
 });

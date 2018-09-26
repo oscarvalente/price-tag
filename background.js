@@ -617,46 +617,92 @@ function getEqualPathItem(domainState, currentURL, callback) {
     callback(null);
 }
 
+function buildSaveConfirmationPayload(currentURL, similarURL) {
+    return {
+        title: "Item with similar URL to existing one",
+        message: "It appears that the item URL you're trying to save:\n" +
+            `${currentURL}\n` +
+            "is pretty similar to\n" +
+            `${similarURL}\n\n` +
+            "Please help us helping you by choosing one of the following options:",
+        buttons: ["It's not, save it! Remember this option for this site.", "Indeed the same item. Don't save!", "For now save this item. Ask me later!"]
+    };
+}
+
 function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     chrome.storage.local.get([domain], result => {
-        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-        if (domainState) {
-            if (domainState._isPathEnoughToTrack === true) {
-                // since it's true we can say that that domain items' path is enough to track items in this domain
-                callback(true);
+            const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+            if (domainState) {
+                if (domainState._isPathEnoughToTrack === true) {
+                    // since it's true we can say that that domain items' path is enough to track items in this domain
+                    callback(true);
+                } else {
+                    // it's the first time user is being inquired about items similarity in this domain
+                    getEqualPathItem(domain, currentURL, similarURL => {
+                        if (similarURL) {
+                            // found an URL whose host and path are equals to the currentURL trying to be saved
+                            // prompt user to confirm if the item is the same
+
+                            // const isSaved = askSaveConfirmation(currentURL, similarURL);
+                            // TODO: Currently this is limited, it needs:
+                            // TODO: Option to say "if URL differs then item is different, stop annoying me!"
+
+                            const modalElementId = "price-tag--save-confirmation";
+                            chrome.tabs.sendMessage(tabId, {
+                                type: "CONFIRMATION_DISPLAY.CREATE",
+                                payload: {elementId: modalElementId}
+                            }, ({status}) => {
+                                if (status === 1) {
+                                    const payload = buildSaveConfirmationPayload(currentURL, similarURL);
+                                    chrome.tabs.sendMessage(tabId, {
+                                        type: "CONFIRMATION_DISPLAY.LOAD",
+                                        payload
+                                    }, ({status}) => {
+                                        chrome.tabs.sendMessage(tabId, {
+                                            type: "CONFIRMATION_DISPLAY.REMOVE",
+                                            payload: {elementId: modalElementId}
+                                        });
+                                        console.log(status);
+
+                                        switch (status) {
+                                            case 0:
+                                                // said Yes: not the same item (path is enough for this site items)
+                                                domainState._isPathEnoughToTrack = true;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                                callback(true);
+                                                break;
+                                            case 1:
+                                                // said No: same item
+                                                callback(false);
+                                                break;
+                                            case 2:
+                                                // said Save but Ask me later
+                                                callback(true);
+                                                break;
+                                            default:
+                                                // something went wrong clicking modal buttons
+                                                callback(false);
+                                                break;
+                                        }
+                                    });
+                                } else {
+                                    // something went wrong creating the modal
+                                    callback(false);
+                                }
+                            });
+                        }
+                        else {
+                            // no URL has host and path equals to the currentURL
+                            callback(false);
+                        }
+                    });
+                }
             } else {
-                // it's the first time user is being inquired about items similarity in this domain
-                getEqualPathItem(domain, currentURL, similarURL => {
-                    if (similarURL) {
-                        // found an URL whose host and path are equals to the currentURL trying to be saved
-                        // prompt user to confirm if the item is the same
-
-                        // const isSaved = askSaveConfirmation(currentURL, similarURL);
-                        // TODO: Currently this is limited, it needs:
-                        // TODO: Option to say "if URL differs then item is different, stop annoying me!"
-
-                        chrome.tabs.sendMessage(tabId, {type: "SIMILAR_ITEM.START_CONFIRMATION_DISPLAY"}, ({status}) => {
-                            if (status === 1) {
-                                // TODO: send other message now to the modal.js
-                                // finally is its response call the callback
-                                    if (isSaved) {
-                                        domainState._isPathEnoughToTrack = true;
-                                        chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    }
-                                    callback(isSaved);
-                            }
-                        });
-                    } else {
-                        // no URL has host and path equals to the currentURL
-                        callback(false);
-                    }
-                });
+                // this means it's the first item being saved belonging to this domain
+                callback(false);
             }
-        } else {
-            // this means it's the first item being saved belonging to this domain
-            callback(false);
         }
-    });
+    );
 }
 
 // TODO: break this down into smaller functions
@@ -728,7 +774,11 @@ function attachEvents() {
                     if (State.autoSaveEnabled) {
                         const {domain, url: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
 
-                        // checkForURLSimilarity(id, domain, url)
+                        /*checkForURLSimilarity(id, domain, url, isToSave => {
+                            if (isToSave) {
+
+                            }
+                        });*/
                         createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.HIGHLIGHT.STOP",
