@@ -52,7 +52,7 @@ but there's a lot more, and more to come.
         * activate in auto-save attempt ✅ 
         * activate in auto-save availability evaluation: in sites where path is enough to track ✅
         * activate on item record ✅
-    * canonical usage ❗
+    * canonical usage ✅
  * tech debt: State needs to be immutable ❗❗
  * bug: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed

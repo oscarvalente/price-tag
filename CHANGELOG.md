@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.15.1
+* Use canonical as primary URL
+
 # v0.15.0
 * Warn mechanism about possible same item save attempt
 
