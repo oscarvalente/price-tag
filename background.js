@@ -743,15 +743,21 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                updateCurrentURL(url);
-                updateAutoSaveStatus(url);
-                updateExtensionAppearance(null, url);
+                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                    if (canonicalURL) {
+                        updateCurrentURL(canonicalURL);
+                    } else {
+                        updateCurrentURL(url);
+                    }
+                    updateAutoSaveStatus(State.currentURL);
+                    updateExtensionAppearance(null, State.currentURL);
+                    const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+                    if (captureDomain) {
+                        const [, domain] = captureDomain;
+                        updateCurrentDomain(domain);
+                    }
+                });
                 State.faviconURL = State._faviconURLMap[tabId] || null;
-                const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-                if (captureDomain) {
-                    const [, domain] = captureDomain;
-                    updateCurrentDomain(domain);
-                }
             } else {
                 setDefaultAppearance();
             }
@@ -766,6 +772,14 @@ function attachEvents() {
                 if (status === "loading") {
                     updateAutoSaveStatus(url);
                     updateExtensionAppearance(null, url);
+                }
+
+                if (status === "complete") {
+                    chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                        if (canonicalURL) {
+                            updateCurrentURL(canonicalURL);
+                        }
+                    });
                 }
 
                 if (favIconUrl) {

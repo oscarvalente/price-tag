@@ -47,12 +47,12 @@ but there's a lot more, and more to come.
  * major improvement: use tab favicon url from onUpdate tab callback ✅
  * bug: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
  * bug: auto-save disabled & icon appearance to default when delete any item _(it should be disabled just if deleted url is the current one)_ ✅
- * when URL is very similar (probably same item) ❗
+ * when URL is very similar (probably same item) ✅
     * warn user and ask if wants to track ✅
         * activate in auto-save attempt ✅ 
         * activate in auto-save availability evaluation: in sites where path is enough to track ✅
         * activate on item record ✅
-    * canonical usage ❗
+    * canonical usage ✅
  * tech debt: State needs to be immutable ❗❗
  * bug: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
