@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.15.0
+* Warn mechanism about possible same item save attempt
+
 # v0.14.5
 * Inject content script declaratively instead of on tab update 
 
