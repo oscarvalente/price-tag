@@ -80,8 +80,8 @@ function displaySaveConfirmation(elementId, sendResponse) {
             sendResponse({status: 1});
         };
 
-        modalElement.style.cssText = "position:fixed;top:0;left:0;display:block;" +
-            "width:700px;height:100%;z-index:1000;border:0;";
+        modalElement.style.cssText = "position:fixed;top:0;right:0;display:block;" +
+            "width:700px;height:100%;z-index:1000;border:0;margin-top: 200px;";
 
         document.body.appendChild(modalElement);
 

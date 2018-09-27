@@ -1,5 +1,4 @@
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
-    debugger;
     switch (type) {
         case "CONFIRMATION_DISPLAY.LOAD":
             const {documentTitle, title, message, buttons} = payload;

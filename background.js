@@ -9,7 +9,8 @@ let State = {
     isCurrentPageTracked: false,
     faviconURL: null,
     _faviconURLMap: {},
-    currentURL: null
+    currentURL: null,
+    domain: null
 };
 
 const DEFAULT_ICON = "assets/icon_48.png";
@@ -131,12 +132,16 @@ function hasAcknowledgeIncrease(item) {
     return item.statuses.includes(ITEM_STATUS.ACK_INCREASE);
 }
 
-function onRecordDone(payload) {
+function onRecordDone(tabId, payload) {
     const {status, domain, url, selection, price, faviconURL, faviconAlt} = payload;
     if (status > 0) {
         State.faviconURL = State.faviconURL || faviconURL;
-        createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-        updateExtensionAppearance(domain, url, true);
+        checkForURLSimilarity(tabId, domain, url, isToSave => {
+            if (isToSave) {
+                createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+                updateExtensionAppearance(domain, url, true);
+            }
+        });
     }
 
     State.recordActive = false;
@@ -206,6 +211,10 @@ function enableCurrentPageTracked() {
     State.isCurrentPageTracked = true;
 }
 
+function updateCurrentDomain(domain) {
+    State.domain = domain;
+}
+
 function updateCurrentURL(url) {
     State.currentURL = url;
 }
@@ -263,7 +272,7 @@ function checkForPriceChanges() {
                 const domainItems = JSON.parse(result[domain]);
 
                 for (let url in domainItems) {
-                    if (domainItems.hasOwnProperty(url) && isWatched(domainItems[url])) {
+                    if (domainItems.hasOwnProperty(url) && matchesURL(url) && isWatched(domainItems[url])) {
                         const request = new XMLHttpRequest();
                         const {price: targetPrice, currentPrice} = domainItems[url];
 
@@ -600,16 +609,24 @@ function captureHostAndPathFromURL(url) {
     return hostAndPath;
 }
 
-function getEqualPathItem(domainState, currentURL, callback) {
+function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
     const currentHostAndPath = captureHostAndPathFromURL(currentURL);
     let foundOne = false;
     for (let url in domainState) {
         if (matchesURL(url) && domainState.hasOwnProperty(url)) {
-            const hostAndPath = captureHostAndPathFromURL(url);
-            if (hostAndPath === currentHostAndPath) {
-                foundOne = foundOne === false;
-                callback(url);
-                return;
+            if (isWatched(domainState[url])) {
+                if (currentURL === url) {
+                    //    if they're exactly the same
+                    callback(null);
+                    return;
+                } else {
+                    const hostAndPath = captureHostAndPathFromURL(url);
+                    if (hostAndPath === currentHostAndPath) {
+                        foundOne = foundOne === false;
+                        callback(url);
+                        return;
+                    }
+                }
             }
         }
     }
@@ -631,78 +648,90 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
 
 function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     chrome.storage.local.get([domain], result => {
-            const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-            if (domainState) {
-                if (domainState._isPathEnoughToTrack === true) {
-                    // since it's true we can say that that domain items' path is enough to track items in this domain
-                    callback(true);
-                } else {
-                    // it's the first time user is being inquired about items similarity in this domain
-                    getEqualPathItem(domain, currentURL, similarURL => {
-                        if (similarURL) {
-                            // found an URL whose host and path are equals to the currentURL trying to be saved
-                            // prompt user to confirm if the item is the same
+        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+        if (domainState) {
+            if (domainState._isPathEnoughToTrack === true) {
+                // since it's true we can say that that domain items' path is enough to track items in this domain
+                searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
+                    if (similarURL) {
+                        callback(false, false);
+                    } else {
+                        callback(true);
+                    }
+                });
+            } else if (domainState._isPathEnoughToTrack === false) {
+                callback(true);
+            } else {
+                // it's the first time user is being inquired about items similarity in this domain
+                searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
+                    if (similarURL) {
+                        // found an URL whose host and path are equals to the currentURL trying to be saved
+                        // prompt user to confirm if the item is the same
 
-                            // const isSaved = askSaveConfirmation(currentURL, similarURL);
-                            // TODO: Currently this is limited, it needs:
-                            // TODO: Option to say "if URL differs then item is different, stop annoying me!"
+                        // TODO: Currently this is limited, it needs:
+                        // TODO: Option to say "if URL differs then item is different, stop annoying me!"
 
-                            const modalElementId = "price-tag--save-confirmation";
-                            chrome.tabs.sendMessage(tabId, {
-                                type: "CONFIRMATION_DISPLAY.CREATE",
-                                payload: {elementId: modalElementId}
-                            }, ({status}) => {
-                                if (status === 1) {
-                                    const payload = buildSaveConfirmationPayload(currentURL, similarURL);
+                        const modalElementId = "price-tag--save-confirmation";
+                        chrome.tabs.sendMessage(tabId, {
+                            type: "CONFIRMATION_DISPLAY.CREATE",
+                            payload: {elementId: modalElementId}
+                        }, ({status}) => {
+                            if (status === 1) {
+                                const payload = buildSaveConfirmationPayload(currentURL, similarURL);
+                                chrome.tabs.sendMessage(tabId, {
+                                    type: "CONFIRMATION_DISPLAY.LOAD",
+                                    payload
+                                }, ({status, index}) => {
                                     chrome.tabs.sendMessage(tabId, {
-                                        type: "CONFIRMATION_DISPLAY.LOAD",
-                                        payload
-                                    }, ({status}) => {
-                                        chrome.tabs.sendMessage(tabId, {
-                                            type: "CONFIRMATION_DISPLAY.REMOVE",
-                                            payload: {elementId: modalElementId}
-                                        });
-                                        console.log(status);
-
-                                        switch (status) {
+                                        type: "CONFIRMATION_DISPLAY.REMOVE",
+                                        payload: {elementId: modalElementId}
+                                    });
+                                    console.log(status);
+                                    if (status === 1) {
+                                        switch (index) {
                                             case 0:
-                                                // said Yes: not the same item (path is enough for this site items)
-                                                domainState._isPathEnoughToTrack = true;
+                                                // said Yes: not the same item
+                                                domainState._isPathEnoughToTrack = false;
                                                 chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
                                                 callback(true);
                                                 break;
                                             case 1:
-                                                // said No: same item
-                                                callback(false);
+                                                // said No: same item (path is enough for this site items)
+                                                domainState._isPathEnoughToTrack = true;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                                callback(false, false);
                                                 break;
                                             case 2:
-                                                // said Save but Ask me later
+                                                // said Save this but for others Ask me later
                                                 callback(true);
                                                 break;
                                             default:
-                                                // something went wrong clicking modal buttons
-                                                callback(false);
+                                                // cannot recognize this modal button click
+                                                callback(false, true);
                                                 break;
                                         }
-                                    });
-                                } else {
-                                    // something went wrong creating the modal
-                                    callback(false);
-                                }
-                            });
-                        }
-                        else {
-                            // no URL has host and path equals to the currentURL
-                            callback(false);
-                        }
-                    });
-                }
-            } else {
-                // this means it's the first item being saved belonging to this domain
-                callback(false);
+                                    } else {
+                                        // something in buttons click
+                                        callback(false, true);
+                                    }
+                                });
+                            } else {
+                                // something went wrong creating the modal
+                                callback(false, true);
+                            }
+                        });
+                    }
+                    else {
+                        // no URL has host and path equals to the currentURL (can save the item)
+                        callback(true);
+                    }
+                });
             }
+        } else {
+            // this means it's the first item being saved belonging to this domain (can save the item)
+            callback(true);
         }
-    );
+    });
 }
 
 // TODO: break this down into smaller functions
@@ -718,6 +747,11 @@ function attachEvents() {
                 updateAutoSaveStatus(url);
                 updateExtensionAppearance(null, url);
                 State.faviconURL = State._faviconURLMap[tabId] || null;
+                const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+                if (captureDomain) {
+                    const [, domain] = captureDomain;
+                    updateCurrentDomain(domain);
+                }
             } else {
                 setDefaultAppearance();
             }
@@ -757,7 +791,10 @@ function attachEvents() {
 
                     if (State.recordActive) {
                         const {url} = payload;
-                        chrome.tabs.sendMessage(id, {type: "RECORD.START", payload: {url}}, onRecordDone);
+                        chrome.tabs.sendMessage(id, {
+                            type: "RECORD.START",
+                            payload: {url}
+                        }, onRecordDone.bind(null, id));
                     } else {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
                     }
@@ -765,29 +802,60 @@ function attachEvents() {
                     break;
                 case "AUTO_SAVE.STATUS":
                     const {url} = payload;
-                    chrome.tabs.sendMessage(id, {
-                        type: "AUTO_SAVE.CHECK_STATUS",
-                        payload: {url, selection: State.selection}
-                    }, onAutoSaveCheckStatus.bind(null, sendResponse));
+                    const {domain} = State;
+                    chrome.storage.local.get([domain], result => {
+                        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                        if (domainState) {
+                            if (domainState._isPathEnoughToTrack === true) {
+                                // since it's true we can say that that domain items' path is enough to track items in this domain
+                                searchForEqualPathWatchedItem(domainState, url, similarURL => {
+                                    if (!similarURL) {
+                                        chrome.tabs.sendMessage(id, {
+                                            type: "AUTO_SAVE.CHECK_STATUS",
+                                            payload: {url, selection: State.selection}
+                                        }, onAutoSaveCheckStatus.bind(null, sendResponse));
+                                    } else {
+                                        sendResponse({status: -1});
+                                    }
+                                });
+                            } else {
+                                chrome.tabs.sendMessage(id, {
+                                    type: "AUTO_SAVE.CHECK_STATUS",
+                                    payload: {url, selection: State.selection}
+                                }, onAutoSaveCheckStatus.bind(null, sendResponse));
+                            }
+                        } else {
+                            // domain doesn't exist
+                            chrome.tabs.sendMessage(id, {
+                                type: "AUTO_SAVE.CHECK_STATUS",
+                                payload: {url, selection: State.selection}
+                            }, onAutoSaveCheckStatus.bind(null, sendResponse));
+                        }
+                    });
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
                         const {domain, url: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
 
-                        /*checkForURLSimilarity(id, domain, url, isToSave => {
+                        checkForURLSimilarity(id, domain, stateUrl, (isToSave, autoSaveStatus) => {
                             if (isToSave) {
+                                createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                                    chrome.tabs.sendMessage(id, {
+                                        type: "AUTO_SAVE.HIGHLIGHT.STOP",
+                                        payload: {selection, originalBackgroundColor}
+                                    }, onSimilarElementHighlight);
 
+                                    updateExtensionAppearance(domain, stateUrl, true);
+                                    State = disableAutoSave(State);
+
+                                    sendResponse(false);
+                                });
+                            } else {
+                                // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                                if (!autoSaveStatus) {
+                                    State = disableAutoSave(State);
+                                }
                             }
-                        });*/
-                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                            chrome.tabs.sendMessage(id, {
-                                type: "AUTO_SAVE.HIGHLIGHT.STOP",
-                                payload: {selection, originalBackgroundColor}
-                            }, onSimilarElementHighlight);
-
-                            updateExtensionAppearance(domain, stateUrl, true);
-
-                            sendResponse(false);
                         });
 
                         return true;
