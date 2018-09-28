@@ -1,11 +1,13 @@
 let recordButton;
 let autoSaveButton;
+let priceUpdateButton;
 
 function bootstrap() {
     chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
 
     recordButton = document.getElementById("record-btn");
     autoSaveButton = document.getElementById("auto-save-btn");
+    priceUpdateButton = document.getElementById("price-update-btn");
 
     recordButton.onclick = () => {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
@@ -15,7 +17,7 @@ function bootstrap() {
 }
 
 function onPopupStatus({state}) {
-    const {recordActive, autoSaveEnabled} = state;
+    const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = state;
     updateRecordButton(recordActive);
     if (autoSaveEnabled) {
         setPendingAutoSave();
@@ -25,6 +27,16 @@ function onPopupStatus({state}) {
         });
     } else {
         updateAutoSaveButton(autoSaveEnabled);
+    }
+
+    if(isPriceUpdateEnabled) {
+        setPendingPriceUpdate();
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
+            chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id, url}},
+                updateAutoSaveButton);
+        });
+    } else {
+        updatePriceUpdateButton(autoSaveEnabled);
     }
 }
 
@@ -69,8 +81,27 @@ function updateAutoSaveButton(buttonEnabled) {
     }
 }
 
+function updatePriceUpdateButton(buttonEnabled) {
+    /*if (buttonEnabled === true) {
+        priceUpdateButton.onclick = onPriceUpdateClick;
+        priceUpdateButton.onmouseover = onPriceUpdateMouseOver;
+        priceUpdateButton.onmouseout = onPriceUpdateMouseOut;
+        priceUpdateButton.style.fill = "#4e9b5f";
+        priceUpdateButton.style.cursor = "pointer";
+    } else if (buttonEnabled === false) {
+        priceUpdateButton.removeEventListener("click", onPriceUpdateClick);
+        priceUpdateButton.removeEventListener("mouseover", onPriceUpdateMouseOver);
+        priceUpdateButton.removeEventListener("mouseout", onPriceUpdateMouseOut);
+        priceUpdateButton.style.fill = "#878a91";
+    }*/
+}
+
 function setPendingAutoSave() {
     autoSaveButton.style.fill = "#62656c";
+}
+
+function setPendingPriceUpdate() {
+    priceUpdateButton.style.fill = "#62656c";
 }
 
 bootstrap();

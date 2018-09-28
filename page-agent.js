@@ -206,5 +206,8 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 confirmationModal.remove();
             }
             break;
+        case "PAGE_METADATA.GET_CANONICAL":
+
+            break;
     }
 });

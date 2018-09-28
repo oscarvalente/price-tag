@@ -38,8 +38,8 @@ but there's a lot more, and more to come.
         * by price ❗
         * by domain, time
         * by domain, price
-    * back button always visible
-    * BUG: after delete all items doesnt display 'no tracked items'
+    * back button always visible ❗
+    * BUG: after delete all items doesnt display 'no tracked items' ❗
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
@@ -53,7 +53,7 @@ but there's a lot more, and more to come.
         * activate in auto-save availability evaluation: in sites where path is enough to track ✅
         * activate on item record ✅
     * canonical usage ✅
- * tech debt: State needs to be immutable ❗❗
+ * tech debt: State needs to be immutable ✅
  * bug: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
@@ -68,12 +68,12 @@ but there's a lot more, and more to come.
      * BUG: sometimes notifications State is lost ✅
      * stop following when price decreases (through notification) ✅
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
-     * show if item is being tracked in popup.js ❗
-     * allow price update if item is being tracked (visiting its page) ❗
+     * allow price update if item is being tracked (visiting its page) `(wip)` ❗
      * use doc title as favicon title ✅
      * use doc title as item name ❗
      * allow naming item ❗
         * toggle on
+     * show if item is being tracked in popup.js
  * save confirmation modal similar URLs message display as links
  * auto-save add highlight border
  * keep tracked items object in state

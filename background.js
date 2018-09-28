@@ -3,6 +3,7 @@ let State = {
     notifications: {},
     notificationsCounter: 0,
     autoSaveEnabled: false,
+    isPriceUpdateEnabled: false,
     selection: null,
     isSimilarElementHighlighted: false,
     originalBackgroundColor: null,
@@ -122,6 +123,14 @@ function isWatched(item) {
 
 function isNotFound(item) {
     return item.statuses.includes(ITEM_STATUS.NOT_FOUND);
+}
+
+function hasIncreased(item) {
+    return item.statuses.includes(ITEM_STATUS.INCREASED);
+}
+
+function hasDecreased(item) {
+    return item.statuses.includes(ITEM_STATUS.DECREASED);
 }
 
 function hasAcknowledgeDecrease(item) {
@@ -309,6 +318,21 @@ function disableAutoSave(state) {
     return {
         ...state,
         autoSaveEnabled: false
+    };
+}
+
+function enablePriceUpdate(state, selection) {
+    return {
+        ...state,
+        isPriceUpdateEnabled: true,
+        selection
+    };
+}
+
+function disablePriceUpdate(state) {
+    return {
+        ...state,
+        isPriceUpdateEnabled: false
     };
 }
 
@@ -510,12 +534,12 @@ function removeTrackedItem(url, currentURL, callback) {
                 const domainItems = JSON.parse(domainData) || null;
                 if (domainItems[url]) {
                     found = true;
-                    // TODO: change status instead of deleting
 
                     domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         if (currentURL === url) {
-                            updateAutoSaveStatus(url);
+                            updateAutoSaveStatus(url, domain);
+                            updatePriceUpdateStatus(url, domain);
                             updateExtensionAppearance(domain, url, false);
                         }
                         callback(true);
@@ -608,8 +632,7 @@ function setupTrackingPolling() {
     setInterval(checkForPriceChanges, CHECKING_INTERVAL);
 }
 
-function updateAutoSaveStatus(url) {
-    const [, domain] = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+function updateAutoSaveStatus(url, domain) {
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
         const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
@@ -620,6 +643,19 @@ function updateAutoSaveStatus(url) {
             }
         } else {
             State = disableAutoSave(State);
+        }
+    });
+}
+
+function updatePriceUpdateStatus(url, domain) {
+    chrome.storage.local.get([domain], result => {
+        const items = result && result[domain] ? JSON.parse(result[domain]) : {};
+        const item = items[url];
+        const hasItemPriceIncOrDec = item && (hasIncreased(item) || hasDecreased(item));
+        if (hasItemPriceIncOrDec) {
+            State = enablePriceUpdate(State, item.selection);
+        } else {
+            State = disablePriceUpdate(State);
         }
     });
 }
@@ -810,15 +846,25 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                State = updateCurrentURL(State, url);
-                updateAutoSaveStatus(url);
-                updateExtensionAppearance(null, url);
-                State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
-                const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-                if (captureDomain) {
-                    const [, domain] = captureDomain;
-                    State = updateCurrentDomain(State, domain);
-                }
+                chrome.tabs.sendMessage(tabId, {
+                    type: "PAGE_METADATA.GET_CANONICAL"
+                }, canonicalURL => {
+                    if (canonicalURL) {
+                        State = updateCurrentURL(State, canonicalURL);
+                    } else {
+                        State = updateCurrentURL(State, url);
+                    }
+
+                    const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+                    if (captureDomain) {
+                        const [, domain] = captureDomain;
+                        State = updateCurrentDomain(State, domain);
+                    }
+                    updateAutoSaveStatus(State.currentURL, State.domain);
+                    updatePriceUpdateStatus(State.currentURL, State.domain);
+                    updateExtensionAppearance(null, State.currentURL);
+                    State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
+                });
             } else {
                 setDefaultAppearance();
             }
@@ -828,11 +874,17 @@ function attachEvents() {
     chrome.tabs.onUpdated.addListener((tabId, {status, favIconUrl}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
-                updateCurrentURL(url);
+                State = updateCurrentURL(State, url);
 
                 if (status === "loading") {
-                    updateAutoSaveStatus(url);
-                    updateExtensionAppearance(null, url);
+                    const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+                    if (captureDomain) {
+                        const [, domain] = captureDomain;
+                        State = updateCurrentDomain(State, domain);
+                    }
+                    updateAutoSaveStatus(State.currentURL, State.domain);
+                    updatePriceUpdateStatus(State.currentURL, State.domain);
+                    updateExtensionAppearance(null, State.currentURL);
                 }
 
                 if (favIconUrl) {
@@ -854,7 +906,7 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    State = toggleRecord(state);
+                    State = toggleRecord(State);
 
                     if (State.recordActive) {
                         const {url} = payload;
@@ -948,6 +1000,19 @@ function attachEvents() {
                         }, onSimilarElementHighlight);
                     }
                     break;
+                case "PRICE_UPDATE.STATUS":
+                    const {url: currentURL} = payload;
+                    const {domain: currentDomain} = State;
+                    chrome.storage.local.get([currentDomain], result => {
+                        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                        const item = domainState[currentURL];
+                        if (item && hasIncreased(item) && hasDecreased(item)) {
+                            sendResponse(true);
+                        } else {
+                            sendResponse(false);
+                        }
+                    });
+                    return true;
                 case "TRACKED_ITEMS.GET":
                     getTrackedItems(sendResponse);
                     return true;
