@@ -810,15 +810,21 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                State = updateCurrentURL(State, url);
-                updateAutoSaveStatus(url);
-                updateExtensionAppearance(null, url);
-                State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
-                const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-                if (captureDomain) {
-                    const [, domain] = captureDomain;
-                    State = updateCurrentDomain(State, domain);
-                }
+                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                    if (canonicalURL) {
+                        updateCurrentURL(canonicalURL);
+                    } else {
+                        updateCurrentURL(url);
+                    }
+                    updateAutoSaveStatus(State.currentURL);
+                    updateExtensionAppearance(null, State.currentURL);
+                    State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
+                    const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+                    if (captureDomain) {
+                        const [, domain] = captureDomain;
+                        State = updateCurrentDomain(State, domain);
+                    }
+                });
             } else {
                 setDefaultAppearance();
             }
@@ -838,6 +844,14 @@ function attachEvents() {
                 if (favIconUrl) {
                     State = updateFaviconURLMapItem(State, tabId, favIconUrl);
                     State = updateFaviconURL(State, favIconUrl);
+                }
+
+                if (status === "complete") {
+                    chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                        if (canonicalURL) {
+                            State = updateCurrentURL(State, canonicalURL);
+                        }
+                    });
                 }
             }
         } else {
