@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.15.2
+* Turn State function changes are immutable
+
 # v0.15.1
 * Use canonical as primary URL
 

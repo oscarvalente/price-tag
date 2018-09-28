@@ -144,16 +144,16 @@ function onRecordDone(tabId, payload) {
         });
     }
 
-    State.recordActive = false;
+    State = disableRecord(State);
 }
 
 function onRecordCancel() {
-    State.recordActive = false;
+    State = disableRecord(State);
 }
 
 function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
-        State.faviconURL = State.faviconURL || faviconURL;
+        State = updateFaviconURL(State, State.faviconURL || faviconURL);
         State = setSelectionInfo(State, url, domain, selection, price, State.faviconURL, faviconAlt);
         sendResponse(true);
     } else {
@@ -203,20 +203,56 @@ function createItem(domain, url, selection, price, faviconURL, faviconAlt, statu
     });
 }
 
-function disableCurrentPageTracked() {
-    State.isCurrentPageTracked = false;
+function disableRecord(state) {
+    return {
+        ...state,
+        recordActive: false
+    }
 }
 
-function enableCurrentPageTracked() {
-    State.isCurrentPageTracked = true;
+function disableCurrentPageTracked(state) {
+    return {
+        ...state,
+        isCurrentPageTracked: false
+    };
 }
 
-function updateCurrentDomain(domain) {
-    State.domain = domain;
+function enableCurrentPageTracked(state) {
+    return {
+        ...state,
+        isCurrentPageTracked: true
+    };
 }
 
-function updateCurrentURL(url) {
-    State.currentURL = url;
+function updateCurrentDomain(state, domain) {
+    return {
+        ...state,
+        domain
+    };
+}
+
+function updateCurrentURL(state, currentURL) {
+    return {
+        ...state,
+        currentURL
+    };
+}
+
+function updateFaviconURL(state, faviconURL) {
+    return {
+        ...state,
+        faviconURL
+    };
+}
+
+function updateFaviconURLMap(state, tabId, faviconURL) {
+    return {
+        ...state,
+        map: {
+            ...state._faviconURLMap,
+            [tabId]: faviconURL
+        }
+    };
 }
 
 function setDefaultAppearance() {
@@ -560,10 +596,10 @@ function updateAutoSaveStatus(url) {
 function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingTo) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
-        enableCurrentPageTracked();
+        State = enableCurrentPageTracked(State);
     } else if (forcePageTrackingTo === false) {
         setDefaultAppearance();
-        disableCurrentPageTracked();
+        State = disableCurrentPageTracked(State);
     } else if (!forcePageTrackingTo) {
         if (!currentDomain) {
             chrome.storage.local.get(null, result => {
@@ -574,14 +610,14 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                     const item = domainState[currentUrl];
                     if (item && isWatched(item)) {
                         setTrackedItemAppearance();
-                        enableCurrentPageTracked();
+                        State = enableCurrentPageTracked(State);
                         wasFound = true;
                         break;
                     }
                 }
                 if (!wasFound) {
                     setDefaultAppearance();
-                    disableCurrentPageTracked();
+                    State = disableCurrentPageTracked(State);
                 }
             });
         } else {
@@ -590,10 +626,10 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                 const item = domainState[currentUrl];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
-                    enableCurrentPageTracked()
+                    State = enableCurrentPageTracked(State);
                 } else {
                     setDefaultAppearance();
-                    disableCurrentPageTracked();
+                    State = disableCurrentPageTracked(State);
                 }
             });
         }
@@ -743,14 +779,14 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                updateCurrentURL(url);
+                State = updateCurrentURL(State, url);
                 updateAutoSaveStatus(url);
                 updateExtensionAppearance(null, url);
-                State.faviconURL = State._faviconURLMap[tabId] || null;
+                State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
                 const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
                 if (captureDomain) {
                     const [, domain] = captureDomain;
-                    updateCurrentDomain(domain);
+                    State = updateCurrentDomain(State, domain);
                 }
             } else {
                 setDefaultAppearance();
@@ -769,8 +805,8 @@ function attachEvents() {
                 }
 
                 if (favIconUrl) {
-                    State._faviconURLMap[tabId] = favIconUrl;
-                    State.faviconURL = favIconUrl;
+                    State = updateFaviconURLMap(State, tabId, favIconUrl);
+                    State = updateFaviconURL(State, favIconUrl);
                 }
             }
         } else {

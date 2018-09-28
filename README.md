@@ -47,7 +47,7 @@ but there's a lot more, and more to come.
  * major improvement: use tab favicon url from onUpdate tab callback ✅
  * bug: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
  * bug: auto-save disabled & icon appearance to default when delete any item _(it should be disabled just if deleted url is the current one)_ ✅
- * when URL is very similar (probably same item) ❗
+ * when URL is very similar (probably same item) ✅
     * warn user and ask if wants to track ✅
         * activate in auto-save attempt ✅ 
         * activate in auto-save availability evaluation: in sites where path is enough to track ✅
@@ -74,6 +74,8 @@ but there's a lot more, and more to come.
      * use doc title as item name ❗
      * allow naming item ❗
         * toggle on
+ * save confirmation modal similar URLs message display as links
+ * auto-save add highlight border
  * keep tracked items object in state
  * saved money info (calc icon)
  * price alert setting
@@ -91,6 +93,7 @@ but there's a lot more, and more to come.
     * migrate persisted state to IndexedDB ❕
     * graph button on management panel
     * new view
+ * error handling: port disconnect
  * extension user tour
  * minor improvements to the ui (styling minor issues)
  * style ui (major) ❗
