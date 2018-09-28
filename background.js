@@ -135,7 +135,7 @@ function hasAcknowledgeIncrease(item) {
 function onRecordDone(tabId, payload) {
     const {status, domain, url, selection, price, faviconURL, faviconAlt} = payload;
     if (status > 0) {
-        State.faviconURL = State.faviconURL || faviconURL;
+        State = updateFaviconURL(State, State.faviconURL || faviconURL);
         checkForURLSimilarity(tabId, domain, url, isToSave => {
             if (isToSave) {
                 createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
@@ -203,6 +203,13 @@ function createItem(domain, url, selection, price, faviconURL, faviconAlt, statu
     });
 }
 
+function toggleRecord(state) {
+    return {
+        ...state,
+        recordActive: !state.recordActive
+    }
+}
+
 function disableRecord(state) {
     return {
         ...state,
@@ -245,12 +252,36 @@ function updateFaviconURL(state, faviconURL) {
     };
 }
 
-function updateFaviconURLMap(state, tabId, faviconURL) {
+function updateFaviconURLMapItem(state, tabId, faviconURL) {
     return {
         ...state,
-        map: {
+        _faviconURLMap: {
             ...state._faviconURLMap,
             [tabId]: faviconURL
+        }
+    };
+}
+
+function incrementNotificationsCounter(state) {
+    const notificationsCounter = state.notificationsCounter + 1;
+    return {
+        ...state,
+        notificationsCounter
+    }
+}
+
+function deleteNotificationsItem(state, notificationId) {
+    const newState = {...state};
+    delete newState.notifications[notificationId];
+    return newState;
+}
+
+function updateNotificationsItem(state, notificationId, notificationState) {
+    return {
+        ...state,
+        notifications: {
+            ...state.notifications,
+            [notificationId]: notificationState
         }
     };
 }
@@ -517,7 +548,7 @@ function clearNotification(notifId, wasClosedByUser) {
             });
         }
 
-        delete State.notifications[notifId];
+        State = deleteNotificationsItem(State, notifId);
     });
 }
 
@@ -533,14 +564,14 @@ function createNotification(notifId, iconUrl, title, message, contextMessage = "
     };
 
     chrome.notifications.create(notifId, options, id => {
-        State.notifications[id] = {
+        State = updateNotificationsItem(State, id, {
             url,
             domain,
             type
-        };
+        });
     });
 
-    State.notificationsCounter++;
+    State = incrementNotificationsCounter(State);
 }
 
 function toPrice(price) {
@@ -805,7 +836,7 @@ function attachEvents() {
                 }
 
                 if (favIconUrl) {
-                    State = updateFaviconURLMap(State, tabId, favIconUrl);
+                    State = updateFaviconURLMapItem(State, tabId, favIconUrl);
                     State = updateFaviconURL(State, favIconUrl);
                 }
             }
@@ -823,7 +854,7 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    State.recordActive = !State.recordActive;
+                    State = toggleRecord(state);
 
                     if (State.recordActive) {
                         const {url} = payload;
