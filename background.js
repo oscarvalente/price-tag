@@ -846,9 +846,7 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                chrome.tabs.sendMessage(tabId, {
-                    type: "PAGE_METADATA.GET_CANONICAL"
-                }, canonicalURL => {
+                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
                     if (canonicalURL) {
                         State = updateCurrentURL(State, canonicalURL);
                     } else {
@@ -860,6 +858,7 @@ function attachEvents() {
                         const [, domain] = captureDomain;
                         State = updateCurrentDomain(State, domain);
                     }
+
                     updateAutoSaveStatus(State.currentURL, State.domain);
                     updatePriceUpdateStatus(State.currentURL, State.domain);
                     updateExtensionAppearance(null, State.currentURL);
@@ -890,6 +889,14 @@ function attachEvents() {
                 if (favIconUrl) {
                     State = updateFaviconURLMapItem(State, tabId, favIconUrl);
                     State = updateFaviconURL(State, favIconUrl);
+                }
+
+                if (status === "complete") {
+                    chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                        if (canonicalURL) {
+                            State = updateCurrentURL(State, canonicalURL);
+                        }
+                    });
                 }
             }
         } else {

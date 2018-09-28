@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.15.3
+* Fix canonical feature merge to master
+
 # v0.15.2
 * Turn State function changes are immutable
 

@@ -18,14 +18,23 @@ function buildElementSelection(path, maxElements) {
 }
 
 function getFaviconPath() {
-    let favicon = null;
     const nodeList = document.getElementsByTagName("link");
     for (let node of nodeList) {
         if (node.getAttribute("rel") === "icon" || node.getAttribute("rel") === "shortcut icon") {
             return node.getAttribute("href");
         }
     }
-    return favicon;
+    return null;
+}
+
+function getCanonicalPath() {
+    const nodeList = document.getElementsByTagName("link");
+    for (let node of nodeList) {
+        if (node.getAttribute("rel") === "canonical") {
+            return node.getAttribute("href");
+        }
+    }
+    return null;
 }
 
 function getFaviconURL() {
@@ -104,7 +113,8 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 event.preventDefault();
                 event.stopPropagation();
                 const {target, path} = event;
-                const {url} = payload;
+                const {url: payloadURL} = payload;
+                const url = getCanonicalPath() || payloadURL;
                 const {textContent} = target;
                 const selection = buildElementSelection(path, 3);
                 let domain = null;
@@ -158,7 +168,8 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             sendResponse({});
             break;
         case "AUTO_SAVE.CHECK_STATUS":
-            const {selection, url} = payload;
+            const {selection, url: payloadURL} = payload;
+            const url = getCanonicalPath() || payloadURL;
             const domain = location.hostname;
             if (document.readyState !== "complete") {
                 window.onload = () => {
@@ -206,8 +217,8 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 confirmationModal.remove();
             }
             break;
-        case "PAGE_METADATA.GET_CANONICAL":
-
+        case "METADATA.GET_CANONICAL":
+            sendResponse(getCanonicalPath());
             break;
     }
 });
