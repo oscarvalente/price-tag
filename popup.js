@@ -17,27 +17,24 @@ function bootstrap() {
 }
 
 function onPopupStatus({state}) {
-    const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = state;
+    // debugger;
+    const {recordActive, autoSaveEnabled} = state;
     updateRecordButton(recordActive);
     if (autoSaveEnabled) {
         setPendingAutoSave();
-        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id, url}},
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+            chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id}},
                 updateAutoSaveButton);
         });
     } else {
         updateAutoSaveButton(autoSaveEnabled);
     }
 
-    if(isPriceUpdateEnabled) {
-        setPendingPriceUpdate();
-        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id, url}},
-                updateAutoSaveButton);
-        });
-    } else {
-        updatePriceUpdateButton(autoSaveEnabled);
-    }
+    setPendingPriceUpdate();
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "PRICE_UPDATE.STATUS", payload: {id}},
+            updatePriceUpdateButton);
+    });
 }
 
 function updateRecordButton(buttonActive) {
@@ -49,51 +46,69 @@ function updateRecordButton(buttonActive) {
 }
 
 function onAutoSaveClick() {
-    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id, url}}, updateAutoSaveButton);
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id}}, updateAutoSaveButton);
     });
 }
 
-function onAutoSaveMouseOver() {
-    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_START", payload: {id, url}});
+function onAutoSaveButtonMouseOver() {
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_START", payload: {id}});
     });
 }
 
 function onAutoSaveMouseOut() {
-    chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id, url}});
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id}});
+    });
+}
+
+function onPriceUpdateClick() {
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "PRICE_UPDATE.ATTEMPT", payload: {id}}, updatePriceUpdateButton);
+    });
+}
+
+function onPriceUpdateButtonMouseOver() {
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_START", payload: {id}});
+    });
+}
+
+function onPriceUpdateMouseOut() {
+    chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+        chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP", payload: {id}});
     });
 }
 
 function updateAutoSaveButton(buttonEnabled) {
     if (buttonEnabled === true) {
         autoSaveButton.onclick = onAutoSaveClick;
-        autoSaveButton.onmouseover = onAutoSaveMouseOver;
+        autoSaveButton.onmouseover = onAutoSaveButtonMouseOver;
         autoSaveButton.onmouseout = onAutoSaveMouseOut;
         autoSaveButton.style.fill = "#4e9b5f";
         autoSaveButton.style.cursor = "pointer";
     } else if (buttonEnabled === false) {
         autoSaveButton.removeEventListener("click", onAutoSaveClick);
-        autoSaveButton.removeEventListener("mouseover", onAutoSaveMouseOver);
+        autoSaveButton.removeEventListener("mouseover", onAutoSaveButtonMouseOver);
         autoSaveButton.removeEventListener("mouseout", onAutoSaveMouseOut);
         autoSaveButton.style.fill = "#878a91";
     }
 }
 
 function updatePriceUpdateButton(buttonEnabled) {
-    /*if (buttonEnabled === true) {
+    if (buttonEnabled === true) {
         priceUpdateButton.onclick = onPriceUpdateClick;
-        priceUpdateButton.onmouseover = onPriceUpdateMouseOver;
+        priceUpdateButton.onmouseover = onPriceUpdateButtonMouseOver;
         priceUpdateButton.onmouseout = onPriceUpdateMouseOut;
         priceUpdateButton.style.fill = "#4e9b5f";
         priceUpdateButton.style.cursor = "pointer";
     } else if (buttonEnabled === false) {
         priceUpdateButton.removeEventListener("click", onPriceUpdateClick);
-        priceUpdateButton.removeEventListener("mouseover", onPriceUpdateMouseOver);
+        priceUpdateButton.removeEventListener("mouseover", onPriceUpdateButtonMouseOver);
         priceUpdateButton.removeEventListener("mouseout", onPriceUpdateMouseOut);
         priceUpdateButton.style.fill = "#878a91";
-    }*/
+    }
 }
 
 function setPendingAutoSave() {

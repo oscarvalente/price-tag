@@ -51,7 +51,7 @@ function getFaviconURL() {
     return null;
 }
 
-function evaluateAutoSave(selection, url, domain, sendResponse) {
+function evaluatePriceTag(selection, sendResponse) {
     const target = document.body.querySelector(selection);
     const textContent = target ? target.textContent : null;
     if (textContent) {
@@ -60,8 +60,6 @@ function evaluateAutoSave(selection, url, domain, sendResponse) {
             const [, price] = textContentMatch;
             sendResponse({
                 status: 1,
-                url,
-                domain,
                 selection,
                 price,
                 faviconURL: getFaviconURL(),
@@ -102,7 +100,8 @@ function displaySaveConfirmation(elementId, sendResponse) {
     return false;
 }
 
-chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
+    const {selection} = payload;
     switch (type) {
         case "RECORD.START":
             let originalBGColor;
@@ -168,21 +167,32 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             sendResponse({});
             break;
         case "AUTO_SAVE.CHECK_STATUS":
-            const {selection, url: payloadURL} = payload;
-            const url = getCanonicalPath() || payloadURL;
-            const domain = location.hostname;
             if (document.readyState !== "complete") {
                 window.onload = () => {
-                    evaluateAutoSave(selection, url, domain, sendResponse);
+                    evaluatePriceTag(selection, sendResponse);
 
                     window.onload = null;
                 };
+
                 return true;
             } else {
-                evaluateAutoSave(selection, url, domain, sendResponse);
+                evaluatePriceTag(selection, sendResponse);
                 return false;
             }
-        case "AUTO_SAVE.HIGHLIGHT.START":
+        case "PRICE_UPDATE.CHECK_STATUS":
+            if (document.readyState !== "complete") {
+                window.onload = () => {
+                    evaluatePriceTag(selection, sendResponse);
+
+                    window.onload = null;
+                };
+
+                return true;
+            } else {
+                evaluatePriceTag(selection, sendResponse);
+                return false;
+            }
+        case "PRICE_TAG.HIGHLIGHT.START":
             const {selection: elementSelection} = payload;
             const elementToHighlight = document.body.querySelector(elementSelection);
             if (elementToHighlight) {
@@ -193,7 +203,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                 sendResponse({status: -1});
             }
             break;
-        case "AUTO_SAVE.HIGHLIGHT.STOP":
+        case "PRICE_TAG.HIGHLIGHT.STOP":
             const {selection: elementHighlighted} = payload;
             let {originalBackgroundColor} = payload;
             originalBackgroundColor = originalBackgroundColor || "";
@@ -206,11 +216,9 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             }
             break;
         case "CONFIRMATION_DISPLAY.CREATE":
-            payload = payload || {};
             const {elementId: idToCreate} = payload;
             return displaySaveConfirmation(idToCreate, sendResponse);
         case "CONFIRMATION_DISPLAY.REMOVE":
-            payload = payload || {};
             const {elementId: idToRemove} = payload;
             const confirmationModal = document.getElementById(idToRemove);
             if (confirmationModal) {
