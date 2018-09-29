@@ -70,7 +70,12 @@ but there's a lot more, and more to come.
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
      * allow price update if item is being tracked (visiting its page) ✅
      * use doc title as favicon title ✅
+     * BUG (refine usage): similar items warning - give option "Same item. Ask me later for items of this site" ❗❗
+        _(Edge case example: continente.pt) - When Product Id is a query parameter; save same Product after adding other irrelevant query parameters_   
+        * choosing this option even though user says "it's the same item" don't use just path for this site future items ❗❗
+        * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ❗❗
      * protect from shitty sites that give canonical a wrong use - ask user which URL ❗
+     * add cancel button to similar item warning modal ❗
      * use doc title as item name ❗
      * allow naming item ❗
         * toggle on
