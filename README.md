@@ -68,8 +68,9 @@ but there's a lot more, and more to come.
      * BUG: sometimes notifications State is lost ✅
      * stop following when price decreases (through notification) ✅
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
-     * allow price update if item is being tracked (visiting its page) `(wip)` ❗
+     * allow price update if item is being tracked (visiting its page) ✅
      * use doc title as favicon title ✅
+     * protect from shitty sites that give canonical a wrong use - ask user which URL ❗
      * use doc title as item name ❗
      * allow naming item ❗
         * toggle on

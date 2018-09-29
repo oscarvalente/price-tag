@@ -631,9 +631,9 @@ function matchesURL(string) {
 }
 
 function setupTrackingPolling() {
-    // checkForPriceChanges();
+    checkForPriceChanges();
     // TODO: remove settimeout (for test purposes)
-    setTimeout(checkForPriceChanges, 20000);
+    // setTimeout(checkForPriceChanges, 20000);
     setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
 }
 
@@ -961,7 +961,7 @@ function attachEvents() {
                         }
                     });
                     return true;
-                case "xMPT":
+                case "AUTO_SAVE.ATTEMPT":
                     if (State.autoSaveEnabled) {
                         const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
 
@@ -1044,9 +1044,10 @@ function attachEvents() {
                             }, onSimilarElementHighlight);
 
                             State = disablePriceUpdate(State);
+                            sendResponse(false);
                         });
                     }
-                    break;
+                    return true;
                 case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
                     if (State.isPriceUpdateEnabled) {
                         const {selection} = State;

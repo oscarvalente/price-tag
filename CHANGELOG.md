@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.16.0
+* When user visits a tracked item page, allow price update when there are changes compared to the saved price-tag
+
 # v0.15.3
 * Fix canonical feature merge to master
 
