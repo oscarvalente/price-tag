@@ -27,6 +27,13 @@
     align-items: center;
 }
 
+#modal #message {
+    width: 600px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 #modal #modal-footer {
     display: flex;
     flex-wrap: nowrap;

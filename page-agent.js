@@ -116,12 +116,10 @@ chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse
                 const url = getCanonicalPath() || payloadURL;
                 const {textContent} = target;
                 const selection = buildElementSelection(path, 3);
-                let domain = null;
                 let price = null;
-                if (url) {
-                    [, domain] = url.match(/https?:\/\/([\w.]+)\/*/);
-                } else {
+                if (!url) {
                     sendResponse({status: -1});
+                    return;
                 }
                 if (textContent) {
                     const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
@@ -130,7 +128,6 @@ chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse
                         sendResponse({
                             status: 1,
                             url,
-                            domain,
                             selection,
                             price,
                             faviconURL: getFaviconURL(),

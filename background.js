@@ -11,6 +11,8 @@ let State = {
     faviconURL: null,
     _faviconURLMap: {},
     currentURL: null,
+    canonicalURL: null,
+    browserURL: null,
     domain: null
 };
 
@@ -133,19 +135,91 @@ function hasAcknowledgeIncrease(item) {
     return item.statuses.includes(ITEM_STATUS.ACK_INCREASE);
 }
 
+function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
+    const modalElementId = "price-tag--url-confirmation";
+    chrome.tabs.sendMessage(tabId, {
+        type: "CONFIRMATION_DISPLAY.CREATE",
+        payload: {elementId: modalElementId}
+    }, ({status}) => {
+        if (status === 1) {
+            const payload = buildURLConfirmationPayload(State.canonicalURL, State.browserURL, domain);
+            chrome.tabs.sendMessage(tabId, {
+                type: "CONFIRMATION_DISPLAY.LOAD",
+                payload
+            }, ({status, index}) => {
+                chrome.tabs.sendMessage(tabId, {
+                    type: "CONFIRMATION_DISPLAY.REMOVE",
+                    payload: {elementId: modalElementId}
+                });
+
+                if (status === 1) {
+                    switch (index) {
+                        case 0:
+                            // said Yes, can use canonical and remember this option
+                            chrome.storage.local.get([domain], result => {
+                                const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                                domainState._canUseCanonical = true;
+                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                State = updateCurrentURL(State, State.canonicalURL);
+                                callback(true, true);
+                            });
+                            break;
+                        case 1:
+                            // said Yes, but use canonical just this time
+                            State = updateCurrentURL(State, State.canonicalURL);
+                            callback(true, true);
+                            break;
+                        case 2:
+                            // said No, use browser URL and remember this option
+                            chrome.storage.local.get([domain], result => {
+                                const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                                domainState._canUseCanonical = false;
+                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                State = updateCurrentURL(State, State.browserURL);
+                                callback(true, false);
+                            });
+                            break;
+                        default:
+                            // cannot recognize this modal button click
+                            callback(false);
+                            break;
+                    }
+                }
+            });
+        }
+    });
+}
+
 function onRecordDone(tabId, payload) {
-    const {status, domain, url, selection, price, faviconURL, faviconAlt} = payload;
+    const {status, selection, price, faviconURL, faviconAlt} = payload;
+    const {currentURL, domain} = State;
     if (status > 0) {
         State = updateFaviconURL(State, State.faviconURL || faviconURL);
-        checkForURLSimilarity(tabId, domain, url, isToSave => {
-            if (isToSave) {
-                createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-                updateExtensionAppearance(domain, url, true);
+        canDisplayURLConfirmation(State, domain, canDisplay => {
+            if (canDisplay) {
+                onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
+                    if (canSave) {
+                        const url = useCaninocal ? State.canonicalURL : State.browserURL;
+                        checkForURLSimilarity(tabId, domain, url, isToSave => {
+                            if (isToSave) {
+                                createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+                                updateExtensionAppearance(domain, url, true);
+                            }
+                        });
+                    }
+                });
+            } else {
+                checkForURLSimilarity(tabId, domain, currentURL, isToSave => {
+                    if (isToSave) {
+                        createItem(domain, currentURL, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+                        updateExtensionAppearance(domain, currentURL, true);
+                    }
+                });
             }
         });
-    }
 
-    State = disableRecord(State);
+        State = disableRecord(State);
+    }
 }
 
 function onRecordCancel() {
@@ -259,6 +333,20 @@ function updateCurrentURL(state, currentURL) {
     };
 }
 
+function updateCanonicalURL(state, canonicalURL) {
+    return {
+        ...state,
+        canonicalURL
+    };
+}
+
+function updateBrowserURL(state, browserURL) {
+    return {
+        ...state,
+        browserURL
+    };
+}
+
 function updateFaviconURL(state, faviconURL) {
     return {
         ...state,
@@ -298,6 +386,14 @@ function updateNotificationsItem(state, notificationId, notificationState) {
             [notificationId]: notificationState
         }
     };
+}
+
+function canDisplayURLConfirmation(state, domain, callback) {
+    chrome.storage.local.get([domain], result => {
+        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+        callback(domainState._canUseCanonical === undefined && !!state.canonicalURL &&
+            State.canonicalURL !== State.browserURL);
+    });
 }
 
 function setDefaultAppearance() {
@@ -762,6 +858,19 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
     };
 }
 
+function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
+    return {
+        title: "This website recommends to follow this item through a different URL",
+        message: `${domain} says that a more accurate URL for this item would be:\n` +
+            `${canonicalURL}\n` +
+            "If this is correct, we recommend you to follow it.\n" +
+            "However you can still opt to choose following the current browser one:\n" +
+            `${browserURL}\n\n` +
+            "Please help us helping you by choosing one of the following options:",
+        buttons: ["Use recommended URL. Remember this option for this site", "Use recommended URL, but just this time", "It's not correct. Use the current browser URL instead"]
+    };
+}
+
 function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     chrome.storage.local.get([domain], result => {
         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
@@ -802,7 +911,6 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
                                         type: "CONFIRMATION_DISPLAY.REMOVE",
                                         payload: {elementId: modalElementId}
                                     });
-                                    console.log(status);
                                     if (status === 1) {
                                         switch (index) {
                                             case 0:
@@ -850,6 +958,44 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     });
 }
 
+function onTabContextChange(tabId, url) {
+    const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+    if (captureDomain) {
+        const [, domain] = captureDomain;
+        State = updateCurrentDomain(State, domain);
+        chrome.storage.local.get([domain], result => {
+            const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+            // check if user has already a preference to use the canonical URL if available
+            if (domainState && domainState._canUseCanonical === false) {
+                State = updateCurrentURL(State, url);
+                State = updateCanonicalURL(State, null);
+                State = updateBrowserURL(State, url);
+
+                updateAutoSaveStatus(State.currentURL, State.domain);
+                updatePriceUpdateStatus(State.currentURL, State.domain);
+                updateExtensionAppearance(null, State.currentURL);
+            } else {
+                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                    if (isCanonicalURLRelevant(canonicalURL)) {
+                        State = updateCurrentURL(State, canonicalURL);
+                        State = updateCanonicalURL(State, canonicalURL);
+                    } else {
+                        State = updateCurrentURL(State, url);
+                        State = updateCanonicalURL(State, null);
+                    }
+
+                    State = updateBrowserURL(State, url);
+
+                    updateAutoSaveStatus(State.currentURL, State.domain);
+                    updatePriceUpdateStatus(State.currentURL, State.domain);
+                    updateExtensionAppearance(null, State.currentURL);
+                });
+            }
+
+        });
+    }
+}
+
 // TODO: break this down into smaller functions
 function attachEvents() {
     chrome.runtime.onInstalled.addListener(() => {
@@ -859,24 +1005,8 @@ function attachEvents() {
     chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
-                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
-                    if (isCanonicalURLRelevant(canonicalURL)) {
-                        State = updateCurrentURL(State, canonicalURL);
-                    } else {
-                        State = updateCurrentURL(State, url);
-                    }
-
-                    const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-                    if (captureDomain) {
-                        const [, domain] = captureDomain;
-                        State = updateCurrentDomain(State, domain);
-                    }
-
-                    updateAutoSaveStatus(State.currentURL, State.domain);
-                    updatePriceUpdateStatus(State.currentURL, State.domain);
-                    updateExtensionAppearance(null, State.currentURL);
-                    State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
-                });
+                onTabContextChange(tabId, url);
+                State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
             } else {
                 setDefaultAppearance();
             }
@@ -892,22 +1022,7 @@ function attachEvents() {
                 }
 
                 if (status === "complete") {
-                    chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
-                        if (isCanonicalURLRelevant(canonicalURL)) {
-                            State = updateCurrentURL(State, canonicalURL);
-                        } else {
-                            State = updateCurrentURL(State, url);
-                        }
-
-                        const captureDomain = State.currentURL.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-                        if (captureDomain) {
-                            const [, domain] = captureDomain;
-                            State = updateCurrentDomain(State, domain);
-                        }
-                        updateAutoSaveStatus(State.currentURL, State.domain);
-                        updatePriceUpdateStatus(State.currentURL, State.domain);
-                        updateExtensionAppearance(null, State.currentURL);
-                    });
+                    onTabContextChange(tabId, url);
                 }
             }
         } else {

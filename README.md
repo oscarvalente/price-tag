@@ -70,16 +70,18 @@ but there's a lot more, and more to come.
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
      * allow price update if item is being tracked (visiting its page) ✅
      * use doc title as favicon title ✅
-     * BUG (refine usage): similar items warning - give option "Same item. Ask me later for items of this site" ❗❗
+     * Refine usage: similar items warning - give option "Same item. Ask me later for items of this site" ❗❗
         _(Edge case Testing example: continente.pt) - When Product Id is a query parameter; save same Product after adding other irrelevant query parameters_   
         * choosing this option even though user says "it's the same item" don't use just path for this site future items ❗❗
         * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ❗❗
-     * BUG: protect from sites that give canonical a wrong use - ask user which URL `(wip)` ❗❗
+     * Refine usage: protect from sites that give canonical a wrong use - ask user which URL `(wip)` ❗❗
         * only use canonical if it's URL with path ✅
-        * ask right before saving what user wants to do with that site: ❗❗
-            "Use URL recommended by site. Remember this option", "Use recommended URL, just this time", "No, use my current URL instead" 
+        * ask right before saving what user wants to do with that site: `(wip)` ❗❗
+            "Use URL recommended by site. Remember this option", "Use recommended URL, just this time", "No, use my current URL instead. Remember this option" 
      * add cancel button to similar item warning modal ❗
+     * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
+     * tech debt: record action doesn't deal with domain and url; state manages them ❗
      * allow naming item ❗
         * toggle on
      * show if item is being tracked in popup.js
