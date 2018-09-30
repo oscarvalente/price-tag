@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.16.1
+* Canonical must be a URL with path to be used
+
 # v0.16.0
 * When user visits a tracked item page, allow price update when there are changes compared to the saved price-tag
 

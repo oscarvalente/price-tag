@@ -35,7 +35,7 @@ const MATCHES = {
     URL: /^https?:\/\/([\w-]+\.)+[\w-]+\w(\/[\w-=.]+)+\/?(\?([\w]+=?[\w-%!@()\\["#\]]+&?)*)?/,
     CAPTURE: {
         DOMAIN_IN_URL: /https?:\/\/([\w.]+)\/*/,
-        HOST_AND_PATH: /^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,
+        HOSTNAME_AND_PATH: /^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,
     }
 };
 
@@ -614,6 +614,10 @@ function createHTMLTemplate(html) {
     return template.content;
 }
 
+function isCanonicalURLRelevant(canonical) {
+    return canonical && matchesHostnameAndPath(canonical);
+}
+
 function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
     return tsA - tsB;
 }
@@ -624,6 +628,10 @@ function matchesDomain(string) {
 
 function matchesHostname(string) {
     return MATCHES.HOSTNAME.test(string);
+}
+
+function matchesHostnameAndPath(string) {
+    return MATCHES.CAPTURE.HOSTNAME_AND_PATH.test(string);
 }
 
 function matchesURL(string) {
@@ -709,7 +717,7 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
 }
 
 function captureHostAndPathFromURL(url) {
-    const captureHostAndPath = url.match(MATCHES.CAPTURE.HOST_AND_PATH);
+    const captureHostAndPath = url.match(MATCHES.CAPTURE.HOSTNAME_AND_PATH);
     let hostAndPath = null;
     if (captureHostAndPath) {
         [, hostAndPath] = captureHostAndPath;
@@ -852,7 +860,7 @@ function attachEvents() {
         chrome.tabs.getSelected(windowId, ({url}) => {
             if (url.startsWith("http")) {
                 chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
-                    if (canonicalURL) {
+                    if (isCanonicalURLRelevant(canonicalURL)) {
                         State = updateCurrentURL(State, canonicalURL);
                     } else {
                         State = updateCurrentURL(State, url);
@@ -885,7 +893,7 @@ function attachEvents() {
 
                 if (status === "complete") {
                     chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
-                        if (canonicalURL) {
+                        if (isCanonicalURLRelevant(canonicalURL)) {
                             State = updateCurrentURL(State, canonicalURL);
                         } else {
                             State = updateCurrentURL(State, url);
@@ -1013,10 +1021,14 @@ function attachEvents() {
                     chrome.storage.local.get([State.domain], result => {
                         const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
                         const item = domainItems[State.currentURL];
-                        chrome.tabs.sendMessage(id, {
-                            type: "PRICE_UPDATE.CHECK_STATUS",
-                            payload: {selection: State.selection}
-                        }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
+                        if (item) {
+                            chrome.tabs.sendMessage(id, {
+                                type: "PRICE_UPDATE.CHECK_STATUS",
+                                payload: {selection: State.selection}
+                            }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
+                        } else {
+                            sendResponse(false);
+                        }
                     });
                     return true;
                 case "PRICE_UPDATE.ATTEMPT":
