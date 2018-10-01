@@ -17,7 +17,6 @@ function bootstrap() {
 }
 
 function onPopupStatus({state}) {
-    // debugger;
     const {recordActive, autoSaveEnabled} = state;
     updateRecordButton(recordActive);
     if (autoSaveEnabled) {

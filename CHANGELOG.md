@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.17.0
+* Give the option to confirm if canonical is of good use or not
+
 # v0.16.1
 * Canonical must be a URL with path to be used
 

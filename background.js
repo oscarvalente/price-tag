@@ -391,8 +391,9 @@ function updateNotificationsItem(state, notificationId, notificationState) {
 function canDisplayURLConfirmation(state, domain, callback) {
     chrome.storage.local.get([domain], result => {
         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-        callback(domainState._canUseCanonical === undefined && !!state.canonicalURL &&
-            State.canonicalURL !== State.browserURL);
+        const isUseCanonicalPrefUnset = !domainState || domainState._canUseCanonical === undefined;
+        callback(isUseCanonicalPrefUnset && !!state.canonicalURL &&
+            state.canonicalURL !== state.browserURL);
     });
 }
 
@@ -777,6 +778,7 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
         setDefaultAppearance();
         State = disableCurrentPageTracked(State);
     } else if (!forcePageTrackingTo) {
+        // TODO: domain is always passed into this function - remove this if logic (keep just the "else")
         if (!currentDomain) {
             chrome.storage.local.get(null, result => {
                 const storageState = filterAllTrackedItems(result);
@@ -797,6 +799,9 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                 }
             });
         } else {
+            // TODO: Fix bug - if domain has (_isPathEnoughToTrack === true) then ALSO try to use the path only URL
+            // TODO: (cont.) However the currentURL needs to be used too because user may have chosen the path is enough
+            // TODO: not on the first item to be tracked in this domain
             chrome.storage.local.get([currentDomain], domainResult => {
                 const domainState = JSON.parse(domainResult);
                 const item = domainState[currentUrl];
@@ -864,9 +869,9 @@ function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
         message: `${domain} says that a more accurate URL for this item would be:\n` +
             `${canonicalURL}\n` +
             "If this is correct, we recommend you to follow it.\n" +
-            "However you can still opt to choose following the current browser one:\n" +
+            "However you can still opt to choose following the current browser URL:\n" +
             `${browserURL}\n\n` +
-            "Please help us helping you by choosing one of the following options:",
+            "Since your choice will affect the way items are tracked futurely,\nplease help us helping you by choosing carefully one of the following options:",
         buttons: ["Use recommended URL. Remember this option for this site", "Use recommended URL, but just this time", "It's not correct. Use the current browser URL instead"]
     };
 }
@@ -1088,24 +1093,50 @@ function attachEvents() {
                     if (State.autoSaveEnabled) {
                         const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
 
-                        checkForURLSimilarity(id, domain, stateUrl, (isToSave, autoSaveStatus) => {
-                            if (isToSave) {
-                                createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                                    chrome.tabs.sendMessage(id, {
-                                        type: "PRICE_TAG.HIGHLIGHT.STOP",
-                                        payload: {selection, originalBackgroundColor}
-                                    }, onSimilarElementHighlight);
+                        canDisplayURLConfirmation(State, domain, canDisplay => {
+                            if (canDisplay) {
+                                onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
+                                    if (canSave) {
+                                        const url = useCaninocal ? State.canonicalURL : State.browserURL;
 
-                                    updateExtensionAppearance(domain, stateUrl, true);
-                                    State = disableAutoSave(State);
+                                        checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
+                                            if (isToSave) {
+                                                createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                                                    chrome.tabs.sendMessage(id, {
+                                                        type: "PRICE_TAG.HIGHLIGHT.STOP",
+                                                        payload: {selection, originalBackgroundColor}
+                                                    }, onSimilarElementHighlight);
 
-                                    sendResponse(false);
+                                                    updateExtensionAppearance(domain, url, true);
+                                                    State = disableAutoSave(State);
+
+                                                    sendResponse(false);
+                                                });
+                                            } else {
+                                                // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                                                if (!autoSaveStatus) {
+                                                    State = disableAutoSave(State);
+                                                }
+                                            }
+                                        });
+                                    }
                                 });
                             } else {
-                                // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
-                                if (!autoSaveStatus) {
-                                    State = disableAutoSave(State);
-                                }
+                                checkForURLSimilarity(id, domain, stateUrl, isToSave => {
+                                    if (isToSave) {
+                                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                                            chrome.tabs.sendMessage(id, {
+                                                type: "PRICE_TAG.HIGHLIGHT.STOP",
+                                                payload: {selection, originalBackgroundColor}
+                                            }, onSimilarElementHighlight);
+
+                                            updateExtensionAppearance(domain, stateUrl, true);
+                                            State = disableAutoSave(State);
+
+                                            sendResponse(false);
+                                        });
+                                    }
+                                });
                             }
                         });
 

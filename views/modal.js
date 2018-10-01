@@ -1,7 +1,6 @@
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case "CONFIRMATION_DISPLAY.LOAD":
-            debugger;
             const {documentTitle, title, message, buttons} = payload;
 
             document.querySelector("#document-title").innerText = documentTitle;
