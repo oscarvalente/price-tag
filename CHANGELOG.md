@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.17.1
+* Improve extension appearance status calculation based on the domain
+
 # v0.17.0
 * Give the option to confirm if canonical is of good use or not
 

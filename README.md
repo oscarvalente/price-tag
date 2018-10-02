@@ -79,7 +79,7 @@ but there's a lot more, and more to come.
         * ask right before saving what user wants to do with that site: ✅
             "Use URL recommended by site. Remember this option", "Use recommended URL, just this time", "No, use my current URL instead. Remember this option"
      * BUG: extension appearance not updated when entering similar URL of domain whose path is enough to track ❗❗❗
-     * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ❗❗
+     * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗

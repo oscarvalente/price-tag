@@ -735,6 +735,10 @@ function matchesURL(string) {
     return MATCHES.URL.test(string);
 }
 
+function parseDomainState(result, domain) {
+    return result && result[domain] && JSON.parse(result[domain]) || null;
+}
+
 function setupTrackingPolling() {
     checkForPriceChanges();
     // TODO: remove settimeout (for test purposes)
@@ -778,32 +782,12 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
         setDefaultAppearance();
         State = disableCurrentPageTracked(State);
     } else if (!forcePageTrackingTo) {
-        // TODO: domain is always passed into this function - remove this if logic (keep just the "else")
-        if (!currentDomain) {
-            chrome.storage.local.get(null, result => {
-                const storageState = filterAllTrackedItems(result);
-                let wasFound = false;
-                for (let domain in storageState) {
-                    const domainState = storageState[domain];
-                    const item = domainState[currentUrl];
-                    if (item && isWatched(item)) {
-                        setTrackedItemAppearance();
-                        State = enableCurrentPageTracked(State);
-                        wasFound = true;
-                        break;
-                    }
-                }
-                if (!wasFound) {
-                    setDefaultAppearance();
-                    State = disableCurrentPageTracked(State);
-                }
-            });
-        } else {
-            // TODO: Fix bug - if domain has (_isPathEnoughToTrack === true) then ALSO try to use the path only URL
-            // TODO: (cont.) However the currentURL needs to be used too because user may have chosen the path is enough
-            // TODO: not on the first item to be tracked in this domain
-            chrome.storage.local.get([currentDomain], domainResult => {
-                const domainState = JSON.parse(domainResult);
+        // TODO: Fix bug - if domain has (_isPathEnoughToTrack === true) then ALSO try to use the path only URL
+        // TODO: (cont.) However the currentURL needs to be used too because user may have chosen the path is enough
+        // TODO: not on the first item to be tracked in this domain
+        chrome.storage.local.get([currentDomain], result => {
+            const domainState = parseDomainState(result, currentDomain);
+            if (domainState) {
                 const item = domainState[currentUrl];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
@@ -812,8 +796,11 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
                     setDefaultAppearance();
                     State = disableCurrentPageTracked(State);
                 }
-            });
-        }
+            } else {
+                setDefaultAppearance();
+                State = disableCurrentPageTracked(State);
+            }
+        });
     }
 }
 
@@ -978,7 +965,7 @@ function onTabContextChange(tabId, url) {
 
                 updateAutoSaveStatus(State.currentURL, State.domain);
                 updatePriceUpdateStatus(State.currentURL, State.domain);
-                updateExtensionAppearance(null, State.currentURL);
+                updateExtensionAppearance(State.domain, State.currentURL);
             } else {
                 chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
                     if (isCanonicalURLRelevant(canonicalURL)) {
@@ -993,7 +980,7 @@ function onTabContextChange(tabId, url) {
 
                     updateAutoSaveStatus(State.currentURL, State.domain);
                     updatePriceUpdateStatus(State.currentURL, State.domain);
-                    updateExtensionAppearance(null, State.currentURL);
+                    updateExtensionAppearance(State.domain, State.currentURL);
                 });
             }
 
