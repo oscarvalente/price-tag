@@ -82,6 +82,7 @@ but there's a lot more, and more to come.
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
      * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗❗
+     * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
