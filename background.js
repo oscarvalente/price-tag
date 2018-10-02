@@ -716,6 +716,20 @@ function isCanonicalURLRelevant(canonical) {
     return canonical && matchesHostnameAndPath(canonical);
 }
 
+function hasChangedURLPath(state, newBrowserURL) {
+    if (!state.browserURL) {
+        return true;
+    }
+
+    const previousProtocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(state.browserURL);
+    const currentProtocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(newBrowserURL);
+    return previousProtocolHostAndPathFromURL !== currentProtocolHostAndPathFromURL;
+}
+
+function wasCanonicalUpdated(state, canonicalURL) {
+    return !state.canonicalURL || (state.canonicalURL !== canonicalURL);
+}
+
 function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
     return tsA - tsB;
 }
@@ -827,7 +841,7 @@ function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
     const currentHostAndPath = captureHostAndPathFromURL(currentURL);
     let foundOne = false;
     for (let url in domainState) {
-        if (matchesURL(url) && domainState.hasOwnProperty(url)) {
+        if (domainState.hasOwnProperty(url) && matchesURL(url)) {
             if (isWatched(domainState[url])) {
                 if (currentURL === url) {
                     //    if they're exactly the same
@@ -986,9 +1000,15 @@ function onTabContextChange(tabId, url) {
                 updateExtensionAppearance(State.domain, State.currentURL);
             } else {
                 chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                    // First thing to do, check:
+                    // If user navigated + if canonical was updated (compared to the previously) + if it's relevant
+                    const canUseCanonical = hasChangedURLPath(State, url) &&
+                        wasCanonicalUpdated(State, canonicalURL) &&
+                        isCanonicalURLRelevant(canonicalURL);
+
                     State = updateBrowserURL(State, url);
 
-                    if (isCanonicalURLRelevant(canonicalURL)) {
+                    if (canUseCanonical) {
                         State = updateCurrentURL(State, canonicalURL);
                         State = updateCanonicalURL(State, canonicalURL);
                     } else {
