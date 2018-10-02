@@ -74,13 +74,13 @@ but there's a lot more, and more to come.
         _(Edge case Testing example: continente.pt) - When Product Id is a query parameter; save same Product after adding other irrelevant query parameters_   
         * choosing this option even though user says "it's the same item" don't use just path for this site future items ❗❗
         * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ❗❗
-     * Refine usage: protect from sites that give canonical a wrong use - ask user which URL `(wip)` ❗❗
+     * Refine usage: protect from sites that give canonical a wrong use - ask user which URL ✅
         * only use canonical if it's URL with path ✅
         * ask right before saving what user wants to do with that site: ✅
             "Use URL recommended by site. Remember this option", "Use recommended URL, just this time", "No, use my current URL instead. Remember this option"
      * BUG: extension appearance not updated when entering similar URL of domain whose path is enough to track ✅
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
-     * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ❗❗❗
+     * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
      * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗❗
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗
