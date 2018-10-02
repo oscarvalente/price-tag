@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.17.2
+* Update current URL if canonical usage can't be applied and if current path is enough to track the item in current website
+
 # v0.17.1
 * Improve extension appearance status calculation based on the domain
 

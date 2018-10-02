@@ -38,6 +38,7 @@ const MATCHES = {
     CAPTURE: {
         DOMAIN_IN_URL: /https?:\/\/([\w.]+)\/*/,
         HOSTNAME_AND_PATH: /^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,
+        PROTOCOL_HOSTNAME_AND_PATH: /^(https?:\/\/(?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/
     }
 };
 
@@ -774,7 +775,7 @@ function updatePriceUpdateStatus(url, domain) {
     });
 }
 
-function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingTo) {
+function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
         State = enableCurrentPageTracked(State);
@@ -788,7 +789,7 @@ function updateExtensionAppearance(currentDomain, currentUrl, forcePageTrackingT
         chrome.storage.local.get([currentDomain], result => {
             const domainState = parseDomainState(result, currentDomain);
             if (domainState) {
-                const item = domainState[currentUrl];
+                const item = domainState[currentURL];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
                     State = enableCurrentPageTracked(State);
@@ -811,6 +812,15 @@ function captureHostAndPathFromURL(url) {
         [, hostAndPath] = captureHostAndPath;
     }
     return hostAndPath;
+}
+
+function captureProtocolHostAndPathFromURL(url) {
+    const captureProtocolHostAndPath = url.match(MATCHES.CAPTURE.PROTOCOL_HOSTNAME_AND_PATH);
+    let protocolHostAndPath = null;
+    if (captureProtocolHostAndPath) {
+        [, protocolHostAndPath] = captureProtocolHostAndPath;
+    }
+    return protocolHostAndPath;
 }
 
 function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
@@ -959,31 +969,45 @@ function onTabContextChange(tabId, url) {
             const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
             // check if user has already a preference to use the canonical URL if available
             if (domainState && domainState._canUseCanonical === false) {
-                State = updateCurrentURL(State, url);
                 State = updateCanonicalURL(State, null);
+                State = updateCurrentURL(State, url);
                 State = updateBrowserURL(State, url);
+
+                if (domainState._isPathEnoughToTrack === true) {
+                    const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
+                    if (protocolHostAndPathFromURL) {
+                        State = updateCurrentURL(State, protocolHostAndPathFromURL);
+                        State = updateBrowserURL(State, protocolHostAndPathFromURL);
+                    }
+                }
 
                 updateAutoSaveStatus(State.currentURL, State.domain);
                 updatePriceUpdateStatus(State.currentURL, State.domain);
                 updateExtensionAppearance(State.domain, State.currentURL);
             } else {
                 chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
+                    State = updateBrowserURL(State, url);
+
                     if (isCanonicalURLRelevant(canonicalURL)) {
                         State = updateCurrentURL(State, canonicalURL);
                         State = updateCanonicalURL(State, canonicalURL);
                     } else {
-                        State = updateCurrentURL(State, url);
                         State = updateCanonicalURL(State, null);
+                        State = updateCurrentURL(State, url);
+
+                        if (domainState && domainState._isPathEnoughToTrack === true) {
+                            const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
+                            if (protocolHostAndPathFromURL) {
+                                State = updateCurrentURL(State, protocolHostAndPathFromURL);
+                                State = updateBrowserURL(State, protocolHostAndPathFromURL);
+                            }
+                        }
                     }
-
-                    State = updateBrowserURL(State, url);
-
                     updateAutoSaveStatus(State.currentURL, State.domain);
                     updatePriceUpdateStatus(State.currentURL, State.domain);
                     updateExtensionAppearance(State.domain, State.currentURL);
                 });
             }
-
         });
     }
 }
