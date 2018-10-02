@@ -39,7 +39,7 @@
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    height: 65px;
+    height: 75px;
     padding: 6px 0;
 }
 
@@ -48,8 +48,9 @@
     border: 0;
     color: #FFFFFF;
     font-variant: all-petite-caps;
-    height: 50px;
+    height: 70px;
     width: 155px;
+    border-radius: 4px;
 }
 
 #modal .button:not(:last-child) {

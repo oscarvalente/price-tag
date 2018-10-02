@@ -870,7 +870,11 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
             "is pretty similar to\n" +
             `${similarURL}\n\n` +
             "Please help us helping you by choosing one of the following options:",
-        buttons: ["It's not, save it! Remember this option for this site.", "Indeed the same item. Don't save!", "For now save this item. Ask me later!"]
+        buttons: [
+            "It's not, save it! Remember this option for this site.",
+            "Indeed the same item. Don't save! Remember this option for this site. (Use just URL path for accessing items)",
+            "For now save this item. Ask me later!"
+        ]
     };
 }
 

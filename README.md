@@ -73,7 +73,7 @@ but there's a lot more, and more to come.
      * Refine usage: similar items warning - give option "Same item. Ask me later for items of this site" ❗❗
         _(Edge case Testing example: continente.pt) - When Product Id is a query parameter; save same Product after adding other irrelevant query parameters_   
         * choosing this option even though user says "it's the same item" don't use just path for this site future items ❗❗
-        * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ❗❗
+        * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ✅
      * Refine usage: protect from sites that give canonical a wrong use - ask user which URL ✅
         * only use canonical if it's URL with path ✅
         * ask right before saving what user wants to do with that site: ✅
@@ -81,7 +81,9 @@ but there's a lot more, and more to come.
      * BUG: extension appearance not updated when entering similar URL of domain whose path is enough to track ✅
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
-     * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗❗
+     * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh ❗❗❗
+     * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗
+     * Allow HTML modal messages ❗
      * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗

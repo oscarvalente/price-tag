@@ -1,5 +1,10 @@
 ### CHANGELOG
 
+# v0.17.4
+* Refine message when displaying button message that toggles path is enough
+* Minor styling in modal buttons
+* Update README.md with new tab full refresh bug
+
 # v0.17.3
 * Use canonical only if applicable and if user navigated to a different page
 
