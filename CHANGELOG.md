@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.17.3
+* Use canonical only if applicable and if user navigated to a different page
+
 # v0.17.2
 * Update current URL if canonical usage can't be applied and if current path is enough to track the item in current website
 
