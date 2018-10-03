@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.0
+* Add button not to save item and ask later again
+
 # v0.17.4
 * Refine message when displaying button message that toggles path is enough
 * Minor styling in modal buttons

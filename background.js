@@ -872,8 +872,9 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
             "Please help us helping you by choosing one of the following options:",
         buttons: [
             "It's not, save it! Remember this option for this site.",
+            "Fow now don't save. Ask me again next time!",
             "Indeed the same item. Don't save! Remember this option for this site. (Use just URL path for accessing items)",
-            "For now save this item. Ask me later!"
+            "For now save this item. Ask me again next time!"
         ]
     };
 }
@@ -940,12 +941,15 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
                                                 callback(true);
                                                 break;
                                             case 1:
+                                                callback(false, true);
+                                                break;
+                                            case 2:
                                                 // said No: same item (path is enough for this site items)
                                                 domainState._isPathEnoughToTrack = true;
                                                 chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
                                                 callback(false, false);
                                                 break;
-                                            case 2:
+                                            case 3:
                                                 // said Save this but for others Ask me later
                                                 callback(true);
                                                 break;
