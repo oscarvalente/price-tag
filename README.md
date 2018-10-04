@@ -82,8 +82,8 @@ but there's a lot more, and more to come.
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
      * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh `(wip)` ❗❗❗
-     * Ask user to do full page refresh in sites that can use canonical URL ❗❗❗
      * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗
+     * Add overlay shadow behind modal
      * Allow HTML modal messages ❗
      * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to similar item warning modal ❗

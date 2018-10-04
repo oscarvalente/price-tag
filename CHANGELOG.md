@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.1
+* Always fetch canonical separately to prevent bug
+
 # v0.18.0
 * Add button not to save item and ask later again
 

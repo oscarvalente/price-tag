@@ -27,16 +27,6 @@ function getFaviconPath() {
     return null;
 }
 
-function getCanonicalPath() {
-    const nodeList = document.getElementsByTagName("link");
-    for (let node of nodeList) {
-        if (node.getAttribute("rel") === "canonical") {
-            return node.getAttribute("href");
-        }
-    }
-    return null;
-}
-
 function getFaviconURL() {
     const faviconPath = getFaviconPath();
     if (faviconPath) {
@@ -98,18 +88,6 @@ function displaySaveConfirmation(elementId, sendResponse) {
     sendResponse({status: -1});
 
     return false;
-}
-
-function getPerformanceNavigationTimingInterface() {
-    const perfEntries = performance.getEntriesByType("navigation");
-
-    for (let perfEntry of perfEntries) {
-        if (perfEntry instanceof PerformanceNavigationTiming) {
-            return perfEntry;
-        }
-    }
-
-    return null;
 }
 
 chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
@@ -234,16 +212,7 @@ chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse
                 confirmationModal.remove();
             }
             break;
-        case "METADATA.GET_CANONICAL":
-            sendResponse(getCanonicalPath());
-            break;
-        case "METADATA.NAVIGATION_TYPE":
-            const performanceNavigationTiming = getPerformanceNavigationTimingInterface();
-            if (performanceNavigationTiming) {
-                sendResponse(performanceNavigationTiming.type);
-            } else {
-                sendResponse(null);
-            }
+        default:
             break;
     }
 });

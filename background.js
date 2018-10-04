@@ -716,16 +716,6 @@ function isCanonicalURLRelevant(canonical) {
     return canonical && matchesHostnameAndPath(canonical);
 }
 
-function hasChangedURLPath(state, newBrowserURL) {
-    if (!state.browserURL) {
-        return true;
-    }
-
-    const previousProtocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(state.browserURL);
-    const currentProtocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(newBrowserURL);
-    return previousProtocolHostAndPathFromURL !== currentProtocolHostAndPathFromURL;
-}
-
 function wasCanonicalUpdated(state, canonicalURL) {
     return !state.canonicalURL || (state.canonicalURL !== canonicalURL);
 }
@@ -982,7 +972,23 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     });
 }
 
-function onTabContextChange(tabId, url, isReload = false) {
+function getCanonicalPathFromSource(source) {
+    const canonicalElement = source.querySelector("link[rel=\"canonical\"]");
+    return canonicalElement && canonicalElement.getAttribute("href");
+}
+
+function onXHR(url, callback) {
+    const request = new XMLHttpRequest();
+    request.onload = function () {
+        const template = createHTMLTemplate(this.response);
+        callback(template);
+    };
+    request.open("GET", url);
+    request.send();
+
+}
+
+function onTabContextChange(tabId, url) {
     const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
     if (captureDomain) {
         const [, domain] = captureDomain;
@@ -1007,21 +1013,13 @@ function onTabContextChange(tabId, url, isReload = false) {
                 updatePriceUpdateStatus(State.currentURL, State.domain);
                 updateExtensionAppearance(State.domain, State.currentURL);
             } else {
-                chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
-                    // First thing to do, check:
-                    // If user navigated + if canonical was updated (compared to the previously) + if it's relevant
-                    const hasChangedCanonicalContext = hasChangedURLPath(State, url) && wasCanonicalUpdated(State, canonicalURL);
-                    const isPageRefresh = isReload && wasCanonicalUpdated(State, canonicalURL);
+                // First thing to do, check:
+                // If canonical was updated (compared to the previously) + if it's relevant
+                State = updateBrowserURL(State, url);
 
-                    // FIXME: como "completed" é triggered 2x: o canonical na segunda (ERRADAMENTE) é igual,
-                    // FIXME: logo não se consegue usá-lo e actualiza (ERRADAMENTE) o url para o browserURL
-                    // FIXME: a seguir pensa que não está a seguir o URL que na verdade está
-                    // FIX: gerir 2 "completed" seguidos
-                    const canUseCanonical =
-                        (hasChangedCanonicalContext || isPageRefresh) &&
-                        isCanonicalURLRelevant(canonicalURL);
-
-                    State = updateBrowserURL(State, url);
+                onXHR(url, template => {
+                    const canonicalURL = getCanonicalPathFromSource(template);
+                    const canUseCanonical = isCanonicalURLRelevant(canonicalURL);
 
                     if (canUseCanonical) {
                         State = updateCurrentURL(State, canonicalURL);
@@ -1071,15 +1069,6 @@ function attachEvents() {
                     State = updateFaviconURLMapItem(State, tabId, favIconUrl);
                     State = updateFaviconURL(State, favIconUrl);
                 }
-
-                /*if (status === "complete") {
-                    chrome.tabs.sendMessage(tabId, {type: "METADATA.NAVIGATION_TYPE"}, navigationType => {
-                        const isReload = navigationType === "reload";
-                        if (url !== State.browserURL || isReload) {
-                            onTabContextChange(tabId, url, isReload);
-                        }
-                    });
-                }*/
             }
         } else {
             setDefaultAppearance();
@@ -1090,18 +1079,16 @@ function attachEvents() {
         if (frameId === 0) {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 if (tabs.length > 0) {
-                    debugger;
                     const [{id, url}] = tabs;
-                    onTabContextChange(id, url, true);
+                    onTabContextChange(id, url);
                 }
             });
         }
     });
 
-    chrome.webNavigation.onHistoryStateUpdated.addListener(({transitionType}) => {
+    chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             if (tabs.length > 0) {
-                debugger;
                 const [{id: tabId, url}] = tabs;
                 if (url !== undefined && url !== State.browserURL) {
                     onTabContextChange(tabId, url);
