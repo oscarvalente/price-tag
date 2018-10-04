@@ -716,10 +716,6 @@ function isCanonicalURLRelevant(canonical) {
     return canonical && matchesHostnameAndPath(canonical);
 }
 
-function wasCanonicalUpdated(state, canonicalURL) {
-    return !state.canonicalURL || (state.canonicalURL !== canonicalURL);
-}
-
 function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
     return tsA - tsB;
 }

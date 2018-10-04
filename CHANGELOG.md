@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.2
+* Remove unused function
+
 # v0.18.1
 * Always fetch canonical separately to prevent bug
 

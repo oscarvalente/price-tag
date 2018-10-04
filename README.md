@@ -39,7 +39,7 @@ but there's a lot more, and more to come.
         * by domain, time
         * by domain, price
     * back button always visible ❗
-    * BUG: after delete all items doesnt display 'no tracked items' ❗
+    * BUG: after delete all items doesn't display 'no tracked items' ❗
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
@@ -81,7 +81,7 @@ but there's a lot more, and more to come.
      * BUG: extension appearance not updated when entering similar URL of domain whose path is enough to track ✅
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
-     * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh `(wip)` ❗❗❗
+     * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh? ✅
      * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗
      * Add overlay shadow behind modal
      * Allow HTML modal messages ❗
