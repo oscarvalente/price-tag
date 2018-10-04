@@ -8,6 +8,7 @@
         "activeTab",
         "tabs",
         "notifications",
+        "webNavigation",
         "http://*/",
         "https://*/"
     ],

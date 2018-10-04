@@ -872,7 +872,7 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
             "Please help us helping you by choosing one of the following options:",
         buttons: [
             "It's not, save it! Remember this option for this site.",
-            "Fow now don't save. Ask me again next time!",
+            "Don't save. Ask me again for items of this site!",
             "Indeed the same item. Don't save! Remember this option for this site. (Use just URL path for accessing items)",
             "For now save this item. Ask me again next time!"
         ]
@@ -982,7 +982,7 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     });
 }
 
-function onTabContextChange(tabId, url) {
+function onTabContextChange(tabId, url, isReload = false) {
     const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
     if (captureDomain) {
         const [, domain] = captureDomain;
@@ -1010,8 +1010,15 @@ function onTabContextChange(tabId, url) {
                 chrome.tabs.sendMessage(tabId, {type: "METADATA.GET_CANONICAL"}, canonicalURL => {
                     // First thing to do, check:
                     // If user navigated + if canonical was updated (compared to the previously) + if it's relevant
-                    const canUseCanonical = hasChangedURLPath(State, url) &&
-                        wasCanonicalUpdated(State, canonicalURL) &&
+                    const hasChangedCanonicalContext = hasChangedURLPath(State, url) && wasCanonicalUpdated(State, canonicalURL);
+                    const isPageRefresh = isReload && wasCanonicalUpdated(State, canonicalURL);
+
+                    // FIXME: como "completed" é triggered 2x: o canonical na segunda (ERRADAMENTE) é igual,
+                    // FIXME: logo não se consegue usá-lo e actualiza (ERRADAMENTE) o url para o browserURL
+                    // FIXME: a seguir pensa que não está a seguir o URL que na verdade está
+                    // FIX: gerir 2 "completed" seguidos
+                    const canUseCanonical =
+                        (hasChangedCanonicalContext || isPageRefresh) &&
                         isCanonicalURLRelevant(canonicalURL);
 
                     State = updateBrowserURL(State, url);
@@ -1046,11 +1053,11 @@ function attachEvents() {
         console.log("Price tag installed.");
     });
 
-    chrome.tabs.onActivated.addListener(({tabId, windowId}) => {
-        chrome.tabs.getSelected(windowId, ({url}) => {
+    chrome.tabs.onActivated.addListener(() => {
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
             if (url.startsWith("http")) {
-                onTabContextChange(tabId, url);
-                State = updateFaviconURL(State, State._faviconURLMap[tabId] || null);
+                onTabContextChange(id, url);
+                State = updateFaviconURL(State, State._faviconURLMap[id] || null);
             } else {
                 setDefaultAppearance();
             }
@@ -1065,13 +1072,42 @@ function attachEvents() {
                     State = updateFaviconURL(State, favIconUrl);
                 }
 
-                if (status === "complete") {
-                    onTabContextChange(tabId, url);
-                }
+                /*if (status === "complete") {
+                    chrome.tabs.sendMessage(tabId, {type: "METADATA.NAVIGATION_TYPE"}, navigationType => {
+                        const isReload = navigationType === "reload";
+                        if (url !== State.browserURL || isReload) {
+                            onTabContextChange(tabId, url, isReload);
+                        }
+                    });
+                }*/
             }
         } else {
             setDefaultAppearance();
         }
+    });
+
+    chrome.webNavigation.onCompleted.addListener(({frameId}) => {
+        if (frameId === 0) {
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                if (tabs.length > 0) {
+                    debugger;
+                    const [{id, url}] = tabs;
+                    onTabContextChange(id, url, true);
+                }
+            });
+        }
+    });
+
+    chrome.webNavigation.onHistoryStateUpdated.addListener(({transitionType}) => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (tabs.length > 0) {
+                debugger;
+                const [{id: tabId, url}] = tabs;
+                if (url !== undefined && url !== State.browserURL) {
+                    onTabContextChange(tabId, url);
+                }
+            }
+        });
     });
 
     chrome.runtime.onMessage.addListener(

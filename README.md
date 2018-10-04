@@ -70,7 +70,7 @@ but there's a lot more, and more to come.
      * ~BUG: review async xhr pages (www.zara.com)~ ⚠️
      * allow price update if item is being tracked (visiting its page) ✅
      * use doc title as favicon title ✅
-     * Refine usage: similar items warning - give option "Same item. Ask me later for items of this site" ❗❗
+     * Refine usage: similar items warning - give option "Same item. Ask me later for items of this site" ✅
         _(Edge case Testing example: continente.pt) - When Product Id is a query parameter; save same Product after adding other irrelevant query parameters_   
         * choosing this option even though user says "it's the same item" don't use just path for this site future items ✅
         * for existing option "it's not the same item" say that if chose to he will be following - add "use only just path for items in this site" ✅
@@ -81,7 +81,8 @@ but there's a lot more, and more to come.
      * BUG: extension appearance not updated when entering similar URL of domain whose path is enough to track ✅
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
-     * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh ❗❗❗
+     * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh `(wip)` ❗❗❗
+     * Ask user to do full page refresh in sites that can use canonical URL ❗❗❗
      * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗
      * Allow HTML modal messages ❗
      * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
@@ -93,6 +94,11 @@ but there's a lot more, and more to come.
         * toggle on
      * show if item is being tracked in popup.js
  * save confirmation modal similar URLs message display as links
+ * pause button
+ * wipe state options
+    * wipe site-related preferences
+    * wipe all sites preferences
+    * wipe all data button
  * auto-save add highlight border
  * keep tracked items object in state
  * saved money info (calc icon)

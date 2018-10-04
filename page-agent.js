@@ -100,6 +100,18 @@ function displaySaveConfirmation(elementId, sendResponse) {
     return false;
 }
 
+function getPerformanceNavigationTimingInterface() {
+    const perfEntries = performance.getEntriesByType("navigation");
+
+    for (let perfEntry of perfEntries) {
+        if (perfEntry instanceof PerformanceNavigationTiming) {
+            return perfEntry;
+        }
+    }
+
+    return null;
+}
+
 chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
     const {selection} = payload;
     switch (type) {
@@ -224,6 +236,14 @@ chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse
             break;
         case "METADATA.GET_CANONICAL":
             sendResponse(getCanonicalPath());
+            break;
+        case "METADATA.NAVIGATION_TYPE":
+            const performanceNavigationTiming = getPerformanceNavigationTimingInterface();
+            if (performanceNavigationTiming) {
+                sendResponse(performanceNavigationTiming.type);
+            } else {
+                sendResponse(null);
+            }
             break;
     }
 });
