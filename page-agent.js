@@ -102,8 +102,7 @@ chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse
                 event.preventDefault();
                 event.stopPropagation();
                 const {target, path} = event;
-                const {url: payloadURL} = payload;
-                const url = getCanonicalPath() || payloadURL;
+                const {url} = payload;
                 const {textContent} = target;
                 const selection = buildElementSelection(path, 3);
                 let price = null;

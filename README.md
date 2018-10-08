@@ -82,7 +82,7 @@ but there's a lot more, and more to come.
      * tech debt: extension appearance update does complex logic when domain is not passed - no need, we always have the current domain ✅
      * BUG: if the URL changes and THERE IS NO canonical update then don't trust current canonical ✅
      * BUG: On full page refresh it doesn't seem to use canonical but it should - listen to tab full refresh? ✅
-     * BUG: After delete item highlights do not happen and cursor isn't pointer ❗❗
+     * ~BUG: After delete item highlights do not happen and cursor isn't pointer~ ⚠️
      * Add overlay shadow behind modal
      * Allow HTML modal messages ❗
      * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
@@ -138,3 +138,7 @@ but there's a lot more, and more to come.
  
  #### Incompatible websites (so far)
  * Zara - www.zara.com
+
+#### External dependency issues ⚠️
+* BUG: After delete item highlights do not happen and cursor isn't pointer
+    * Chrome element mouseover is bugged - proof: inspection is bugged in DevTools️ only when behaviour is reproduced

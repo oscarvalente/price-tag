@@ -104,6 +104,10 @@ body {
     height: 14px;
 }
 
+.item-container .item-delete {
+    cursor: pointer;
+}
+
 #back-btn {
     margin: 10px 0 0 8px;
     display: inline-block;

@@ -1,13 +1,19 @@
 let recordButton;
+let recordButtonIcon;
 let autoSaveButton;
+let autoSaveButtonIcon;
 let priceUpdateButton;
+let priceUpdateButtonIcon;
 
 function bootstrap() {
     chrome.runtime.sendMessage({type: "POPUP.STATUS"}, onPopupStatus);
 
     recordButton = document.getElementById("record-btn");
+    recordButtonIcon = document.getElementById("record-btn-icon");
     autoSaveButton = document.getElementById("auto-save-btn");
+    autoSaveButtonIcon = document.getElementById("auto-save-btn-icon");
     priceUpdateButton = document.getElementById("price-update-btn");
+    priceUpdateButtonIcon = document.getElementById("price-update-btn-icon");
 
     recordButton.onclick = () => {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
@@ -38,9 +44,9 @@ function onPopupStatus({state}) {
 
 function updateRecordButton(buttonActive) {
     if (buttonActive) {
-        recordButton.style.fill = "#c4111d";
+        recordButtonIcon.style.fill = "#c4111d";
     } else {
-        recordButton.style.fill = "#54575e";
+        recordButtonIcon.style.fill = "#54575e";
     }
 }
 
@@ -85,13 +91,14 @@ function updateAutoSaveButton(buttonEnabled) {
         autoSaveButton.onclick = onAutoSaveClick;
         autoSaveButton.onmouseover = onAutoSaveButtonMouseOver;
         autoSaveButton.onmouseout = onAutoSaveMouseOut;
-        autoSaveButton.style.fill = "#4e9b5f";
+        autoSaveButtonIcon.style.fill = "#4e9b5f";
         autoSaveButton.style.cursor = "pointer";
     } else if (buttonEnabled === false) {
         autoSaveButton.removeEventListener("click", onAutoSaveClick);
         autoSaveButton.removeEventListener("mouseover", onAutoSaveButtonMouseOver);
         autoSaveButton.removeEventListener("mouseout", onAutoSaveMouseOut);
-        autoSaveButton.style.fill = "#878a91";
+        autoSaveButtonIcon.style.fill = "#878a91";
+        autoSaveButton.style.cursor = "initial";
     }
 }
 
@@ -100,22 +107,23 @@ function updatePriceUpdateButton(buttonEnabled) {
         priceUpdateButton.onclick = onPriceUpdateClick;
         priceUpdateButton.onmouseover = onPriceUpdateButtonMouseOver;
         priceUpdateButton.onmouseout = onPriceUpdateMouseOut;
-        priceUpdateButton.style.fill = "#4e9b5f";
+        priceUpdateButtonIcon.style.fill = "#4e9b5f";
         priceUpdateButton.style.cursor = "pointer";
     } else if (buttonEnabled === false) {
         priceUpdateButton.removeEventListener("click", onPriceUpdateClick);
         priceUpdateButton.removeEventListener("mouseover", onPriceUpdateButtonMouseOver);
         priceUpdateButton.removeEventListener("mouseout", onPriceUpdateMouseOut);
-        priceUpdateButton.style.fill = "#878a91";
+        priceUpdateButtonIcon.style.fill = "#878a91";
+        priceUpdateButton.style.cursor = "initial";
     }
 }
 
 function setPendingAutoSave() {
-    autoSaveButton.style.fill = "#62656c";
+    autoSaveButtonIcon.style.fill = "#62656c";
 }
 
 function setPendingPriceUpdate() {
-    priceUpdateButton.style.fill = "#62656c";
+    priceUpdateButtonIcon.style.fill = "#62656c";
 }
 
 bootstrap();
