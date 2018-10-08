@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.3
+* Document bug and track toolbar layout improvements 
+
 # v0.18.2
 * Remove unused function
 
