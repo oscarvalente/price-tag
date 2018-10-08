@@ -93,7 +93,7 @@ function registerHelpers() {
 function setupUpdateTrackedItems() {
     updateTrackedItems();
     // TODO: uncomment to refresh
-    setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    // setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function bootstrap() {

@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.4
+* Back button always visible
+
 # v0.18.3
 * Document bug and track toolbar layout improvements 
 

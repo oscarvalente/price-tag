@@ -6,11 +6,17 @@ body {
     font-size: 14px;
 }
 
+#tracked-items-container {
+    height: 490px;
+}
+
 #tracked-items-list {
-    padding: 2px 4px;
+    padding: 2px 22px 0 4px;
     width: 400px;
+    height: 426px;
+    overflow: scroll;
     list-style: none;
-    margin: 4px 0 0 0;
+    margin-top: 4px;
 }
 
 #tracked-items-list .item-container {
@@ -109,8 +115,10 @@ body {
 }
 
 #back-btn {
-    margin: 10px 0 0 8px;
     display: inline-block;
+    margin: 2px 0 0 8px;
+    position: fixed;
+    top: 95%;
 }
 
 .item-container .item-diffperc {
