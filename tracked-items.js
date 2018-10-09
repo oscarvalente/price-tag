@@ -92,8 +92,8 @@ function registerHelpers() {
 
 function setupUpdateTrackedItems() {
     updateTrackedItems();
-    // TODO: uncomment to refresh
-    // setInterval(updateTrackedItems, REFRESH_INTERVAL);
+    // TEMP: uncomment to refresh
+    setInterval(updateTrackedItems, REFRESH_INTERVAL);
 }
 
 function bootstrap() {
@@ -108,6 +108,9 @@ function bootstrap() {
 function onItemRemoved(listItemElement, wasRemoved) {
     if (wasRemoved) {
         trackedItemsList.removeChild(listItemElement);
+        if (trackedItemsList.children.length === 0) {
+            updateTrackedItems();
+        }
     }
 }
 

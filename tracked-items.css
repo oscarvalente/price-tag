@@ -14,7 +14,7 @@ body {
     padding: 2px 22px 0 4px;
     width: 400px;
     height: 426px;
-    overflow: scroll;
+    overflow: auto;
     list-style: none;
     margin-top: 4px;
 }

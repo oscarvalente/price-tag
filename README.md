@@ -39,14 +39,14 @@ but there's a lot more, and more to come.
         * by domain, time
         * by domain, price
     * back button always visible ✅
-    * BUG: after delete all items doesn't display 'no tracked items' ❗
+    * BUG: after delete all items doesn't display 'no tracked items' ❗❗ `(wip)`
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
  * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ✅
  * major improvement: use tab favicon url from onUpdate tab callback ✅
- * bug: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
- * bug: auto-save disabled & icon appearance to default when delete any item _(it should be disabled just if deleted url is the current one)_ ✅
+ * BUG: auto-save disabled when opening extension while tab loads _(autosave check status callback error)_ ✅
+ * BUG: auto-save disabled & icon appearance to default when delete any item _(it should be disabled just if deleted url is the current one)_ ✅
  * when URL is very similar (probably same item) ✅
     * warn user and ask if wants to track ✅
         * activate in auto-save attempt ✅ 
@@ -54,7 +54,7 @@ but there's a lot more, and more to come.
         * activate on item record ✅
     * canonical usage ✅
  * tech debt: State needs to be immutable ✅
- * bug: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
+ * BUG: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
@@ -140,5 +140,5 @@ but there's a lot more, and more to come.
  * Zara - www.zara.com
 
 #### External dependency issues ⚠️
-* BUG: After delete item highlights do not happen and cursor isn't pointer
+* After delete item highlights do not happen and cursor isn't pointer (bug)
     * Chrome element mouseover is bugged - proof: inspection is bugged in DevTools️ only when behaviour is reproduced
