@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.5
+* No tracked items label gone after delete all items bug fix
+
 # v0.18.4
 * Back button always visible
 
