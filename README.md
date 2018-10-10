@@ -39,7 +39,7 @@ but there's a lot more, and more to come.
         * by domain, time
         * by domain, price
     * back button always visible ✅
-    * BUG: after delete all items doesn't display 'no tracked items' ❗❗ `(wip)`
+    * BUG: after delete all items doesn't display 'no tracked items' ✅
     * minor styling ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
