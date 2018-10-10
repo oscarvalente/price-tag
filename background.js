@@ -158,7 +158,7 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                         case 0:
                             // said Yes, can use canonical and remember this option
                             chrome.storage.local.get([domain], result => {
-                                const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                                const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                 domainState._canUseCanonical = true;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
                                 State = updateCurrentURL(State, State.canonicalURL);
@@ -173,12 +173,17 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                         case 2:
                             // said No, use browser URL and remember this option
                             chrome.storage.local.get([domain], result => {
-                                const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+                                const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                 domainState._canUseCanonical = false;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
                                 State = updateCurrentURL(State, State.browserURL);
                                 callback(true, false);
                             });
+                            break;
+                        case 3:
+                            // said No, use browser URL but ask again
+                            State = updateCurrentURL(State, State.browserURL);
+                            callback(true, false);
                             break;
                         default:
                             // cannot recognize this modal button click
@@ -874,7 +879,12 @@ function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
             "However you can still opt to choose following the current browser URL:\n" +
             `${browserURL}\n\n` +
             "Since your choice will affect the way items are tracked futurely,\nplease help us helping you by choosing carefully one of the following options:",
-        buttons: ["Use recommended URL. Remember this option for this site", "Use recommended URL, but just this time", "It's not correct. Use the current browser URL instead"]
+        buttons: [
+            "Use recommended URL. Remember this option for this site",
+            "Use recommended URL but just this time",
+            "It's not correct, use the current browser URL. Remember this option",
+            "Don't use recommended URL. Use the current browser URL instead but just this time"
+        ]
     };
 }
 

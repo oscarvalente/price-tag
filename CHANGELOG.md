@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.18.6
+* Add "Use browser URL just this time" option
+* Fix saving item for unexisting domain bug
+
 # v0.18.5
 * No tracked items label gone after delete all items bug fix
 
