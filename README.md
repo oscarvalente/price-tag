@@ -123,12 +123,12 @@ but there's a lot more, and more to come.
  * minor improvements to the ui (styling minor issues)
  * style ui (major) ❗
  * todos list in code
- * add project bundle build tool ❗
+ * add project bundle build tool
     * add yarn as package manager ✅
     * add rollup/webpack to build ❗ `(wip)`
-        * add minify
-        * add uglify
-        * copy needed assets to dist ❗
+        * add babel ✅
+        * add minify + uglify ✅ 
+        * add sourcemap ✅
         * add eslint
  * swap HandlebarsJS for React ❗
  
