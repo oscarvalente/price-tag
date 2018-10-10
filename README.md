@@ -129,6 +129,7 @@ but there's a lot more, and more to come.
         * add babel ✅
         * add minify + uglify ✅ 
         * add sourcemap ✅
+        * copy needed assets to dist to have it decoupled ❗
         * add eslint
  * swap HandlebarsJS for React ❗
  
