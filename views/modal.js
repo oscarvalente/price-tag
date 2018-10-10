@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
 
             document.querySelector("#document-title").innerText = documentTitle;
             document.querySelector("#modal #title").innerText = title;
-            document.querySelector("#modal #message").innerText = message;
+            document.querySelector("#modal #message").innerHTML = message;
 
             buttons.forEach((title, index) => {
                 let button = document.createElement("button");

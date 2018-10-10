@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.8
+* Allow HTML inside modal messages
+
 # v0.18.7
 * Fix diff percentage update on price update successful attempt
 

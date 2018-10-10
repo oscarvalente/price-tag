@@ -860,11 +860,11 @@ function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
 function buildSaveConfirmationPayload(currentURL, similarURL) {
     return {
         title: "Item with similar URL to existing one",
-        message: "It appears that the item URL you're trying to save:\n" +
-            `${currentURL}\n` +
-            "is pretty similar to\n" +
-            `${similarURL}\n\n` +
-            "Please help us helping you by choosing one of the following options:",
+        message: "It appears that the item URL you're trying to save:<br>" +
+            `<i><a href="${currentURL}">${currentURL}</a></i><br>` +
+            "is pretty similar to<br>" +
+            `<i><a href="${similarURL}">${similarURL}</a></i><br><br>` +
+            "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
         buttons: [
             "It's not, save it! Remember this option for this site.",
             "Don't save. Ask me again for items of this site!",
@@ -877,12 +877,12 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
 function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
     return {
         title: "This website recommends to follow this item through a different URL",
-        message: `${domain} says that a more accurate URL for this item would be:\n` +
-            `${canonicalURL}\n` +
-            "If this is correct, we recommend you to follow it.\n" +
-            "However you can still opt to choose following the current browser URL:\n" +
-            `${browserURL}\n\n` +
-            "Since your choice will affect the way items are tracked futurely,\nplease help us helping you by choosing carefully one of the following options:",
+        message: `<u>${domain}</u> says that a more accurate URL for this item would be:<br>` +
+            `<i><a href="${canonicalURL}">${canonicalURL}</a></i><br>` +
+            "If this is correct, we recommend you to follow it.<br><br>" +
+            "<b>However</b> you can still opt to choose following the current browser URL:<br>" +
+            `<i><a href="${browserURL}">${browserURL}</a></i><br><br>` +
+            "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
         buttons: [
             "Use recommended URL. Remember this option for this site",
             "Use recommended URL but just this time",
