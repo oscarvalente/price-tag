@@ -90,128 +90,136 @@ function displaySaveConfirmation(elementId, sendResponse) {
     return false;
 }
 
-chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
-    const {selection} = payload;
-    switch (type) {
-        case "RECORD.START":
-            let originalBGColor;
+function attachEvents() {
+    chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
+        const {selection} = payload;
+        switch (type) {
+            case "RECORD.START":
+                let originalBGColor;
 
-            document.body.style.cursor = "pointer";
-            window.focus();
-            document.body.onclick = (event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                const {target, path} = event;
-                const {url} = payload;
-                const {textContent} = target;
-                const selection = buildElementSelection(path, 3);
-                let price = null;
-                if (!url) {
-                    sendResponse({status: -1});
-                    return;
-                }
-                if (textContent) {
-                    const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
-                    if (textContentMatch) {
-                        [, price] = textContentMatch;
-                        sendResponse({
-                            status: 1,
-                            url,
-                            selection,
-                            price,
-                            faviconURL: getFaviconURL(),
-                            faviconAlt: document.title
-                        });
-                    } else {
-                        sendResponse({status: -3});
+                document.body.style.cursor = "pointer";
+                window.focus();
+                document.body.onclick = function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const {target, path} = event;
+                    const {url} = payload;
+                    const {textContent} = target;
+                    const selection = buildElementSelection(path, 3);
+                    let price = null;
+                    if (!url) {
+                        sendResponse({status: -1});
+                        return;
                     }
-                } else {
-                    sendResponse({status: -2});
-                }
+                    if (textContent) {
+                        const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+                        if (textContentMatch) {
+                            [, price] = textContentMatch;
+                            sendResponse({
+                                status: 1,
+                                url,
+                                selection,
+                                price,
+                                faviconURL: getFaviconURL(),
+                                faviconAlt: document.title
+                            });
+                        } else {
+                            sendResponse({status: -3});
+                        }
+                    } else {
+                        sendResponse({status: -2});
+                    }
 
-                target.style.backgroundColor = originalBGColor;
+                    target.style.backgroundColor = originalBGColor;
+                    document.body.style.cursor = "";
+                    document.body.onclick = null;
+                    document.body.onmouseover = null;
+                };
+
+                document.body.onmouseover = ({target}) => {
+                    target.addEventListener("mouseout", ({target}) => {
+                        target.style.backgroundColor = originalBGColor;
+                        target.removeEventListener("mouseout", target);
+                    });
+                    originalBGColor = target.style.backgroundColor;
+                    target.style.backgroundColor = "#c9ecfc";
+                };
+
+                return true;
+            case "RECORD.CANCEL":
                 document.body.style.cursor = "";
                 document.body.onclick = null;
                 document.body.onmouseover = null;
-            };
 
-            document.body.onmouseover = ({target}) => {
-                target.addEventListener("mouseout", ({target}) => {
-                    target.style.backgroundColor = originalBGColor;
-                    target.removeEventListener("mouseout", this);
-                });
-                originalBGColor = target.style.backgroundColor;
-                target.style.backgroundColor = "#c9ecfc";
-            };
+                sendResponse({});
+                break;
+            case "AUTO_SAVE.CHECK_STATUS":
+                if (document.readyState !== "complete") {
+                    window.onload = () => {
+                        evaluatePriceTag(selection, sendResponse);
 
-            return true;
-        case "RECORD.CANCEL":
-            document.body.style.cursor = "";
-            document.body.onclick = null;
-            document.body.onmouseover = null;
+                        window.onload = null;
+                    };
 
-            sendResponse({});
-            break;
-        case "AUTO_SAVE.CHECK_STATUS":
-            if (document.readyState !== "complete") {
-                window.onload = () => {
+                    return true;
+                } else {
                     evaluatePriceTag(selection, sendResponse);
+                    return false;
+                }
+            case "PRICE_UPDATE.CHECK_STATUS":
+                if (document.readyState !== "complete") {
+                    window.onload = () => {
+                        evaluatePriceTag(selection, sendResponse);
 
-                    window.onload = null;
-                };
+                        window.onload = null;
+                    };
 
-                return true;
-            } else {
-                evaluatePriceTag(selection, sendResponse);
-                return false;
-            }
-        case "PRICE_UPDATE.CHECK_STATUS":
-            if (document.readyState !== "complete") {
-                window.onload = () => {
+                    return true;
+                } else {
                     evaluatePriceTag(selection, sendResponse);
+                    return false;
+                }
+            case "PRICE_TAG.HIGHLIGHT.START":
+                const {selection: elementSelection} = payload;
+                const elementToHighlight = document.body.querySelector(elementSelection);
+                if (elementToHighlight) {
+                    const originalBackgroundColor = elementToHighlight.style.backgroundColor;
+                    elementToHighlight.style.backgroundColor = "#c9ecfc";
+                    sendResponse({status: 1, isHighlighted: true, originalBackgroundColor});
+                } else {
+                    sendResponse({status: -1});
+                }
+                break;
+            case "PRICE_TAG.HIGHLIGHT.STOP":
+                const {selection: elementHighlighted} = payload;
+                let {originalBackgroundColor} = payload;
+                originalBackgroundColor = originalBackgroundColor || "";
+                const elementToStopHighlight = document.body.querySelector(elementHighlighted);
+                if (elementToStopHighlight) {
+                    elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
+                    sendResponse({status: 1, isHighlighted: false});
+                } else {
+                    sendResponse({status: -1});
+                }
+                break;
+            case "CONFIRMATION_DISPLAY.CREATE":
+                const {elementId: idToCreate} = payload;
+                return displaySaveConfirmation(idToCreate, sendResponse);
+            case "CONFIRMATION_DISPLAY.REMOVE":
+                const {elementId: idToRemove} = payload;
+                const confirmationModal = document.getElementById(idToRemove);
+                if (confirmationModal) {
+                    confirmationModal.remove();
+                }
+                break;
+            default:
+                break;
+        }
+    });
+}
 
-                    window.onload = null;
-                };
+function bootstrap() {
+    attachEvents();
+}
 
-                return true;
-            } else {
-                evaluatePriceTag(selection, sendResponse);
-                return false;
-            }
-        case "PRICE_TAG.HIGHLIGHT.START":
-            const {selection: elementSelection} = payload;
-            const elementToHighlight = document.body.querySelector(elementSelection);
-            if (elementToHighlight) {
-                const originalBackgroundColor = elementToHighlight.style.backgroundColor;
-                elementToHighlight.style.backgroundColor = "#c9ecfc";
-                sendResponse({status: 1, isHighlighted: true, originalBackgroundColor});
-            } else {
-                sendResponse({status: -1});
-            }
-            break;
-        case "PRICE_TAG.HIGHLIGHT.STOP":
-            const {selection: elementHighlighted} = payload;
-            let {originalBackgroundColor} = payload;
-            originalBackgroundColor = originalBackgroundColor || "";
-            const elementToStopHighlight = document.body.querySelector(elementHighlighted);
-            if (elementToStopHighlight) {
-                elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
-                sendResponse({status: 1, isHighlighted: false});
-            } else {
-                sendResponse({status: -1});
-            }
-            break;
-        case "CONFIRMATION_DISPLAY.CREATE":
-            const {elementId: idToCreate} = payload;
-            return displaySaveConfirmation(idToCreate, sendResponse);
-        case "CONFIRMATION_DISPLAY.REMOVE":
-            const {elementId: idToRemove} = payload;
-            const confirmationModal = document.getElementById(idToRemove);
-            if (confirmationModal) {
-                confirmationModal.remove();
-            }
-            break;
-        default:
-            break;
-    }
-});
+bootstrap();
