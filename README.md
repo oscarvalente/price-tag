@@ -86,7 +86,7 @@ but there's a lot more, and more to come.
      * ~BUG: After delete item highlights do not happen and cursor isn't pointer~ ⚠️
      * Add overlay shadow behind modal
      * Allow HTML modal messages ✅
-     * Error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
+     * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
@@ -125,10 +125,11 @@ but there's a lot more, and more to come.
  * todos list in code
  * add project bundle build tool
     * add yarn as package manager ✅
-    * add rollup/webpack to build ❗ `(wip)`
+    * add rollup to build ❗ `(wip)`
         * add babel ✅
         * add minify + uglify ✅ 
         * add sourcemap ✅
+        * production build without sourcemaps ❗
         * copy needed assets to dist to have it decoupled ❗
         * add eslint
  * swap HandlebarsJS for React ❗
