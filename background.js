@@ -73,11 +73,15 @@ function updateItemCurrentPrice(item, newPrice) {
         currentPrice: newPrice
     };
 
-    const diff = Math.abs(newItem.currentPrice - newItem.price) * 100 / newItem.price;
+    return updateItemDiffPercentage(newItem);
+}
+
+function updateItemDiffPercentage(item) {
+    const diff = Math.abs(item.currentPrice - item.price) * 100 / item.price;
     const diffPerc = parseFloat(diff.toFixed(2));
     let diffPercentage = null;
     if (diffPerc) {
-        diffPercentage = newItem.currentPrice > newItem.price ?
+        diffPercentage = item.currentPrice > item.price ?
             +diffPerc :
             -diffPerc;
 
@@ -88,9 +92,9 @@ function updateItemCurrentPrice(item, newPrice) {
         }
     }
 
-    newItem.diffPercentage = diffPercentage;
+    item.diffPercentage = diffPercentage;
 
-    return newItem;
+    return item;
 }
 
 function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
@@ -1261,6 +1265,7 @@ function attachEvents() {
                                     ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED,
                                     ITEM_STATUS.NOT_FOUND
                                 ]);
+                            domainItems[stateUrl] = updateItemDiffPercentage(domainItems[stateUrl]);
 
                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
 

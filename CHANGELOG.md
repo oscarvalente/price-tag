@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.7
+* Fix diff percentage update on price update successful attempt
+
 # v0.18.6
 * Add "Use browser URL just this time" option
 * Fix saving item for unexisting domain bug
