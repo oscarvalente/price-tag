@@ -56,6 +56,7 @@ but there's a lot more, and more to come.
  * tech debt: State needs to be immutable ✅
  * BUG: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
+ * internationalization ❗
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
         * lower price ✅
@@ -93,7 +94,7 @@ but there's a lot more, and more to come.
      * allow naming item ❗
         * toggle on
      * show if item is being tracked in popup.js
- * save confirmation modal similar URLs message display as links
+ * save confirmation modal similar URLs message display as links ✅
  * pause button
  * wipe state options
     * wipe site-related preferences
@@ -123,9 +124,13 @@ but there's a lot more, and more to come.
  * style ui (major) ❗
  * todos list in code
  * add project bundle build tool ❗
-    * add yarn as package manager ❗
-    * add rollup/webpack to build ❗
-    * swap HandlebarsJS for React
+    * add yarn as package manager ✅
+    * add rollup/webpack to build ❗ `(wip)`
+        * add minify
+        * add uglify
+        * copy needed assets to dist ❗
+        * add eslint
+ * swap HandlebarsJS for React ❗
  
  **Legend:**
  * ❗️ urgent/priority development

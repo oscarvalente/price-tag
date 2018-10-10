@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.18.9
+* Yarn as package-manager
+* Rollup as build tool
+
 # v0.18.8
 * Allow HTML inside modal messages
 

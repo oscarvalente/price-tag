@@ -1,3 +1,5 @@
+'use strict';
+
 function buildElementSelection(path, maxElements) {
     const pathSelection = [];
     let elemCount = 1;
