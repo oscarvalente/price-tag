@@ -131,6 +131,7 @@ but there's a lot more, and more to come.
         * add sourcemap ✅
         * production build without sourcemaps ✅
         * copy needed assets to dist to have it decoupled ❗
+        * add dev watch task
         * add eslint
  * swap HandlebarsJS for React ❗
  

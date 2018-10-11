@@ -1,6 +1,9 @@
 ### CHANGELOG
 
 # v0.18.10
+* Copy needed assets to generate full-fledged independent dist
+
+# v0.18.10
 * Add build environment and scripts improvement
 
 # v0.18.9

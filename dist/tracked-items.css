@@ -1,0 +1,134 @@
+body {
+    font-family: "Arial Rounded MT", sans-serif;
+    font-weight: normal;
+    font-stretch: normal;
+    font-variant: all-petite-caps;
+    font-size: 14px;
+}
+
+#tracked-items-container {
+    height: 490px;
+}
+
+#tracked-items-list {
+    padding: 2px 22px 0 4px;
+    width: 400px;
+    height: 426px;
+    overflow: auto;
+    list-style: none;
+    margin-top: 4px;
+}
+
+#tracked-items-list .item-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+    line-height: 32px;
+}
+
+.item-container .status-container {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 52px;
+}
+
+.item-container .status-container > svg:not(:last-child) {
+    padding-right: 3px;
+}
+
+#tracked-items-list .tracked-item-label {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+#tracked-items-title-container {
+    display: flex;
+    flex-wrap: nowrap;
+    padding: 4px 8px 3px;
+}
+
+#tracked-items-title-container .tracked-items-title-icon {
+    width: 18px;
+    height: 18px;
+}
+
+#tracked-items-title-container .tracked-items-title {
+    display: inline;
+    font-size: 18px;
+    margin: 0 0 0 14px;
+}
+
+.tracked-item-label .item-label {
+    font-size: 18px;
+}
+
+.tracked-item-label .item-label.price {
+    text-align: left;
+    width: 48px;
+    font-size: 22px;
+    padding-right: 8px;
+    align-self: flex-start;
+}
+
+.tracked-item-label .item-label.target-price {
+    font-style: italic;
+    color: #b5a8a8;
+}
+
+#tracked-items-title-container > *,
+.tracked-item-label .item-label.date,
+.item-container .item-watch,
+.item-container .item-icon,
+.item-container .item-notfound,
+.item-container .item-pricedown,
+.item-container .item-pricedown {
+    align-self: center;
+}
+
+.item-container .item-icon-container {
+    width: 20px;
+}
+
+.item-container .item-targetprice-container {
+    padding-right: 14px;
+    width: 36px;
+}
+
+.item-container .item-diffperc-container {
+    display: inline-flex;
+    width: 53px;
+}
+
+.item-container .item-delete,
+.item-container .item-watch,
+.item-container .item-notfound,
+.item-container .item-priceup,
+.item-container .item-pricedown {
+    width: 14px;
+    height: 14px;
+}
+
+.item-container .item-delete {
+    cursor: pointer;
+}
+
+#back-btn {
+    display: inline-block;
+    margin: 2px 0 0 8px;
+    position: fixed;
+    top: 95%;
+}
+
+.item-container .item-diffperc {
+    width: 32px;
+    height: 32px;
+}
+
+.item-container .item-icon {
+    padding-right: 6px;
+    width: 12px;
+    height: 12px;
+}
+

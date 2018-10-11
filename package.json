@@ -1,6 +1,6 @@
 {
     "name": "price-tag",
-    "version": "0.18.10",
+    "version": "0.18.11",
     "description": "Records and tracks online shopping item prices",
     "main": "index.js",
     "repository": "git@bitbucket.org:oscarv_08/price-tag.git",
@@ -14,9 +14,10 @@
         "rollup-plugin-terser": "3.0.0"
     },
     "scripts": {
-        "build:prod": "yarn clean && rollup -c --environment BUILD:production",
-        "build:dev": "yarn clean && rollup -c",
-        "clean": "rm -rf dist"
+        "build:prod": "yarn clean && yarn copy:files && rollup -c --environment BUILD:production",
+        "build:dev": "yarn clean && yarn copy:files && rollup -c",
+        "copy:files": "cp -R views assets vendor *.html *.css tracked-items.js popup.js dist",
+        "clean": "rm -rf dist && mkdir dist"
     },
     "engines": {
         "node": "= 8.11.1"
