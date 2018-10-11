@@ -1,6 +1,6 @@
 {
     "name": "Price Tag",
-    "version": "0.18.11",
+    "version": "0.18.12",
     "description": "Records and tracks online shopping item prices",
     "manifest_version": 2,
     "permissions": [
@@ -14,13 +14,13 @@
     ],
     "background": {
         "scripts": [
-            "bg.js"
+            "background.js"
         ],
         "persistent": false
     },
     "content_scripts": [{
         "js": [
-            "pa.js"
+            "page-agent.js"
         ],
         "matches": ["http://*/*", "https://*/*"]
     }

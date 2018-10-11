@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.12
+* Dev build is top folder local, Prod build is dist - re-structure build accordingly
+
 # v0.18.11
 * Copy needed assets to generate full-fledged independent dist
 
