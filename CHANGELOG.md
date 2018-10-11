@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+# v0.18.13
+* Remove dependency from rollup copy files plugin
+* Bundle modal.js
+
 # v0.18.12
 * Dev build is top folder local, Prod build is dist - re-structure build accordingly
 

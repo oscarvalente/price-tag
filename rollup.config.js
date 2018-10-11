@@ -1,46 +1,13 @@
 import babel from "rollup-plugin-babel";
 import {terser} from "rollup-plugin-terser";
-import copy from "rollup-plugin-copy-assets";
 
 const commonConfig = {
-    watch: {
-        exclude: ["node_modules/**"]
-    },
     plugins: [
         babel({
             exclude: "node_modules/**",
             plugins: ["@babel/plugin-proposal-object-rest-spread"]
         }),
         terser()
-    ]
-};
-
-const popupConfig = {
-    ...commonConfig,
-    plugins: [
-        ...commonConfig.plugins,
-        copy({
-            assets: [
-                "./vendor",
-                "./assets",
-                "./views",
-                "./popup.html",
-                "./popup.css"
-            ]
-        })
-    ]
-};
-
-const trackedItemsConfig = {
-    ...commonConfig,
-    plugins: [
-        ...commonConfig.plugins,
-        copy({
-            assets: [
-                "./tracked-items.html",
-                "./tracked-items.css"
-            ]
-        })
     ]
 };
 
@@ -65,13 +32,20 @@ export default [
             file: "dist/popup.js",
             format: "iife"
         },
-        ...popupConfig
+        ...commonConfig
     }, {
         input: "tracked-items.js",
         output: {
             file: "dist/tracked-items.js",
             format: "iife"
         },
-        ...trackedItemsConfig
+        ...commonConfig
+    }, {
+        input: "views/modal.js",
+        output: {
+            file: "dist/views/modal.js",
+            format: "iife"
+        },
+        ...commonConfig
     }
 ];
