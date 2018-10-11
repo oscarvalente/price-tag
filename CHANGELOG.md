@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.10
+* Add build environment and scripts improvement
+
 # v0.18.9
 * Yarn as package-manager
 * Rollup as build tool

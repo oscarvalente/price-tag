@@ -1,6 +1,6 @@
 {
     "name": "Price Tag",
-    "version": "0.18.9",
+    "version": "0.18.10",
     "description": "Records and tracks online shopping item prices",
     "manifest_version": 2,
     "permissions": [

@@ -11,13 +11,26 @@ const commonConfig = {
     ]
 };
 
+const prodOutputConfig = {
+    sourcemap: true
+};
+
+const getOutputConfig = ((env) => {
+    switch (env) {
+        case "production":
+            return {};
+        default:
+            return prodOutputConfig;
+    }
+}).bind(null, process.env.BUILD);
+
 export default [
     {
         input: "background.js",
         output: {
             file: "dist/bg.js",
             format: "iife",
-            sourcemap: true
+            ...getOutputConfig()
         },
         ...commonConfig
     }, {
@@ -26,7 +39,7 @@ export default [
             {
                 file: "dist/pa.js",
                 format: "iife",
-                sourcemap: true
+                ...getOutputConfig()
             }
         ],
         ...commonConfig
