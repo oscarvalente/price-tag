@@ -1,3 +1,9 @@
+import React from "react";
+import ReactDOM from "react-dom";
+import ToolbarButton from "./components/toolbar-button";
+
+// import ToolbarButton from "./components/toolbar-button";
+
 let recordButton;
 let recordButtonIcon;
 let autoSaveButton;
@@ -20,6 +26,9 @@ function bootstrap() {
             chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, onPopupStatus);
         });
     };
+
+    //    react-lixo
+    ReactDOM.render(React.createElement(ToolbarButton), document.getElementById('react-lixo'));
 }
 
 function onPopupStatus({state}) {

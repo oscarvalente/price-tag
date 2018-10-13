@@ -1,13 +1,67 @@
+import resolve from "rollup-plugin-node-resolve";
 import babel from "rollup-plugin-babel";
+import commonjs from "rollup-plugin-commonjs";
 import {terser} from "rollup-plugin-terser";
+import postcss from "rollup-plugin-postcss";
+import replace from "rollup-plugin-replace";
 
 const commonConfig = {
     plugins: [
         babel({
-            exclude: "node_modules/**",
-            plugins: ["@babel/plugin-proposal-object-rest-spread"]
+            babelrc: true,
+            exclude: "node_modules/**"
+        }),
+        resolve({
+            browser: true
         }),
         terser()
+    ]
+};
+
+const getCommonConfig = (env => {
+    switch (env) {
+        case "production":
+            return commonConfig;
+        default:
+            return {
+                ...commonConfig,
+                watch: {
+                    exclude: ["node_modules/**"]
+                }
+            };
+    }
+}).bind(null, process.env.BUILD);
+
+const getOutputEntryConfig = (env => {
+    switch (env) {
+        case "production":
+            return {};
+        default:
+            return {
+                sourcemap: true
+            };
+    }
+}).bind(null, process.env.BUILD);
+
+const viewConfig = {
+    ...getCommonConfig(),
+    plugins: [
+        ...getCommonConfig().plugins,
+        postcss({
+            modules: true
+        }),
+        replace({
+            "process.env.NODE_ENV": JSON.stringify(process.env.BUILD)
+        }),
+        commonjs({
+            include: [
+                "node_modules/**"
+            ]/*,
+            namedExports: {
+                "node_modules/react/index.js": ["Children", "Component", "PropTypes", "createElement"],
+                "node_modules/react-dom/index.js": ["render"]
+            }*/
+        })
     ]
 };
 
@@ -16,35 +70,40 @@ export default [
         input: "background.js",
         output: {
             file: "dist/background.js",
-            format: "iife"
+            format: "iife",
+            ...getOutputEntryConfig()
         },
-        ...commonConfig
+        ...getCommonConfig()
     }, {
         input: "page-agent.js",
         output: {
             file: "dist/page-agent.js",
-            format: "iife"
+            format: "iife",
+            ...getOutputEntryConfig()
         },
-        ...commonConfig
+        ...getCommonConfig()
     }, {
         input: "popup.js",
         output: {
             file: "dist/popup.js",
-            format: "iife"
+            format: "iife",
+            ...getOutputEntryConfig()
         },
-        ...commonConfig
+        ...viewConfig
     }, {
         input: "tracked-items.js",
         output: {
             file: "dist/tracked-items.js",
-            format: "iife"
+            format: "iife",
+            ...getOutputEntryConfig()
         },
         ...commonConfig
     }, {
         input: "views/modal.js",
         output: {
             file: "dist/views/modal.js",
-            format: "iife"
+            format: "iife",
+            ...getOutputEntryConfig()
         },
         ...commonConfig
     }

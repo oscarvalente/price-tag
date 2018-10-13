@@ -87,7 +87,7 @@ but there's a lot more, and more to come.
      * Add overlay shadow behind modal
      * Allow HTML modal messages ✅
      * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
-     * add cancel button to similar item warning modal ❗
+     * add cancel button to warning modals ❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
      * tech debt: record action doesn't deal with domain and url; state manages them ❗
@@ -134,6 +134,9 @@ but there's a lot more, and more to come.
         * add dev env ✅
         * add eslint
  * swap HandlebarsJS for React ❗
+    * add react into build ❗ `(wip)`
+    * automatic copy assets on any change ❗
+    * use postcss-inline-svg
  
  **Legend:**
  * ❗️ urgent/priority development
