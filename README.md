@@ -135,10 +135,11 @@ but there's a lot more, and more to come.
         * add eslint
  * swap HandlebarsJS for React ❗
     * add react into build ✅
-    * automatic copy other assets on any change
     * bundle css ✅
-    * use postcss-inline-svg
-    * refactor to react components and hoc
+    * fix sourcemaps for dev build ✅
+    * automatic copy other assets on any change
+    * checkout postcss-inline-svg usage ❗
+    * refactor to react components and hoc ❗
  
  **Legend:**
  * ❗️ urgent/priority development

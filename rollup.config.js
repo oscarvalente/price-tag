@@ -12,16 +12,23 @@ const commonConfig = {
             exclude: "node_modules/**"
         }),
         resolve({
-            browser: true
-        }),
-        terser()
+            customResolveOptions: {
+                moduleDirectory: 'node_modules'
+            }
+        })
     ]
 };
 
 const getCommonConfig = (env => {
     switch (env) {
         case "production":
-            return commonConfig;
+            return {
+                ...commonConfig,
+                plugins: [
+                    ...commonConfig.plugins,
+                    terser()
+                ]
+            };
         default:
             return {
                 ...commonConfig,
@@ -55,13 +62,14 @@ const viewConfig = {
             "process.env.NODE_ENV": JSON.stringify(process.env.BUILD)
         }),
         commonjs({
+            sourceMap: false,
             include: [
                 "node_modules/**"
-            ]/*,
+            ],
             namedExports: {
                 "node_modules/react/index.js": ["Children", "Component", "PropTypes", "createElement"],
                 "node_modules/react-dom/index.js": ["render"]
-            }*/
+            }
         })
     ]
 };

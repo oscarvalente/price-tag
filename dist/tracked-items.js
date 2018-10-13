@@ -1,2 +1,159 @@
-!function(){"use strict";function e(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}let t,n,r;const i={WATCHED:"WATCHED",NOT_FOUND:"NOT_FOUND",INCREASED:"INCREASED",DECREASED:"DECREASED",FIXED:"FIXED"},c=14e3;function s(c){const s=c.map(t=>(function(t){for(var n=1;n<arguments.length;n++){var r=null!=arguments[n]?arguments[n]:{},i=Object.keys(r);"function"==typeof Object.getOwnPropertySymbols&&(i=i.concat(Object.getOwnPropertySymbols(r).filter(function(e){return Object.getOwnPropertyDescriptor(r,e).enumerable}))),i.forEach(function(n){e(t,n,r[n])})}return t})({},t,{dateTime:function(e){const t=new Date(e);return`${t.toLocaleDateString()} ${t.toLocaleTimeString()}`}(t.timestamp),isWatched:t.statuses.includes(i.WATCHED),isNotFound:t.statuses.includes(i.NOT_FOUND),isHigher:t.statuses.includes(i.INCREASED),isLower:t.statuses.includes(i.DECREASED),diffPercBackground:t.diffPercentage&&t.diffPercentage>0?"red":"green"}));t.innerHTML=r({trackedItems:s}),n=document.getElementById("tracked-items-list"),function(e){const t=document.body.querySelectorAll(e);for(let e in t)if(t.hasOwnProperty(e)){const n=t[e],r=n.getAttribute("data-item-url");n.onclick=a.bind(null,r,n.parentElement)}}(".item-container .item-delete")}function a(e,t){chrome.runtime.sendMessage({type:"TRACKED_ITEMS.UNFOLLOW",payload:{url:e}},function(e,t){t&&(n.removeChild(e),0===n.children.length&&o())}.bind(null,t))}function o(){chrome.runtime.sendMessage({type:"TRACKED_ITEMS.GET"},s)}Handlebars.registerHelper("diffPercentage",e=>{let t=parseInt(e,10),n=110,r=180;return(t>=10||t<=-10)&&(n=50,r=175),(t>=100||t<=-100)&&(n=60,r=170),t>0&&(t=`+${t}`),new Handlebars.SafeString(`<text x="${n}" y="310" font-family="Verdana" font-weight="bold" font-size="${r}" fill="#fff1cb" letter-spacing="-10">\n                ${t}%\n            </text>`)}),Handlebars.registerHelper("targetPrice",function(){return this.price!==this.currentPrice?new Handlebars.SafeString(`<span class="item-label target-price" title="Price the last time you marked it">${this.price}</span>`):""}),t=document.getElementById("tracked-items-container"),r=function(e){const t=document.getElementById(e).innerHTML;return Handlebars.compile(t)}("items-list"),o(),setInterval(o,c)}();
+(function () {
+  'use strict';
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _objectSpread(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+      var ownKeys = Object.keys(source);
+
+      if (typeof Object.getOwnPropertySymbols === 'function') {
+        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+        }));
+      }
+
+      ownKeys.forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    }
+
+    return target;
+  }
+
+  let trackedItemsContainer;
+  let trackedItemsList;
+  let listItemsLoader;
+  const ITEM_STATUS = {
+    WATCHED: "WATCHED",
+    NOT_FOUND: "NOT_FOUND",
+    INCREASED: "INCREASED",
+    DECREASED: "DECREASED",
+    FIXED: "FIXED"
+  };
+  const REFRESH_INTERVAL = 14000;
+
+  function loadTemplate(elementId) {
+    const elementHTML = document.getElementById(elementId).innerHTML;
+    return Handlebars.compile(elementHTML);
+  }
+
+  function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+  }
+
+  function onTrackedItems(rawItems) {
+    const trackedItems = rawItems.map(item => _objectSpread({}, item, {
+      dateTime: formatDate(item.timestamp),
+      isWatched: item.statuses.includes(ITEM_STATUS.WATCHED),
+      isNotFound: item.statuses.includes(ITEM_STATUS.NOT_FOUND),
+      isHigher: item.statuses.includes(ITEM_STATUS.INCREASED),
+      isLower: item.statuses.includes(ITEM_STATUS.DECREASED),
+      diffPercBackground: item.diffPercentage && item.diffPercentage > 0 ? "red" : "green"
+    }));
+    trackedItemsContainer.innerHTML = listItemsLoader({
+      trackedItems
+    });
+    trackedItemsList = document.getElementById("tracked-items-list");
+    addRemoveEvents(".item-container .item-delete");
+  }
+
+  function addRemoveEvents(selection) {
+    const deleteElements = document.body.querySelectorAll(selection);
+
+    for (let elem in deleteElements) {
+      if (deleteElements.hasOwnProperty(elem)) {
+        const element = deleteElements[elem];
+        const url = element.getAttribute("data-item-url");
+        element.onclick = removeItem.bind(null, url, element.parentElement);
+      }
+    }
+  }
+
+  function removeItem(url, listItemElement) {
+    chrome.runtime.sendMessage({
+      type: "TRACKED_ITEMS.UNFOLLOW",
+      payload: {
+        url
+      }
+    }, onItemRemoved.bind(null, listItemElement));
+  }
+
+  function updateTrackedItems() {
+    chrome.runtime.sendMessage({
+      type: "TRACKED_ITEMS.GET"
+    }, onTrackedItems);
+  }
+
+  function registerHelpers() {
+    Handlebars.registerHelper("diffPercentage", value => {
+      let percentage = parseInt(value, 10); // default: 1 digit
+
+      let x = 110;
+      let fontSize = 180;
+
+      if (percentage >= 10 || percentage <= -10) {
+        x = 50;
+        fontSize = 175;
+      }
+
+      if (percentage >= 100 || percentage <= -100) {
+        x = 60;
+        fontSize = 170;
+      }
+
+      if (percentage > 0) {
+        percentage = `+${percentage}`;
+      }
+
+      return new Handlebars.SafeString(`<text x="${x}" y="310" font-family="Verdana" font-weight="bold" font-size="${fontSize}" fill="#fff1cb" letter-spacing="-10">
+                ${percentage}%
+            </text>`);
+    });
+    Handlebars.registerHelper("targetPrice", function registerTargetPrice() {
+      return this.price !== this.currentPrice ? new Handlebars.SafeString(`<span class="item-label target-price" title="Price the last time you marked it">${this.price}</span>`) : "";
+    });
+  }
+
+  function setupUpdateTrackedItems() {
+    updateTrackedItems(); // TEMP: uncomment to refresh
+
+    setInterval(updateTrackedItems, REFRESH_INTERVAL);
+  }
+
+  function bootstrap() {
+    registerHelpers();
+    trackedItemsContainer = document.getElementById("tracked-items-container");
+    listItemsLoader = loadTemplate("items-list");
+    setupUpdateTrackedItems();
+  }
+
+  function onItemRemoved(listItemElement, wasRemoved) {
+    if (wasRemoved) {
+      trackedItemsList.removeChild(listItemElement);
+
+      if (trackedItemsList.children.length === 0) {
+        updateTrackedItems();
+      }
+    }
+  }
+
+  bootstrap();
+
+}());
 //# sourceMappingURL=tracked-items.js.map

@@ -1,5 +1,5 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import {createElement} from "react";
+import {render} from "react-dom";
 import Popup from "./src/popup-app";
 
 let recordButton;
@@ -26,7 +26,7 @@ function bootstrap() {
     };
 
     //    react-lixo
-    ReactDOM.render(React.createElement(Popup), document.getElementById('react-lixo'));
+    render(createElement(Popup), document.getElementById('react-lixo'));
 }
 
 function onPopupStatus({state}) {
