@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.14
+* Open modal links on blank target
+
 # v0.18.13
 * Remove dependency from rollup copy files plugin
 * Bundle modal.js

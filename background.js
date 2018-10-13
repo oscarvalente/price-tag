@@ -861,9 +861,9 @@ function buildSaveConfirmationPayload(currentURL, similarURL) {
     return {
         title: "Item with similar URL to existing one",
         message: "It appears that the item URL you're trying to save:<br>" +
-            `<i><a href="${currentURL}">${currentURL}</a></i><br>` +
+            `<i><a href="${currentURL}" target="_blank">${currentURL}</a></i><br>` +
             "is pretty similar to<br>" +
-            `<i><a href="${similarURL}">${similarURL}</a></i><br><br>` +
+            `<i><a href="${similarURL}" target="_blank">${similarURL}</a></i><br><br>` +
             "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
         buttons: [
             "It's not, save it! Remember this option for this site.",
@@ -878,10 +878,10 @@ function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
     return {
         title: "This website recommends to follow this item through a different URL",
         message: `<u>${domain}</u> says that a more accurate URL for this item would be:<br>` +
-            `<i><a href="${canonicalURL}">${canonicalURL}</a></i><br>` +
+            `<i><a href="${canonicalURL}" target="_blank">${canonicalURL}</a></i><br>` +
             "If this is correct, we recommend you to follow it.<br><br>" +
             "<b>However</b> you can still opt to choose following the current browser URL:<br>" +
-            `<i><a href="${browserURL}">${browserURL}</a></i><br><br>` +
+            `<i><a href="${browserURL}" target="_blank">${browserURL}</a></i><br><br>` +
             "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
         buttons: [
             "Use recommended URL. Remember this option for this site",
