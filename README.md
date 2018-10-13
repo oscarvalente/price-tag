@@ -86,6 +86,7 @@ but there's a lot more, and more to come.
      * ~BUG: After delete item highlights do not happen and cursor isn't pointer~ ⚠️
      * Add overlay shadow behind modal
      * Allow HTML modal messages ✅
+     * BUG: change link "target" inside modal to blank ❗❗
      * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to similar item warning modal ❗
      * add button to stop following item in main toolbar ❗
