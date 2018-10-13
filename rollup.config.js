@@ -48,7 +48,8 @@ const viewConfig = {
     plugins: [
         ...getCommonConfig().plugins,
         postcss({
-            modules: true
+            modules: true,
+            extensions: ['.css']
         }),
         replace({
             "process.env.NODE_ENV": JSON.stringify(process.env.BUILD)

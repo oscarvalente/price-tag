@@ -2,7 +2,7 @@ import React from "react";
 
 import styles from "./toolbar.css";
 
-import ToolbarButton from "../toolbar-button";
+import ToolbarButton from "../toolbar-button/index";
 
 class Toolbar extends React.Component {
     render() {

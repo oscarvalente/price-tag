@@ -1,8 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import ToolbarButton from "./components/toolbar-button";
-
-// import ToolbarButton from "./components/toolbar-button";
+import Popup from "./src/popup-app";
 
 let recordButton;
 let recordButtonIcon;
@@ -28,7 +26,7 @@ function bootstrap() {
     };
 
     //    react-lixo
-    ReactDOM.render(React.createElement(ToolbarButton), document.getElementById('react-lixo'));
+    ReactDOM.render(React.createElement(Popup), document.getElementById('react-lixo'));
 }
 
 function onPopupStatus({state}) {
