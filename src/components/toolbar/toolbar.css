@@ -1,4 +1,4 @@
-.tracking-container .tracking-buttons {
+.tracking-buttons {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
@@ -11,9 +11,10 @@
     border-radius: 4px;
 }
 
-.tracking-container .tracking-buttons > li {
+.tracking-buttons > li {
     display: inline-block;
-    height: 30px;
-    width: 30px;
-    padding: 6px 14px 6px;
+}
+
+.tracking-buttons > li:not(:last-child) {
+    border-right: 1px solid #b5a8a8;
 }

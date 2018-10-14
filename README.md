@@ -138,8 +138,8 @@ but there's a lot more, and more to come.
     * bundle css ✅
     * fix sourcemaps for dev build ✅
     * automatic copy other assets on any change
-    * checkout postcss-inline-svg usage ❗
-    * refactor to react components and hoc ❗
+    * checkout postcss-inline-svg usage ✅
+    * refactor to react components and hoc ❗❗ `(wip)`
  
  **Legend:**
  * ❗️ urgent/priority development

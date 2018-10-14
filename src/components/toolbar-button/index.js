@@ -1,13 +1,20 @@
-import React from "react";
+import React, {Component} from "react";
 
-import styles from "./toolbar-button.css";
+import styles from "./toolbar-button.scss";
 
-const ToolbarButton = props => (
-    <div className={styles["toolbar-button-container"]}>
-        {props.title}
-        {/*<SVGInline src={props.svgPath} fill={props.fill} title={props.title}/>*/}
-    </div>
-);
+class ToolbarButton extends Component {
+    render() {
+        const buttonStatus = `${this.props.id}-${this.props.status}`;
+        return (
+            <div
+                id={styles[this.props.id]}
+                className={`${styles["toolbar-button-container"]} ${styles[buttonStatus]}`}
+                onClick={this.props.onClick}
+                title={this.props.title}>
+            </div>
+        );
+    }
+}
 
 export default ToolbarButton;
 

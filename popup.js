@@ -25,8 +25,8 @@ function bootstrap() {
         });
     };
 
-    //    react-lixo
-    render(createElement(Popup), document.getElementById('react-lixo'));
+    // Reactify popup
+    render(createElement(Popup), document.getElementById('popup-app'));
 }
 
 function onPopupStatus({state}) {

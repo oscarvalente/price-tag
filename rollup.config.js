@@ -3,6 +3,7 @@ import babel from "rollup-plugin-babel";
 import commonjs from "rollup-plugin-commonjs";
 import {terser} from "rollup-plugin-terser";
 import postcss from "rollup-plugin-postcss";
+import inlineSvg from "postcss-inline-svg";
 import replace from "rollup-plugin-replace";
 
 const commonConfig = {
@@ -13,7 +14,7 @@ const commonConfig = {
         }),
         resolve({
             customResolveOptions: {
-                moduleDirectory: 'node_modules'
+                moduleDirectory: "node_modules"
             }
         })
     ]
@@ -56,7 +57,12 @@ const viewConfig = {
         ...getCommonConfig().plugins,
         postcss({
             modules: true,
-            extensions: ['.css']
+            extensions: [".css", ".scss"],
+            syntax: "postcss-scss",
+            parser: "postcss-scss",
+            plugins: [
+                inlineSvg()
+            ]
         }),
         replace({
             "process.env.NODE_ENV": JSON.stringify(process.env.BUILD)

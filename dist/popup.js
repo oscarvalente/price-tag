@@ -20123,6 +20123,40 @@
 	});
 	var reactDom_1 = reactDom.render;
 
+	function _defineProperty(obj, key, value) {
+	  if (key in obj) {
+	    Object.defineProperty(obj, key, {
+	      value: value,
+	      enumerable: true,
+	      configurable: true,
+	      writable: true
+	    });
+	  } else {
+	    obj[key] = value;
+	  }
+
+	  return obj;
+	}
+
+	function _objectSpread(target) {
+	  for (var i = 1; i < arguments.length; i++) {
+	    var source = arguments[i] != null ? arguments[i] : {};
+	    var ownKeys = Object.keys(source);
+
+	    if (typeof Object.getOwnPropertySymbols === 'function') {
+	      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+	        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+	      }));
+	    }
+
+	    ownKeys.forEach(function (key) {
+	      _defineProperty(target, key, source[key]);
+	    });
+	  }
+
+	  return target;
+	}
+
 	function styleInject(css, ref) {
 	  if ( ref === void 0 ) ref = {};
 	  var insertAt = ref.insertAt;
@@ -20150,23 +20184,116 @@
 	  }
 	}
 
-	var css = ".toolbar-button_toolbar-button-container__24LKm {\n\n}\n";
-	var styles = {"toolbar-button-container":"toolbar-button_toolbar-button-container__24LKm"};
+	var css = ".toolbar_tracking-buttons__3YjZk {\n    display: flex;\n    flex-wrap: nowrap;\n    align-items: center;\n    justify-content: space-evenly;\n    width: 176px;\n    list-style: none;\n    margin: 0;\n    padding: 0;\n    border: 3px double #d2cccc;\n    border-radius: 4px;\n}\n\n.toolbar_tracking-buttons__3YjZk > li {\n    display: inline-block;\n}\n\n.toolbar_tracking-buttons__3YjZk > li:not(:last-child) {\n    border-right: 1px solid #b5a8a8;\n}\n";
+	var styles = {"tracking-buttons":"toolbar_tracking-buttons__3YjZk"};
 	styleInject(css);
 
-	const ToolbarButton = props => react.createElement("div", {
-	  className: styles["toolbar-button-container"]
-	}, props.title);
-
-	var css$1 = ".popup-app_tracking-container__2kg83 {\n    margin: 2px;\n}\n";
-	var styles$1 = {"tracking-container":"popup-app_tracking-container__2kg83"};
+	var css$1 = "#toolbar-button_record-btn__2Nv5d {\n  cursor: pointer; }\n\n.toolbar-button_toolbar-button-container__3j0gl {\n  height: 42px;\n  width: 58px; }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn-inactive__38x-F {\n    background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%2354575e'%3E %3Ctitle%3ESearch for price-tag in current page%3C/title%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\");\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn-active__2liH6 {\n    background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%23c4111d'%3E %3Ctitle%3ESearch for price-tag in current page%3C/title%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\");\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n";
+	var styles$1 = {"record-btn":"toolbar-button_record-btn__2Nv5d","toolbar-button-container":"toolbar-button_toolbar-button-container__3j0gl","record-btn-inactive":"toolbar-button_record-btn-inactive__38x-F","record-btn-active":"toolbar-button_record-btn-active__2liH6"};
 	styleInject(css$1);
 
-	class Popup extends react.Component {
+	class ToolbarButton extends react_2 {
 	  render() {
-	    return react.createElement("section", {
-	      className: styles$1["tracking-container"]
-	    }, react.createElement(ToolbarButton, null));
+	    const buttonStatus = `${this.props.id}-${this.props.status}`;
+	    return react.createElement("div", {
+	      id: styles$1[this.props.id],
+	      className: `${styles$1["toolbar-button-container"]} ${styles$1[buttonStatus]}`,
+	      onClick: this.props.onClick,
+	      title: this.props.title
+	    });
+	  }
+
+	}
+
+	class Toolbar extends react_2 {
+	  constructor(props) {
+	    super(props);
+	    this.onRecordClick = this.onRecordClick.bind(this);
+	  }
+
+	  render() {
+	    return react.createElement("ul", {
+	      className: styles["tracking-buttons"]
+	    }, react.createElement("li", {
+	      id: "record-btn"
+	    }, react.createElement(ToolbarButton, {
+	      id: "record-btn",
+	      status: this.props.recordButtonStatus,
+	      title: "Search for price-tag in current page",
+	      onClick: this.onRecordClick
+	    })), react.createElement("li", {
+	      id: "auto-save-btn"
+	    }, react.createElement(ToolbarButton, null)), react.createElement("li", {
+	      id: "price-update-btn"
+	    }, react.createElement(ToolbarButton, null)));
+	  }
+
+	  onRecordClick() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id,
+	      url
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "RECORD.ATTEMPT",
+	        payload: {
+	          id,
+	          url
+	        }
+	      }, this.props.onPopupStatus);
+	    });
+	  }
+
+	}
+
+	var css$2 = ".popup-app_tracking-container__2kg83 {\n}\n";
+	styleInject(css$2);
+
+	const BUTTON_STATUS = {
+	  active: "active",
+	  inactive: "inactive"
+	};
+
+	function updateRecordButton(buttonActive) {
+	  if (buttonActive) {
+	    this.setState(state => _objectSpread({}, state, {
+	      recordButtonStatus: BUTTON_STATUS.active
+	    }));
+	  } else {
+	    this.setState(state => _objectSpread({}, state, {
+	      recordButtonStatus: BUTTON_STATUS.inactive
+	    }));
+	  }
+	}
+
+	class Popup extends react_2 {
+	  constructor(props) {
+	    super(props);
+	    this.onPopupStatus = this.onPopupStatus.bind(this);
+	    this.state = {
+	      recordButtonStatus: BUTTON_STATUS.inactive
+	    };
+	    chrome.runtime.sendMessage({
+	      type: "POPUP.STATUS"
+	    }, this.onPopupStatus);
+	  }
+
+	  render() {
+	    return react.createElement(Toolbar, {
+	      recordButtonStatus: this.state.recordButtonStatus,
+	      onPopupStatus: this.onPopupStatus
+	    });
+	  }
+
+	  onPopupStatus({
+	    state
+	  }) {
+	    const {
+	      recordActive
+	    } = state;
+	    updateRecordButton.bind(this)(recordActive);
 	  }
 
 	}
@@ -20205,10 +20332,10 @@
 	        }
 	      }, onPopupStatus);
 	    });
-	  }; //    react-lixo
+	  }; // Reactify popup
 
 
-	  reactDom_1(react_4(Popup), document.getElementById('react-lixo'));
+	  reactDom_1(react_4(Popup), document.getElementById('popup-app'));
 	}
 
 	function onPopupStatus({
@@ -20218,7 +20345,7 @@
 	    recordActive,
 	    autoSaveEnabled
 	  } = state;
-	  updateRecordButton(recordActive);
+	  updateRecordButton$1(recordActive);
 
 	  if (autoSaveEnabled) {
 	    setPendingAutoSave();
@@ -20255,7 +20382,7 @@
 	  });
 	}
 
-	function updateRecordButton(buttonActive) {
+	function updateRecordButton$1(buttonActive) {
 	  if (buttonActive) {
 	    recordButtonIcon.style.fill = "#c4111d";
 	  } else {

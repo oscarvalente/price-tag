@@ -1,0 +1,29 @@
+@svg-load record-inactive url(../../../assets/search.svg) {
+  fill: #54575e;
+}
+
+@svg-load record-active url(../../../assets/search.svg) {
+  fill: #c4111d;
+}
+
+#record-btn {
+  cursor: pointer;
+}
+
+.toolbar-button-container {
+  height: 42px;
+  width: 58px;
+
+  &.record-btn-inactive {
+    background: svg-inline(record-inactive);
+    height: 30px;
+    width: 30px;
+    margin: 6px 14px 6px;
+  }
+  &.record-btn-active {
+    background: svg-inline(record-active);
+    height: 30px;
+    width: 30px;
+    margin: 6px 14px 6px;
+  }
+}
