@@ -13,12 +13,28 @@ function getAutosaveButton(buttonStatus) {
     return buttonStatus === BUTTON_STATUS.active ?
         <ToolbarButton id="auto-save-btn"
                        status={this.props.autosaveButtonStatus}
+                       title="Save the detected price-tag in current page"
                        onClick={this.onAutosaveClick}
                        onMouseOver={this.onAutosaveMouseover}
                        onMouseOut={this.onAutosaveMouseout}
         /> :
         <ToolbarButton id="auto-save-btn"
+                       title="Save the detected price-tag in current page"
                        status={this.props.autosaveButtonStatus}/>;
+}
+
+function getPriceUpdateButton(buttonStatus) {
+    return buttonStatus === BUTTON_STATUS.active ?
+        <ToolbarButton id="price-update-btn"
+                       status={this.props.priceUpdateButtonStatus}
+                       title="Update price-tag to current value"
+                       onClick={this.onPriceUpdateClick}
+                       onMouseOver={this.onPriceUpdateMouseover}
+                       onMouseOut={this.onPriceUpdateMouseout}
+        /> :
+        <ToolbarButton id="price-update-btn"
+                       title="Update price-tag to current value"
+                       status={this.props.priceUpdateButtonStatus}/>;
 }
 
 class Toolbar extends Component {
@@ -28,10 +44,14 @@ class Toolbar extends Component {
         this.onAutosaveClick = this.onAutosaveClick.bind(this);
         this.onAutosaveMouseover = this.onAutosaveMouseover.bind(this);
         this.onAutosaveMouseout = this.onAutosaveMouseout.bind(this);
+        this.onPriceUpdateClick = this.onPriceUpdateClick.bind(this);
+        this.onPriceUpdateMouseover = this.onPriceUpdateMouseover.bind(this);
+        this.onPriceUpdateMouseout = this.onPriceUpdateMouseout.bind(this);
     }
 
     render() {
         const createAutosaveButton = getAutosaveButton.bind(this, this.props.autosaveButtonStatus);
+        const createPriceUpdateButton = getPriceUpdateButton.bind(this, this.props.priceUpdateButtonStatus);
         return (
             <ul className={styles["tracking-buttons"]}>
                 <li>
@@ -43,8 +63,8 @@ class Toolbar extends Component {
                 <li>
                     {createAutosaveButton()}
                 </li>
-                <li id="price-update-btn">
-                    <ToolbarButton/>
+                <li>
+                    {createPriceUpdateButton()}
                 </li>
             </ul>
         );
@@ -58,7 +78,7 @@ class Toolbar extends Component {
 
     onAutosaveClick() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id}}, this.props.onPopupStatus);
+            chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id}}, this.props.onAutosaveStatus);
         });
     }
 
@@ -71,6 +91,24 @@ class Toolbar extends Component {
     onAutosaveMouseout() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
             chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id}});
+        });
+    }
+
+    onPriceUpdateClick() {
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+            chrome.runtime.sendMessage({type: "PRICE_UPDATE.ATTEMPT", payload: {id}}, this.props.onPriceUpdateStatus);
+        });
+    }
+
+    onPriceUpdateMouseover() {
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+            chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_START", payload: {id}});
+        });
+    }
+
+    onPriceUpdateMouseout() {
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+            chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP", payload: {id}});
         });
     }
 }

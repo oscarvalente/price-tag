@@ -37,10 +37,31 @@ function updateAutosaveButton(buttonEnabled) {
     }
 }
 
+function updatePriceUpdateButton(buttonEnabled) {
+    if (buttonEnabled === true) {
+        this.setState(state => ({
+            ...state,
+            priceUpdateButtonStatus: BUTTON_STATUS.active
+        }));
+    } else if (buttonEnabled === false) {
+        this.setState(state => ({
+            ...state,
+            priceUpdateButtonStatus: BUTTON_STATUS.inactive
+        }));
+    }
+}
+
 async function setPendingAutosave() {
     await this.setState(state => ({
         ...state,
         autosaveButtonStatus: BUTTON_STATUS.pending
+    }));
+}
+
+async function setPendingPriceUpdate() {
+    await this.setState(state => ({
+        ...state,
+        priceUpdateButtonStatus: BUTTON_STATUS.pending
     }));
 }
 
@@ -51,11 +72,15 @@ class Popup extends Component {
         this.updateRecordButton = updateRecordButton.bind(this);
         this.updateAutosaveButton = updateAutosaveButton.bind(this);
         this.setPendingAutosave = setPendingAutosave.bind(this);
+        this.updatePriceUpdateButton = updatePriceUpdateButton.bind(this);
+        this.setPendingPriceUpdate = setPendingPriceUpdate.bind(this);
 
         this.state = {
             recordButtonStatus: BUTTON_STATUS.inactive,
-            autosaveButtonStatus: BUTTON_STATUS.inactive
+            autosaveButtonStatus: BUTTON_STATUS.inactive,
+            priceUpdateButtonStatus: BUTTON_STATUS.inactive
         };
+
         chrome.runtime.sendMessage({type: "POPUP.STATUS"}, this.onPopupStatus);
     }
 
@@ -63,7 +88,11 @@ class Popup extends Component {
         return (
             <Toolbar recordButtonStatus={this.state.recordButtonStatus}
                      autosaveButtonStatus={this.state.autosaveButtonStatus}
-                     onPopupStatus={this.onPopupStatus}/>
+                     priceUpdateButtonStatus={this.state.priceUpdateButtonStatus}
+                     onPopupStatus={this.onPopupStatus}
+                     onAutosaveStatus={this.updateAutosaveButton}
+                     onPriceUpdateStatus={this.updatePriceUpdateButton}
+            />
         );
     }
 
@@ -81,6 +110,12 @@ class Popup extends Component {
         } else {
             this.updateAutosaveButton(autoSaveEnabled);
         }
+
+        this.setPendingPriceUpdate();
+        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
+            chrome.runtime.sendMessage({type: "PRICE_UPDATE.STATUS", payload: {id}},
+                this.updatePriceUpdateButton);
+        });
     }
 }
 

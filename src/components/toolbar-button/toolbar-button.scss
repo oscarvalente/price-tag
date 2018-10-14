@@ -18,15 +18,24 @@
   fill: #62656c;
 }
 
+@svg-load price-update-inactive url(../../../assets/coin.svg) {
+  fill: #878a91;
+}
+
+@svg-load price-update-active url(../../../assets/coin.svg) {
+  fill: #4e9b5f;
+}
+
+@svg-load price-update-pending url(../../../assets/coin.svg) {
+  fill: #62656c;
+}
+
 .toolbar-button-container {
-  height: 42px;
-  width: 58px;
+  height: 30px;
+  width: 30px;
+  margin: 6px 14px 6px;
 
   &.record-btn {
-    // TODO: height and width goes to parent when all icons are in view
-    height: 30px;
-    width: 30px;
-    margin: 6px 14px 6px;
     &:hover {
       cursor: pointer;
     }
@@ -40,9 +49,6 @@
   }
 
   &.auto-save-btn {
-    height: 30px;
-    width: 30px;
-    margin: 6px 14px 6px;
     &.inactive {
       background: svg-inline(auto-save-inactive);
       cursor: initial;
@@ -53,6 +59,20 @@
     }
     &.pending {
       background: svg-inline(auto-save-pending);
+    }
+  }
+
+  &.price-update-btn {
+    &.inactive {
+      background: svg-inline(price-update-inactive);
+      cursor: initial;
+    }
+    &.active {
+      background: svg-inline(price-update-active);
+      cursor: pointer;
+    }
+    &.pending {
+      background: svg-inline(price-update-pending);
     }
   }
 }
