@@ -6,24 +6,53 @@
   fill: #c4111d;
 }
 
-#record-btn {
-  cursor: pointer;
+@svg-load auto-save-inactive url(../../../assets/hand.svg) {
+  fill: #878a91;
+}
+
+@svg-load auto-save-active url(../../../assets/hand.svg) {
+  fill: #4e9b5f;
+}
+
+@svg-load auto-save-pending url(../../../assets/hand.svg) {
+  fill: #62656c;
 }
 
 .toolbar-button-container {
   height: 42px;
   width: 58px;
 
-  &.record-btn-inactive {
-    background: svg-inline(record-inactive);
+  &.record-btn {
+    // TODO: height and width goes to parent when all icons are in view
     height: 30px;
     width: 30px;
     margin: 6px 14px 6px;
+    &:hover {
+      cursor: pointer;
+    }
+    &.inactive {
+      background: svg-inline(record-inactive);
+    }
+
+    &.active {
+      background: svg-inline(record-active);
+    }
   }
-  &.record-btn-active {
-    background: svg-inline(record-active);
+
+  &.auto-save-btn {
     height: 30px;
     width: 30px;
     margin: 6px 14px 6px;
+    &.inactive {
+      background: svg-inline(auto-save-inactive);
+      cursor: initial;
+    }
+    &.active {
+      background: svg-inline(auto-save-active);
+      cursor: pointer;
+    }
+    &.pending {
+      background: svg-inline(auto-save-pending);
+    }
   }
 }

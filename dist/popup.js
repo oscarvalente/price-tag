@@ -20123,6 +20123,42 @@
 	});
 	var reactDom_1 = reactDom.render;
 
+	function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+	  try {
+	    var info = gen[key](arg);
+	    var value = info.value;
+	  } catch (error) {
+	    reject(error);
+	    return;
+	  }
+
+	  if (info.done) {
+	    resolve(value);
+	  } else {
+	    Promise.resolve(value).then(_next, _throw);
+	  }
+	}
+
+	function _asyncToGenerator(fn) {
+	  return function () {
+	    var self = this,
+	        args = arguments;
+	    return new Promise(function (resolve, reject) {
+	      var gen = fn.apply(self, args);
+
+	      function _next(value) {
+	        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+	      }
+
+	      function _throw(err) {
+	        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+	      }
+
+	      _next(undefined);
+	    });
+	  };
+	}
+
 	function _defineProperty(obj, key, value) {
 	  if (key in obj) {
 	    Object.defineProperty(obj, key, {
@@ -20188,42 +20224,61 @@
 	var styles = {"tracking-buttons":"toolbar_tracking-buttons__3YjZk"};
 	styleInject(css);
 
-	var css$1 = "#toolbar-button_record-btn__2Nv5d {\n  cursor: pointer; }\n\n.toolbar-button_toolbar-button-container__3j0gl {\n  height: 42px;\n  width: 58px; }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn-inactive__38x-F {\n    background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%2354575e'%3E %3Ctitle%3ESearch for price-tag in current page%3C/title%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\");\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn-active__2liH6 {\n    background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%23c4111d'%3E %3Ctitle%3ESearch for price-tag in current page%3C/title%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\");\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n";
-	var styles$1 = {"record-btn":"toolbar-button_record-btn__2Nv5d","toolbar-button-container":"toolbar-button_toolbar-button-container__3j0gl","record-btn-inactive":"toolbar-button_record-btn-inactive__38x-F","record-btn-active":"toolbar-button_record-btn-active__2liH6"};
+	var css$1 = ".toolbar-button_toolbar-button-container__3j0gl {\n  height: 42px;\n  width: 58px; }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn__2Nv5d {\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn__2Nv5d:hover {\n      cursor: pointer; }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn__2Nv5d.toolbar-button_inactive__CPlZn {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%2354575e'%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\"); }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_record-btn__2Nv5d.toolbar-button_active__2kw-4 {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 448.288 448.288' style='enable-background:new 0 0 448.288 448.288;' xml:space='preserve' fill='%23c4111d'%3E %3Cg%3E %3Cg%3E %3Cpath d='M223.762,208.549c-3.788-18.657-20.202-32.059-39.24-32.04c-13.255,0-24-10.745-24-24s10.745-24,24-24s24,10.745,24,24h16 c-0.024-19.001-13.389-35.373-32-39.2v-8.8h-16v8.8c-21.65,4.396-35.636,25.51-31.24,47.16 c3.789,18.657,20.202,32.059,39.24,32.04c13.255,0,24,10.745,24,24s-10.745,24-24,24s-24-10.745-24-24h-16 c0.024,19.001,13.389,35.373,32,39.2v8.8h16v-8.8C214.171,251.313,228.158,230.199,223.762,208.549z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='72.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='176.521' y='272.509' width='16' height='24'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='272.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='72.521' y='176.509' width='24' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='242.453' y='106.139' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -6.0511 213.6699)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='101.644' y='246.907' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -146.8312 155.3331)' width='24.888' height='16'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='246.901' y='242.44' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -105.5713 254.8959)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Crect x='106.133' y='101.662' transform='matrix(0.7071 -0.7071 0.7071 0.7071 -47.2568 114.1245)' width='16' height='24.888'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M184.521,24.509c-88.366,0-160,71.634-160,160s71.634,160,160,160s160-71.634,160-160 C344.42,96.186,272.845,24.611,184.521,24.509z M184.521,328.509c-79.529,0-144-64.471-144-144s64.471-144,144-144 s144,64.471,144,144C328.429,264,264.012,328.417,184.521,328.509z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3Cg%3E %3Cpath d='M445.945,411.989l-56.568-56.568c-7.287-6.93-18.057-8.729-27.2-4.544l-42.112-42.112 c68.762-75.009,63.697-191.559-11.312-260.32S117.195-15.252,48.433,59.757s-63.697,191.559,11.312,260.32 c70.443,64.576,178.565,64.576,249.008,0l42.056,42.032c-4.466,9.134-2.605,20.099,4.624,27.248l56.568,56.576 c3.124,3.123,8.188,3.123,11.312,0l22.632-22.632C449.068,420.177,449.068,415.113,445.945,411.989z M184.521,352.509 c-92.742-0.101-167.899-75.258-168-168c0-92.784,75.216-168,168-168s168,75.216,168,168S277.305,352.509,184.521,352.509z M417.657,428.965l-50.912-50.92c-3.178-3.07-3.266-8.134-0.196-11.312c3.07-3.178,8.134-3.266,11.312-0.196 c0.066,0.064,0.132,0.129,0.196,0.196l50.92,50.912L417.657,428.965z'/%3E %3C/g%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3Cg%3E %3C/g%3E %3C/svg%3E\"); }\n  .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_auto-save-btn__BF24C {\n    height: 30px;\n    width: 30px;\n    margin: 6px 14px 6px; }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_auto-save-btn__BF24C.toolbar-button_inactive__CPlZn {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 511 511.99978' xmlns='http://www.w3.org/2000/svg' fill='%23878a91'%3E %3Cpath d='m235.792969 347.265625c3.902343-3.910156 3.902343-10.238281 0-14.148437-3.90625-3.898438-10.234375-3.898438-14.144531 0-3.898438 3.910156-3.898438 10.238281 0 14.148437 3.910156 3.898437 10.238281 3.898437 14.144531 0zm0 0'/%3E %3Cpath d='m188.449219 109.96875c0 60.636719 49.332031 109.972656 109.96875 109.972656s109.96875-49.335937 109.96875-109.972656-49.332031-109.96875-109.96875-109.96875-109.96875 49.332031-109.96875 109.96875zm199.945312 0c0 49.613281-40.363281 89.976562-89.976562 89.976562s-89.976563-40.363281-89.976563-89.976562c0-49.609375 40.363282-89.972656 89.976563-89.972656s89.976562 40.363281 89.976562 89.972656zm0 0'/%3E %3Cpath d='m115.652344 509.042969c3.875 3.90625 10.183594 3.949219 14.109375.082031l48.46875-47.75c8.234375-8.234375 10.738281-20.425781 7.117187-31.023438l10.425782-10.054687c5.613281-5.421875 13.003906-8.410156 20.816406-8.410156h132.902344c23.578124 0 45.863281-9.054688 62.757812-25.496094.695312-.675781-5.277344 6.359375 90.667969-108.3125 14.230469-16.835937 12.101562-42.117187-4.75-56.363281-16.746094-14.113282-41.832031-12.085938-56.101563 4.460937l-58.992187 60.632813c-7.449219-9.167969-18.808594-14.882813-31.082031-14.882813h-111.480469c-15.863281-6.636719-32.695313-9.996093-50.0625-9.996093-48.140625 0-90.175781 22.234374-112.734375 63.921874-9.503906-1.800781-19.527344 1.074219-26.738282 8.285157l-47.558593 47.699219c-3.882813 3.894531-3.890625 10.195312-.015625 14.101562zm74.792968-227.121094c15.3125 0 30.117188 3.082031 44.011719 9.160156 1.265625.554688 2.628907.839844 4.007813.839844h113.527344c10.839843 0 19.996093 8.839844 19.996093 19.992187 0 11.027344-8.96875 19.996094-19.996093 19.996094h-81.566407c-5.519531 0-9.996093 4.476563-9.996093 9.996094 0 5.523438 4.476562 9.996094 9.996093 9.996094h81.566407c22.050781 0 39.988281-17.9375 39.988281-39.988282 0-1.757812-.125-3.5-.351563-5.226562 57.066406-58.660156 65.113282-66.902344 65.457032-67.3125 7.125-8.410156 19.773437-9.476562 28.1875-2.382812 8.421874 7.121093 9.488281 19.761718 2.34375 28.21875l-89.667969 107.195312c-13.09375 12.570312-30.285157 19.488281-48.457031 19.488281h-132.902344c-13.023438 0-25.351563 4.980469-34.703125 14.015625l-8.496094 8.199219-78.320313-78.316406c18.304688-34.339844 52.652344-53.871094 95.375-53.871094zm-125.320312 66.34375c3.296875-3.296875 8.359375-3.890625 12.378906-1.40625 1.730469 1.054687-3.238281-3.46875 86.589844 86.234375 3.996094 3.996094 3.78125 10.363281.054688 14.089844l-41.320313 40.707031-98.230469-98.980469zm0 0'/%3E %3Cpath d='m286.421875 49.988281v11.714844c-11.636719 4.125-19.996094 15.238281-19.996094 28.273437 0 16.535157 13.453125 29.992188 29.992188 29.992188 5.511719 0 9.996093 4.484375 9.996093 9.996094 0 5.511718-4.484374 9.996094-9.996093 9.996094-4.269531 0-8.882813-2.683594-12.980469-7.5625-3.554688-4.226563-9.859375-4.769532-14.085938-1.21875-4.226562 3.554687-4.773437 9.859374-1.21875 14.085937 5.34375 6.355469 11.628907 10.785156 18.289063 13.019531v11.667969c0 5.523437 4.476563 9.996094 9.996094 9.996094s9.996093-4.472657 9.996093-9.996094v-11.714844c11.636719-4.128906 19.996094-15.242187 19.996094-28.273437 0-16.539063-13.453125-29.992188-29.992187-29.992188-5.511719 0-9.996094-4.484375-9.996094-9.996094 0-5.511718 4.484375-10 9.996094-10 3.542969 0 7.28125 1.808594 10.8125 5.226563 3.96875 3.839844 10.296875 3.734375 14.136719-.230469 3.839843-3.96875 3.734374-10.296875-.230469-14.136718-5.074219-4.910157-10.152344-7.6875-14.722657-9.203126v-11.644531c0-5.523437-4.476562-10-9.996093-10s-9.996094 4.476563-9.996094 10zm0 0'/%3E %3C/svg%3E\");\n      cursor: initial; }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_auto-save-btn__BF24C.toolbar-button_active__2kw-4 {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 511 511.99978' xmlns='http://www.w3.org/2000/svg' fill='%234e9b5f'%3E %3Cpath d='m235.792969 347.265625c3.902343-3.910156 3.902343-10.238281 0-14.148437-3.90625-3.898438-10.234375-3.898438-14.144531 0-3.898438 3.910156-3.898438 10.238281 0 14.148437 3.910156 3.898437 10.238281 3.898437 14.144531 0zm0 0'/%3E %3Cpath d='m188.449219 109.96875c0 60.636719 49.332031 109.972656 109.96875 109.972656s109.96875-49.335937 109.96875-109.972656-49.332031-109.96875-109.96875-109.96875-109.96875 49.332031-109.96875 109.96875zm199.945312 0c0 49.613281-40.363281 89.976562-89.976562 89.976562s-89.976563-40.363281-89.976563-89.976562c0-49.609375 40.363282-89.972656 89.976563-89.972656s89.976562 40.363281 89.976562 89.972656zm0 0'/%3E %3Cpath d='m115.652344 509.042969c3.875 3.90625 10.183594 3.949219 14.109375.082031l48.46875-47.75c8.234375-8.234375 10.738281-20.425781 7.117187-31.023438l10.425782-10.054687c5.613281-5.421875 13.003906-8.410156 20.816406-8.410156h132.902344c23.578124 0 45.863281-9.054688 62.757812-25.496094.695312-.675781-5.277344 6.359375 90.667969-108.3125 14.230469-16.835937 12.101562-42.117187-4.75-56.363281-16.746094-14.113282-41.832031-12.085938-56.101563 4.460937l-58.992187 60.632813c-7.449219-9.167969-18.808594-14.882813-31.082031-14.882813h-111.480469c-15.863281-6.636719-32.695313-9.996093-50.0625-9.996093-48.140625 0-90.175781 22.234374-112.734375 63.921874-9.503906-1.800781-19.527344 1.074219-26.738282 8.285157l-47.558593 47.699219c-3.882813 3.894531-3.890625 10.195312-.015625 14.101562zm74.792968-227.121094c15.3125 0 30.117188 3.082031 44.011719 9.160156 1.265625.554688 2.628907.839844 4.007813.839844h113.527344c10.839843 0 19.996093 8.839844 19.996093 19.992187 0 11.027344-8.96875 19.996094-19.996093 19.996094h-81.566407c-5.519531 0-9.996093 4.476563-9.996093 9.996094 0 5.523438 4.476562 9.996094 9.996093 9.996094h81.566407c22.050781 0 39.988281-17.9375 39.988281-39.988282 0-1.757812-.125-3.5-.351563-5.226562 57.066406-58.660156 65.113282-66.902344 65.457032-67.3125 7.125-8.410156 19.773437-9.476562 28.1875-2.382812 8.421874 7.121093 9.488281 19.761718 2.34375 28.21875l-89.667969 107.195312c-13.09375 12.570312-30.285157 19.488281-48.457031 19.488281h-132.902344c-13.023438 0-25.351563 4.980469-34.703125 14.015625l-8.496094 8.199219-78.320313-78.316406c18.304688-34.339844 52.652344-53.871094 95.375-53.871094zm-125.320312 66.34375c3.296875-3.296875 8.359375-3.890625 12.378906-1.40625 1.730469 1.054687-3.238281-3.46875 86.589844 86.234375 3.996094 3.996094 3.78125 10.363281.054688 14.089844l-41.320313 40.707031-98.230469-98.980469zm0 0'/%3E %3Cpath d='m286.421875 49.988281v11.714844c-11.636719 4.125-19.996094 15.238281-19.996094 28.273437 0 16.535157 13.453125 29.992188 29.992188 29.992188 5.511719 0 9.996093 4.484375 9.996093 9.996094 0 5.511718-4.484374 9.996094-9.996093 9.996094-4.269531 0-8.882813-2.683594-12.980469-7.5625-3.554688-4.226563-9.859375-4.769532-14.085938-1.21875-4.226562 3.554687-4.773437 9.859374-1.21875 14.085937 5.34375 6.355469 11.628907 10.785156 18.289063 13.019531v11.667969c0 5.523437 4.476563 9.996094 9.996094 9.996094s9.996093-4.472657 9.996093-9.996094v-11.714844c11.636719-4.128906 19.996094-15.242187 19.996094-28.273437 0-16.539063-13.453125-29.992188-29.992187-29.992188-5.511719 0-9.996094-4.484375-9.996094-9.996094 0-5.511718 4.484375-10 9.996094-10 3.542969 0 7.28125 1.808594 10.8125 5.226563 3.96875 3.839844 10.296875 3.734375 14.136719-.230469 3.839843-3.96875 3.734374-10.296875-.230469-14.136718-5.074219-4.910157-10.152344-7.6875-14.722657-9.203126v-11.644531c0-5.523437-4.476562-10-9.996093-10s-9.996094 4.476563-9.996094 10zm0 0'/%3E %3C/svg%3E\");\n      cursor: pointer; }\n    .toolbar-button_toolbar-button-container__3j0gl.toolbar-button_auto-save-btn__BF24C.toolbar-button_pending__25UhL {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 511 511.99978' xmlns='http://www.w3.org/2000/svg' fill='%2362656c'%3E %3Cpath d='m235.792969 347.265625c3.902343-3.910156 3.902343-10.238281 0-14.148437-3.90625-3.898438-10.234375-3.898438-14.144531 0-3.898438 3.910156-3.898438 10.238281 0 14.148437 3.910156 3.898437 10.238281 3.898437 14.144531 0zm0 0'/%3E %3Cpath d='m188.449219 109.96875c0 60.636719 49.332031 109.972656 109.96875 109.972656s109.96875-49.335937 109.96875-109.972656-49.332031-109.96875-109.96875-109.96875-109.96875 49.332031-109.96875 109.96875zm199.945312 0c0 49.613281-40.363281 89.976562-89.976562 89.976562s-89.976563-40.363281-89.976563-89.976562c0-49.609375 40.363282-89.972656 89.976563-89.972656s89.976562 40.363281 89.976562 89.972656zm0 0'/%3E %3Cpath d='m115.652344 509.042969c3.875 3.90625 10.183594 3.949219 14.109375.082031l48.46875-47.75c8.234375-8.234375 10.738281-20.425781 7.117187-31.023438l10.425782-10.054687c5.613281-5.421875 13.003906-8.410156 20.816406-8.410156h132.902344c23.578124 0 45.863281-9.054688 62.757812-25.496094.695312-.675781-5.277344 6.359375 90.667969-108.3125 14.230469-16.835937 12.101562-42.117187-4.75-56.363281-16.746094-14.113282-41.832031-12.085938-56.101563 4.460937l-58.992187 60.632813c-7.449219-9.167969-18.808594-14.882813-31.082031-14.882813h-111.480469c-15.863281-6.636719-32.695313-9.996093-50.0625-9.996093-48.140625 0-90.175781 22.234374-112.734375 63.921874-9.503906-1.800781-19.527344 1.074219-26.738282 8.285157l-47.558593 47.699219c-3.882813 3.894531-3.890625 10.195312-.015625 14.101562zm74.792968-227.121094c15.3125 0 30.117188 3.082031 44.011719 9.160156 1.265625.554688 2.628907.839844 4.007813.839844h113.527344c10.839843 0 19.996093 8.839844 19.996093 19.992187 0 11.027344-8.96875 19.996094-19.996093 19.996094h-81.566407c-5.519531 0-9.996093 4.476563-9.996093 9.996094 0 5.523438 4.476562 9.996094 9.996093 9.996094h81.566407c22.050781 0 39.988281-17.9375 39.988281-39.988282 0-1.757812-.125-3.5-.351563-5.226562 57.066406-58.660156 65.113282-66.902344 65.457032-67.3125 7.125-8.410156 19.773437-9.476562 28.1875-2.382812 8.421874 7.121093 9.488281 19.761718 2.34375 28.21875l-89.667969 107.195312c-13.09375 12.570312-30.285157 19.488281-48.457031 19.488281h-132.902344c-13.023438 0-25.351563 4.980469-34.703125 14.015625l-8.496094 8.199219-78.320313-78.316406c18.304688-34.339844 52.652344-53.871094 95.375-53.871094zm-125.320312 66.34375c3.296875-3.296875 8.359375-3.890625 12.378906-1.40625 1.730469 1.054687-3.238281-3.46875 86.589844 86.234375 3.996094 3.996094 3.78125 10.363281.054688 14.089844l-41.320313 40.707031-98.230469-98.980469zm0 0'/%3E %3Cpath d='m286.421875 49.988281v11.714844c-11.636719 4.125-19.996094 15.238281-19.996094 28.273437 0 16.535157 13.453125 29.992188 29.992188 29.992188 5.511719 0 9.996093 4.484375 9.996093 9.996094 0 5.511718-4.484374 9.996094-9.996093 9.996094-4.269531 0-8.882813-2.683594-12.980469-7.5625-3.554688-4.226563-9.859375-4.769532-14.085938-1.21875-4.226562 3.554687-4.773437 9.859374-1.21875 14.085937 5.34375 6.355469 11.628907 10.785156 18.289063 13.019531v11.667969c0 5.523437 4.476563 9.996094 9.996094 9.996094s9.996093-4.472657 9.996093-9.996094v-11.714844c11.636719-4.128906 19.996094-15.242187 19.996094-28.273437 0-16.539063-13.453125-29.992188-29.992187-29.992188-5.511719 0-9.996094-4.484375-9.996094-9.996094 0-5.511718 4.484375-10 9.996094-10 3.542969 0 7.28125 1.808594 10.8125 5.226563 3.96875 3.839844 10.296875 3.734375 14.136719-.230469 3.839843-3.96875 3.734374-10.296875-.230469-14.136718-5.074219-4.910157-10.152344-7.6875-14.722657-9.203126v-11.644531c0-5.523437-4.476562-10-9.996093-10s-9.996094 4.476563-9.996094 10zm0 0'/%3E %3C/svg%3E\"); }\n";
+	var styles$1 = {"toolbar-button-container":"toolbar-button_toolbar-button-container__3j0gl","record-btn":"toolbar-button_record-btn__2Nv5d","inactive":"toolbar-button_inactive__CPlZn","active":"toolbar-button_active__2kw-4","auto-save-btn":"toolbar-button_auto-save-btn__BF24C","pending":"toolbar-button_pending__25UhL"};
 	styleInject(css$1);
 
 	class ToolbarButton extends react_2 {
 	  render() {
-	    const buttonStatus = `${this.props.id}-${this.props.status}`;
 	    return react.createElement("div", {
-	      id: styles$1[this.props.id],
-	      className: `${styles$1["toolbar-button-container"]} ${styles$1[buttonStatus]}`,
+	      className: `${styles$1["toolbar-button-container"]} ${styles$1[this.props.id]} ${styles$1[this.props.status]}`,
 	      onClick: this.props.onClick,
+	      onMouseOver: this.props.onMouseOver,
+	      onMouseOut: this.props.onMouseOut,
 	      title: this.props.title
 	    });
 	  }
 
 	}
 
+	const BUTTON_STATUS = {
+	  active: "active",
+	  inactive: "inactive",
+	  pending: "pending"
+	};
+
+	function getAutosaveButton(buttonStatus) {
+	  return buttonStatus === BUTTON_STATUS.active ? react.createElement(ToolbarButton, {
+	    id: "auto-save-btn",
+	    status: this.props.autosaveButtonStatus,
+	    onClick: this.onAutosaveClick,
+	    onMouseOver: this.onAutosaveMouseover,
+	    onMouseOut: this.onAutosaveMouseout
+	  }) : react.createElement(ToolbarButton, {
+	    id: "auto-save-btn",
+	    status: this.props.autosaveButtonStatus
+	  });
+	}
+
 	class Toolbar extends react_2 {
 	  constructor(props) {
 	    super(props);
 	    this.onRecordClick = this.onRecordClick.bind(this);
+	    this.onAutosaveClick = this.onAutosaveClick.bind(this);
+	    this.onAutosaveMouseover = this.onAutosaveMouseover.bind(this);
+	    this.onAutosaveMouseout = this.onAutosaveMouseout.bind(this);
 	  }
 
 	  render() {
+	    const createAutosaveButton = getAutosaveButton.bind(this, this.props.autosaveButtonStatus);
 	    return react.createElement("ul", {
 	      className: styles["tracking-buttons"]
-	    }, react.createElement("li", {
-	      id: "record-btn"
-	    }, react.createElement(ToolbarButton, {
+	    }, react.createElement("li", null, react.createElement(ToolbarButton, {
 	      id: "record-btn",
 	      status: this.props.recordButtonStatus,
 	      title: "Search for price-tag in current page",
 	      onClick: this.onRecordClick
-	    })), react.createElement("li", {
-	      id: "auto-save-btn"
-	    }, react.createElement(ToolbarButton, null)), react.createElement("li", {
+	    })), react.createElement("li", null, createAutosaveButton()), react.createElement("li", {
 	      id: "price-update-btn"
 	    }, react.createElement(ToolbarButton, null)));
 	  }
@@ -20246,34 +20301,112 @@
 	    });
 	  }
 
+	  onAutosaveClick() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "AUTO_SAVE.ATTEMPT",
+	        payload: {
+	          id
+	        }
+	      }, this.props.onPopupStatus);
+	    });
+	  }
+
+	  onAutosaveMouseover() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "AUTO_SAVE.HIGHLIGHT.PRE_START",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
+	  onAutosaveMouseout() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
 	}
 
 	var css$2 = ".popup-app_tracking-container__2kg83 {\n}\n";
 	styleInject(css$2);
 
-	const BUTTON_STATUS = {
+	const BUTTON_STATUS$1 = {
 	  active: "active",
-	  inactive: "inactive"
+	  inactive: "inactive",
+	  pending: "pending"
 	};
 
 	function updateRecordButton(buttonActive) {
 	  if (buttonActive) {
 	    this.setState(state => _objectSpread({}, state, {
-	      recordButtonStatus: BUTTON_STATUS.active
+	      recordButtonStatus: BUTTON_STATUS$1.active
 	    }));
 	  } else {
 	    this.setState(state => _objectSpread({}, state, {
-	      recordButtonStatus: BUTTON_STATUS.inactive
+	      recordButtonStatus: BUTTON_STATUS$1.inactive
 	    }));
 	  }
+	}
+
+	function updateAutosaveButton(buttonEnabled) {
+	  if (buttonEnabled === true) {
+	    this.setState(state => _objectSpread({}, state, {
+	      autosaveButtonStatus: BUTTON_STATUS$1.active
+	    }));
+	  } else if (buttonEnabled === false) {
+	    this.setState(state => _objectSpread({}, state, {
+	      autosaveButtonStatus: BUTTON_STATUS$1.inactive
+	    }));
+	  }
+	}
+
+	function setPendingAutosave() {
+	  return _setPendingAutosave.apply(this, arguments);
+	}
+
+	function _setPendingAutosave() {
+	  _setPendingAutosave = _asyncToGenerator(function* () {
+	    yield this.setState(state => _objectSpread({}, state, {
+	      autosaveButtonStatus: BUTTON_STATUS$1.pending
+	    }));
+	  });
+	  return _setPendingAutosave.apply(this, arguments);
 	}
 
 	class Popup extends react_2 {
 	  constructor(props) {
 	    super(props);
 	    this.onPopupStatus = this.onPopupStatus.bind(this);
+	    this.updateRecordButton = updateRecordButton.bind(this);
+	    this.updateAutosaveButton = updateAutosaveButton.bind(this);
+	    this.setPendingAutosave = setPendingAutosave.bind(this);
 	    this.state = {
-	      recordButtonStatus: BUTTON_STATUS.inactive
+	      recordButtonStatus: BUTTON_STATUS$1.inactive,
+	      autosaveButtonStatus: BUTTON_STATUS$1.inactive
 	    };
 	    chrome.runtime.sendMessage({
 	      type: "POPUP.STATUS"
@@ -20283,6 +20416,7 @@
 	  render() {
 	    return react.createElement(Toolbar, {
 	      recordButtonStatus: this.state.recordButtonStatus,
+	      autosaveButtonStatus: this.state.autosaveButtonStatus,
 	      onPopupStatus: this.onPopupStatus
 	    });
 	  }
@@ -20291,9 +20425,29 @@
 	    state
 	  }) {
 	    const {
-	      recordActive
+	      recordActive,
+	      autoSaveEnabled
 	    } = state;
-	    updateRecordButton.bind(this)(recordActive);
+	    this.updateRecordButton(recordActive);
+
+	    if (autoSaveEnabled) {
+	      this.setPendingAutosave();
+	      chrome.tabs.query({
+	        active: true,
+	        currentWindow: true
+	      }, ([{
+	        id
+	      }]) => {
+	        chrome.runtime.sendMessage({
+	          type: "AUTO_SAVE.STATUS",
+	          payload: {
+	            id
+	          }
+	        }, this.updateAutosaveButton);
+	      });
+	    } else {
+	      this.updateAutosaveButton(autoSaveEnabled);
+	    }
 	  }
 
 	}

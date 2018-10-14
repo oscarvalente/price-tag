@@ -4,12 +4,12 @@ import styles from "./toolbar-button.scss";
 
 class ToolbarButton extends Component {
     render() {
-        const buttonStatus = `${this.props.id}-${this.props.status}`;
         return (
             <div
-                id={styles[this.props.id]}
-                className={`${styles["toolbar-button-container"]} ${styles[buttonStatus]}`}
+                className={`${styles["toolbar-button-container"]} ${styles[this.props.id]} ${styles[this.props.status]}`}
                 onClick={this.props.onClick}
+                onMouseOver={this.props.onMouseOver}
+                onMouseOut={this.props.onMouseOut}
                 title={this.props.title}>
             </div>
         );
