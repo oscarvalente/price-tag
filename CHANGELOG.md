@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.15
+* Migrate main popup to React
+
 # v0.18.14
 * Open modal links on blank target
 
