@@ -1,7 +1,9 @@
 import React, {Component} from "react";
-import Toolbar from "../components/toolbar";
-
 import styles from "./popup-app.css";
+
+import Toolbar from "../components/toolbar";
+import IconLink from "../components/icon-link";
+
 
 const BUTTON_STATUS = {
     active: "active",
@@ -86,13 +88,16 @@ class Popup extends Component {
 
     render() {
         return (
-            <Toolbar recordButtonStatus={this.state.recordButtonStatus}
-                     autosaveButtonStatus={this.state.autosaveButtonStatus}
-                     priceUpdateButtonStatus={this.state.priceUpdateButtonStatus}
-                     onPopupStatus={this.onPopupStatus}
-                     onAutosaveStatus={this.updateAutosaveButton}
-                     onPriceUpdateStatus={this.updatePriceUpdateButton}
-            />
+            <div>
+                <Toolbar recordButtonStatus={this.state.recordButtonStatus}
+                         autosaveButtonStatus={this.state.autosaveButtonStatus}
+                         priceUpdateButtonStatus={this.state.priceUpdateButtonStatus}
+                         onPopupStatus={this.onPopupStatus}
+                         onAutosaveStatus={this.updateAutosaveButton}
+                         onPriceUpdateStatus={this.updatePriceUpdateButton}
+                />
+                <IconLink href="tracked-items.html" icon="tracked-items" title="Tracked items"/>
+            </div>
         );
     }
 

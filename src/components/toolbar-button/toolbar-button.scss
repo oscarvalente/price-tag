@@ -40,39 +40,39 @@
       cursor: pointer;
     }
     &.inactive {
-      background: svg-inline(record-inactive);
+      background: svg-inline(record-inactive) no-repeat;
     }
 
     &.active {
-      background: svg-inline(record-active);
+      background: svg-inline(record-active) no-repeat;
     }
   }
 
   &.auto-save-btn {
     &.inactive {
-      background: svg-inline(auto-save-inactive);
+      background: svg-inline(auto-save-inactive) no-repeat;
       cursor: initial;
     }
     &.active {
-      background: svg-inline(auto-save-active);
+      background: svg-inline(auto-save-active) no-repeat;
       cursor: pointer;
     }
     &.pending {
-      background: svg-inline(auto-save-pending);
+      background: svg-inline(auto-save-pending) no-repeat;
     }
   }
 
   &.price-update-btn {
     &.inactive {
-      background: svg-inline(price-update-inactive);
+      background: svg-inline(price-update-inactive) no-repeat;
       cursor: initial;
     }
     &.active {
-      background: svg-inline(price-update-active);
+      background: svg-inline(price-update-active) no-repeat;
       cursor: pointer;
     }
     &.pending {
-      background: svg-inline(price-update-pending);
+      background: svg-inline(price-update-pending) no-repeat;
     }
   }
 }

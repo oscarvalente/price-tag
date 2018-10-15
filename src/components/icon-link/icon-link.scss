@@ -1,0 +1,35 @@
+@svg-load tracked-items-icon url(../../../assets/shopping.svg) {
+}
+
+.icon-link-container {
+  display: block;
+  line-height: 18px;
+  height: 18px;
+  margin-top: 28px;
+  min-width: 116px;
+  cursor: pointer;
+
+  > * {
+    vertical-align: middle;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  .title {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  .icon {
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    padding-right: 6px;
+
+    &.tracked-items {
+      background: svg-inline(tracked-items-icon) no-repeat;
+    }
+  }
+}
