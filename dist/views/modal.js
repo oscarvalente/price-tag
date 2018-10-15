@@ -37,4 +37,3 @@
     });
 
 }());
-//# sourceMappingURL=modal.js.map
