@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, {Component, Fragment} from "react";
 import styles from "./popup-app.css";
 
 import Toolbar from "../components/toolbar";
@@ -88,7 +88,7 @@ class Popup extends Component {
 
     render() {
         return (
-            <div>
+            <Fragment>
                 <Toolbar recordButtonStatus={this.state.recordButtonStatus}
                          autosaveButtonStatus={this.state.autosaveButtonStatus}
                          priceUpdateButtonStatus={this.state.priceUpdateButtonStatus}
@@ -97,7 +97,7 @@ class Popup extends Component {
                          onPriceUpdateStatus={this.updatePriceUpdateButton}
                 />
                 <IconLink href="tracked-items.html" icon="tracked-items" title="Tracked items"/>
-            </div>
+            </Fragment>
         );
     }
 
