@@ -1,8 +1,8 @@
 import React, {Component, Fragment} from "react";
-import styles from "./popup-app.css";
 
-import Toolbar from "../components/toolbar";
-import IconLink from "../components/icon-link";
+import styles from "./popup.scss";
+import Toolbar from "../../components/toolbar/index";
+import IconLink from "../../components/icon-link/index";
 
 
 const BUTTON_STATUS = {

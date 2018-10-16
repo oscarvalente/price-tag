@@ -6,6 +6,10 @@ body {
     font-size: 14px;
 }
 
+#tracked-items-page {
+    height: 490px;
+}
+
 #tracked-items-container {
     height: 490px;
 }
@@ -82,7 +86,7 @@ body {
 .item-container .item-watch,
 .item-container .item-icon,
 .item-container .item-notfound,
-.item-container .item-pricedown,
+.item-container .item-priceup,
 .item-container .item-pricedown {
     align-self: center;
 }

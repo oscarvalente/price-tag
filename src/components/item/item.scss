@@ -1,0 +1,97 @@
+.item-icon-container {
+  width: 20px;
+
+  .item-icon {
+    padding-right: 6px;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.status-container {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 52px;
+
+  > div:not(:last-child) {
+    padding-right: 3px;
+  }
+
+  @svg-load icon-watch url(../../../assets/eye.svg) {
+  }
+
+  @svg-load icon-notfound url(../../../assets/broken-link.svg) {
+  }
+
+  @svg-load icon-priceup url(../../../assets/line-chart.svg) {
+  }
+
+  @svg-load icon-pricedown url(../../../assets/piggy-bank.svg) {
+  }
+
+  .item-watch {
+    background: svg-inline(icon-watch) no-repeat;
+  }
+
+  .item-notfound {
+    background: svg-inline(icon-notfound) no-repeat;
+  }
+
+  .item-priceup {
+    background: svg-inline(icon-priceup) no-repeat;
+  }
+
+  .item-pricedown {
+    background: svg-inline(icon-pricedown) no-repeat;
+  }
+
+  .item-watch,
+  .item-notfound,
+  .item-priceup,
+  .item-pricedown {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.item-label-container {
+  .item-label {
+    font-size: 18px;
+
+    &.price {
+      text-align: left;
+      width: 48px;
+      font-size: 22px;
+      padding-right: 8px;
+      align-self: flex-start;
+    }
+
+    &.target-price {
+      font-style: italic;
+      color: #b5a8a8;
+    }
+  }
+
+  .item-targetprice-container {
+    padding-right: 14px;
+    width: 36px;
+  }
+
+  .item-diffperc-container {
+    display: inline-flex;
+    width: 53px;
+
+    .item-diffperc {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+.item-icon,
+.item-watch,
+.item-notfound,
+.item-priceup,
+.item-pricedown {
+  align-self: center;
+}

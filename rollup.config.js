@@ -3,7 +3,8 @@ import babel from "rollup-plugin-babel";
 import commonjs from "rollup-plugin-commonjs";
 import {terser} from "rollup-plugin-terser";
 import postcss from "rollup-plugin-postcss";
-import inlineSvg from "postcss-inline-svg";
+import postcssInlineSvg from "postcss-inline-svg";
+import postcssModules from "postcss-modules";
 import replace from "rollup-plugin-replace";
 
 const commonConfig = {
@@ -51,6 +52,17 @@ const getOutputEntryConfig = (env => {
     }
 }).bind(null, process.env.BUILD);
 
+const getPostCSSConfig = (env => {
+    switch (env) {
+        case "production":
+            return {};
+        default:
+            return {
+                sourceMap: true
+            };
+    }
+}).bind(null, process.env.BUILD);
+
 const viewConfig = {
     ...getCommonConfig(),
     plugins: [
@@ -58,11 +70,13 @@ const viewConfig = {
         postcss({
             modules: true,
             extensions: [".css", ".scss"],
+            // extract: true,
             syntax: "postcss-scss",
-            parser: "postcss-scss",
+            use: ["sass"],
             plugins: [
-                inlineSvg()
-            ]
+                postcssInlineSvg()
+            ],
+            ...getPostCSSConfig()
         }),
         replace({
             "process.env.NODE_ENV": JSON.stringify(process.env.BUILD)
@@ -112,7 +126,7 @@ export default [
             format: "iife",
             ...getOutputEntryConfig()
         },
-        ...commonConfig
+        ...viewConfig
     }, {
         input: "views/modal.js",
         output: {

@@ -1,3 +1,7 @@
+import {createElement} from "react";
+import {render} from "react-dom";
+import TrackedItems from "./src/pages/tracked-items";
+
 let trackedItemsContainer;
 let trackedItemsList;
 let listItemsLoader;
@@ -83,7 +87,7 @@ function registerHelpers() {
             </text>`
         );
     });
-    Handlebars.registerHelper("targetPrice", function registerTargetPrice(){
+    Handlebars.registerHelper("targetPrice", function registerTargetPrice() {
         return this.price !== this.currentPrice ?
             new Handlebars.SafeString(`<span class="item-label target-price" title="Price the last time you marked it">${this.price}</span>`) :
             "";
@@ -103,6 +107,8 @@ function bootstrap() {
     listItemsLoader = loadTemplate("items-list");
 
     setupUpdateTrackedItems();
+    render(createElement(TrackedItems), document.getElementById('tracked-items-page'));
+
 }
 
 function onItemRemoved(listItemElement, wasRemoved) {
