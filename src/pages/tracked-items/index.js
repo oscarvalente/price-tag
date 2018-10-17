@@ -42,10 +42,14 @@ class TrackedItems extends Component {
         clearInterval(this.setupUpdate);
     }
 
+    shouldComponentUpdate(_, nextState) {
+        return this.state.items.length !== nextState.items.length;
+    }
+
     render() {
         return (
             <section id={styles.container}>
-                <ItemsList items={this.state.items}/>
+                <ItemsList items={this.state.items} onItemRemoved={this.updateTrackedItems}/>
             </section>
         );
     }

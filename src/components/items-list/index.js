@@ -1,9 +1,9 @@
 import React, {Component} from "react";
 
 import styles from "./items-list.scss";
-import Item, {IconContainer, StatusContainer, LabelContainer} from "../item";
+import Item, {IconContainer, StatusContainer, LabelContainer, DeleteButton} from "../item";
 
-const mapItemsList = (items) =>
+const mapItemsList = (items, onItemRemoved) =>
     items.map(item =>
         <li key={item.timestamp} className={styles["item-container"]}>
             <Item value={item}>
@@ -13,7 +13,8 @@ const mapItemsList = (items) =>
                                  higherTitle={`Higher price - price is higher than when you started tracking this item (${item.currentPrice})`}
                                  lowerTitle={`Save money - price is lower than when you started tracking this item (${item.startingPrice}). Now ${item.currentPrice}`}
                 />
-                <LabelContainer/>
+                <LabelContainer targetPriceTitle="Price the last time you marked it"/>
+                <DeleteButton onItemRemoved={onItemRemoved} title="Remove item"/>
             </Item>
         </li>
     );
@@ -22,7 +23,7 @@ class ItemsList extends Component {
     render() {
         return (
             <ol id={styles["tracked-items-list"]}>
-                {mapItemsList(this.props.items)}
+                {mapItemsList(this.props.items, this.props.onItemRemoved)}
             </ol>
         );
     }

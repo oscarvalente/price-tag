@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 
 import styles from "./item.scss";
+import DiffPercentage from "../diff-percentage";
 
 const ItemContext = React.createContext();
 
@@ -44,26 +45,44 @@ const StatusContainer = (props) => {
 const LabelContainer = (props) => {
     return (
         <ItemContext.Consumer>
-            {({url, currentPrice, targetPrice, diffPercentage, dateTime}) => (
+            {({url, currentPrice, diffPercentage, dateTime, price: targetPrice}) => (
                 <a className={styles["item-label-container"]} href={url} title={url} target="_blank">
-                    <span className={styles["item-label price"]}>{currentPrice}</span>
+                    <span className={`${styles["item-label"]} ${styles.price}`}>{currentPrice}</span>
                     <div className={styles["item-targetprice-container"]}>
-                        {targetPrice}
+                        <span className={`${styles["item-label"]} ${styles["target-price"]}`}
+                              title={props.targetPriceTitle}>{targetPrice}</span>
                     </div>
-                    <div className="item-diffperc-container">
+                    <div className={styles["item-diffperc-container"]}>
                         {diffPercentage && (
-                            // TODO: new component <diff SVG>
-                            // <DiffPercentage />
                             (diffPercentage > 0 &&
-                                <div className={styles["item-diffperc win"]}></div>
+                                <DiffPercentage backgroundColor="green" value={diffPercentage}/>
                             )
                             ||
-                            <div className={styles["item-diffperc lose"]}></div>
+                            <DiffPercentage backgroundColor="red" value={diffPercentage}/>
                         )}
                     </div>
-                    <span className="item-label date">{dateTime}</span>
+                    <span className={`${styles["item-label"]} ${styles["date"]}`}>{dateTime}</span>
                 </a>
             )}
+        </ItemContext.Consumer>
+    );
+};
+
+function removeItem(url, callback) {
+    chrome.runtime.sendMessage({
+        type: "TRACKED_ITEMS.UNFOLLOW",
+        payload: {url}
+    }, callback);
+}
+
+const DeleteButton = (props) => {
+    return (
+        <ItemContext.Consumer>
+            {(({url}) => (
+                <div className={styles["item-delete"]}
+                     onClick={removeItem.bind(null, url, props.onItemRemoved)}
+                     title={props.title}></div>
+            ))}
         </ItemContext.Consumer>
     );
 };
@@ -82,5 +101,6 @@ export default Item;
 export {
     IconContainer,
     StatusContainer,
-    LabelContainer
+    LabelContainer,
+    DeleteButton
 };
