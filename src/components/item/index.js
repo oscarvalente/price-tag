@@ -49,16 +49,18 @@ const LabelContainer = (props) => {
                 <a className={styles["item-label-container"]} href={url} title={url} target="_blank">
                     <span className={`${styles["item-label"]} ${styles.price}`}>{currentPrice}</span>
                     <div className={styles["item-targetprice-container"]}>
+                        {currentPrice !== targetPrice &&
                         <span className={`${styles["item-label"]} ${styles["target-price"]}`}
                               title={props.targetPriceTitle}>{targetPrice}</span>
+                        }
                     </div>
                     <div className={styles["item-diffperc-container"]}>
                         {diffPercentage && (
                             (diffPercentage > 0 &&
-                                <DiffPercentage backgroundColor="green" value={diffPercentage}/>
+                                <DiffPercentage backgroundColor="red" value={diffPercentage}/>
                             )
                             ||
-                            <DiffPercentage backgroundColor="red" value={diffPercentage}/>
+                            <DiffPercentage backgroundColor="green" value={diffPercentage}/>
                         )}
                     </div>
                     <span className={`${styles["item-label"]} ${styles["date"]}`}>{dateTime}</span>

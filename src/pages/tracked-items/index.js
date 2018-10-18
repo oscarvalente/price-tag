@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 
 import styles from "./tracked-items.scss";
+import IconTitle from "../../components/icon-title";
 import ItemsList from "../../components/items-list";
 
 const REFRESH_INTERVAL = 14000;
@@ -21,6 +22,11 @@ function formatDate(timestamp) {
 function updateTrackedItems() {
     chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, this.onTrackedItems);
 }
+
+const BackButton = (props) => {
+    return <a href={props.href} id={styles["back-btn"]}>&lt; Back</a>;
+};
+
 
 class TrackedItems extends Component {
     constructor(props) {
@@ -49,7 +55,9 @@ class TrackedItems extends Component {
     render() {
         return (
             <section id={styles.container}>
+                <IconTitle icon="shopping" title="Tracked items"/>
                 <ItemsList items={this.state.items} onItemRemoved={this.updateTrackedItems}/>
+                <BackButton href="popup.html"/>
             </section>
         );
     }

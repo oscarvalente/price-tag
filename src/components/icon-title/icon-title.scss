@@ -1,0 +1,23 @@
+@svg-load icon-shopping url(../../../assets/shopping.svg) {
+}
+
+.title-container {
+  display: flex;
+  flex-wrap: nowrap;
+  padding: 4px 8px 3px;
+
+  .icon {
+    width: 18px;
+    height: 18px;
+
+    &.shopping {
+      background: svg-inline(icon-shopping) no-repeat;
+    }
+  }
+
+  .title {
+    display: inline;
+    font-size: 18px;
+    margin: 0 0 0 14px;
+  }
+}
