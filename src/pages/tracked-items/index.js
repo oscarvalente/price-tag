@@ -72,9 +72,7 @@ class TrackedItems extends Component {
                 isNotFound: item.statuses.includes(ITEM_STATUS.NOT_FOUND),
                 isHigher: item.statuses.includes(ITEM_STATUS.INCREASED),
                 isLower: item.statuses.includes(ITEM_STATUS.DECREASED),
-                diffPercentage: item.diffPercentage,
-                // TODO: use ^ this in the view to apply v this
-                diffPercBackground: item.diffPercentage && item.diffPercentage > 0 ? "red" : "green"
+                diffPercentage: item.diffPercentage
             }))
         }));
     }

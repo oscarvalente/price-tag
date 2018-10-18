@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.16
+* Migrate track list panel to React
+
 # v0.18.15
 * Migrate main popup to React
 
