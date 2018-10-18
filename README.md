@@ -141,9 +141,10 @@ but there's a lot more, and more to come.
     * automatic copy other assets on any change
     * checkout postcss-inline-svg usage ✅
     * refactor to react components and hoc ❗❗ `(wip)`
-        * refactor toolbar popup ❗❗ `(wip)`
-        * refactor track-panel ❗❗
+        * refactor toolbar popup ✅
+        * refactor track-panel ✅
         * refactor modal ❗❗
+        * modal dist ❗
         * evaluate folder containers vs components
  
  **Legend:**
