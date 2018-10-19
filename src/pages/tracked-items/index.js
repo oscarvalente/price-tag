@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./tracked-items.scss";
 import IconTitle from "../../components/icon-title";
@@ -27,6 +28,10 @@ const BackButton = (props) => {
     return <a href={props.href} id={styles["back-btn"]}>&lt; Back</a>;
 };
 
+BackButton.propTypes = {
+    href: PropTypes.string
+};
+
 
 class TrackedItems extends Component {
     constructor(props) {
@@ -41,11 +46,11 @@ class TrackedItems extends Component {
 
     componentDidMount() {
         this.updateTrackedItems();
-        this.setupUpdate = setInterval(this.updateTrackedItems, REFRESH_INTERVAL);
+        this.setupUpdate = window.setInterval(this.updateTrackedItems, REFRESH_INTERVAL);
     }
 
     componentWillUnmount() {
-        clearInterval(this.setupUpdate);
+        window.clearInterval(this.setupUpdate);
     }
 
     shouldComponentUpdate(_, nextState) {

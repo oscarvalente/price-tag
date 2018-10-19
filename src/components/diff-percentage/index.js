@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./diff-percentage.scss";
 
@@ -50,5 +51,10 @@ class DiffPercentage extends Component {
         );
     }
 }
+
+DiffPercentage.propTypes = {
+    value: PropTypes.number,
+    backgroundColor: PropTypes.string
+};
 
 export default DiffPercentage;

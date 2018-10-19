@@ -1,6 +1,6 @@
 {
     "name": "price-tag",
-    "version": "0.18.16",
+    "version": "0.18.17",
     "description": "Records and tracks online shopping item prices",
     "main": "index.js",
     "repository": "git@bitbucket.org:oscarv_08/price-tag.git",
@@ -11,9 +11,12 @@
         "@babel/plugin-proposal-object-rest-spread": "7.0.0",
         "@babel/plugin-transform-async-to-generator": "7.1.0",
         "@babel/preset-react": "7.0.0",
+        "eslint": "5.7.0",
+        "eslint-plugin-react": "7.11.1",
         "node-sass": "4.9.3",
         "postcss-inline-svg": "3.1.1",
         "postcss-scss": "2.0.0",
+        "prop-types": "15.6.2",
         "rollup": "0.66.6",
         "rollup-plugin-babel": "4.0.3",
         "rollup-plugin-commonjs": "9.2.0",
@@ -23,11 +26,12 @@
         "rollup-plugin-terser": "3.0.0"
     },
     "scripts": {
-        "build": "yarn assemble && rollup -c --environment BUILD:production",
-        "build:watch": "yarn assemble && rollup -c -w --environment BUILD:development",
+        "build": "yarn eslint && yarn assemble && rollup -c --environment BUILD:production",
+        "build:watch": "yarn eslint && yarn assemble && rollup -c -w --environment BUILD:development",
         "assemble": "yarn clean && yarn copy:assets",
         "copy:assets": "cp -R manifest.json assets vendor views *.html *.css dist",
-        "clean": "rm -rf dist && mkdir dist"
+        "clean": "rm -rf dist && mkdir dist",
+        "eslint": "eslint --fix --cache 'src/**/*.js'"
     },
     "engines": {
         "node": "= 8.11.1"

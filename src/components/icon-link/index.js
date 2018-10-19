@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./icon-link.scss";
 
@@ -12,5 +13,11 @@ class IconLink extends Component {
         );
     }
 }
+
+IconLink.propTypes = {
+    href: PropTypes.string,
+    icon: PropTypes.string,
+    title: PropTypes.string
+};
 
 export default IconLink;

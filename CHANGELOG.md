@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.17
+* eslint in build
+
 # v0.18.16
 * Migrate track list panel to React
 

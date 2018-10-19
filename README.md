@@ -126,14 +126,14 @@ but there's a lot more, and more to come.
  * todos list in code
  * add project bundle build tool
     * add yarn as package manager ✅
-    * add rollup to build ❗ `(wip)`
+    * add rollup to build ✅
         * add babel ✅
         * add minify + uglify ✅ 
         * add sourcemap ✅
         * production build without sourcemaps ✅
         * copy needed assets to dist to have it decoupled ✅
         * add dev env ✅
-        * add eslint
+        * add eslint ✅
  * swap HandlebarsJS for React ❗
     * add react into build ✅
     * bundle css ✅
@@ -143,6 +143,7 @@ but there's a lot more, and more to come.
     * refactor to react components and hoc ❗❗ `(wip)`
         * refactor toolbar popup ❗❗ `(wip)`
         * refactor track-panel ❗❗
+        * add react prop-types ❗❗
         * refactor modal ❗❗
         * evaluate folder containers vs components
  
