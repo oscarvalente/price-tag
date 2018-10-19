@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./toolbar.css";
 import ToolbarButton from "../toolbar-button/index";
@@ -112,6 +113,15 @@ class Toolbar extends Component {
         });
     }
 }
+
+Toolbar.propTypes = {
+    autosaveButtonStatus: PropTypes.string,
+    priceUpdateButtonStatus: PropTypes.string,
+    recordButtonStatus: PropTypes.string,
+    onPopupStatus: PropTypes.func,
+    onAutosaveStatus: PropTypes.func,
+    onPriceUpdateStatus: PropTypes.func
+};
 
 export default Toolbar;
 

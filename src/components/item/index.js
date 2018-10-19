@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./item.scss";
 import DiffPercentage from "../diff-percentage";
@@ -42,11 +43,19 @@ const StatusContainer = (props) => {
     );
 };
 
+StatusContainer.propTypes = {
+    watchedTitle: PropTypes.string,
+    notFoundTitle: PropTypes.string,
+    higherTitle: PropTypes.string,
+    lowerTitle: PropTypes.string
+};
+
 const LabelContainer = (props) => {
     return (
         <ItemContext.Consumer>
             {({url, currentPrice, diffPercentage, dateTime, price: targetPrice}) => (
-                <a className={styles["item-label-container"]} href={url} title={url} target="_blank">
+                <a className={styles["item-label-container"]} href={url} title={url} target="_blank"
+                   rel="noopener noreferrer">
                     <span className={`${styles["item-label"]} ${styles.price}`}>{currentPrice}</span>
                     <div className={styles["item-targetprice-container"]}>
                         {currentPrice !== targetPrice &&
@@ -70,6 +79,10 @@ const LabelContainer = (props) => {
     );
 };
 
+LabelContainer.propTypes = {
+    targetPriceTitle: PropTypes.string
+};
+
 function removeItem(url, callback) {
     chrome.runtime.sendMessage({
         type: "TRACKED_ITEMS.UNFOLLOW",
@@ -87,6 +100,14 @@ const DeleteButton = (props) => {
             ))}
         </ItemContext.Consumer>
     );
+};
+
+DeleteButton.propTypes = {
+    title: PropTypes.string
+};
+
+DeleteButton.propTypes = {
+    onItemRemoved: PropTypes.func
 };
 
 class Item extends Component {

@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./icon-title.scss";
 
@@ -12,5 +13,10 @@ class IconTitle extends Component {
         );
     }
 }
+
+IconTitle.propTypes = {
+    icon: PropTypes.string,
+    title: PropTypes.string
+};
 
 export default IconTitle;

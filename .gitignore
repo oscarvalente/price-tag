@@ -6,5 +6,7 @@ node_modules/*
 node_modules/.yarn-integrity
 yarn-error.log
 
+.eslintcache
+
 # Temp
 my-state.temp.js

@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./items-list.scss";
 import Item, {IconContainer, StatusContainer, LabelContainer, DeleteButton} from "../item";
@@ -28,5 +29,10 @@ class ItemsList extends Component {
         );
     }
 }
+
+ItemsList.propTypes = {
+    items: PropTypes.array,
+    onItemRemoved: PropTypes.func
+};
 
 export default ItemsList;

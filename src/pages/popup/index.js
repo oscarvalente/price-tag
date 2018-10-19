@@ -1,6 +1,5 @@
 import React, {Component, Fragment} from "react";
 
-import styles from "./popup.scss";
 import Toolbar from "../../components/toolbar/index";
 import IconLink from "../../components/icon-link/index";
 

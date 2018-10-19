@@ -1,4 +1,5 @@
 import React, {Component} from "react";
+import PropTypes from "prop-types";
 
 import styles from "./toolbar-button.scss";
 
@@ -16,6 +17,13 @@ class ToolbarButton extends Component {
     }
 }
 
+ToolbarButton.propTypes = {
+    id: PropTypes.string,
+    status: PropTypes.string,
+    title: PropTypes.string,
+    onClick: PropTypes.func,
+    onMouseOver: PropTypes.func,
+    onMouseOut: PropTypes.func
+};
+
 export default ToolbarButton;
-
-
