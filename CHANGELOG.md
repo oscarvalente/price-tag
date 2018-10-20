@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.18
+* Migrate modal to react
+
 # v0.18.17
 * eslint in build
 
