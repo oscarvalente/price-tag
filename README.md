@@ -86,7 +86,7 @@ but there's a lot more, and more to come.
      * ~BUG: After delete item highlights do not happen and cursor isn't pointer~ ⚠️
      * Add overlay shadow behind modal
      * Allow HTML modal messages ✅
-     * BUG: change link "target" inside modal to blank ❗❗
+     * BUG: change link "target" inside modal to blank ✅
      * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to warning modals ❗
      * add button to stop following item in main toolbar ❗
@@ -134,18 +134,18 @@ but there's a lot more, and more to come.
         * copy needed assets to dist to have it decoupled ✅
         * add dev env ✅
         * add eslint ✅
- * swap HandlebarsJS for React ❗
+ * swap HandlebarsJS for React ✅
     * add react into build ✅
     * bundle css ✅
     * fix sourcemaps for dev build ✅
     * automatic copy other assets on any change
     * checkout postcss-inline-svg usage ✅
-    * refactor to react components and hoc ❗❗ `(wip)`
+    * refactor to react components and hoc ✅
         * refactor toolbar popup ✅
         * refactor track-panel ✅
         * add react prop-types ✅
-        * refactor modal ❗❗
-        * modal dist ❗
+        * refactor modal ✅
+        * modal dist ✅
         * evaluate folder containers vs components
  
  **Legend:**
