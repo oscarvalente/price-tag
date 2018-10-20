@@ -134,6 +134,6 @@ export default [
             format: "iife",
             ...getOutputEntryConfig()
         },
-        ...commonConfig
+        ...viewConfig
     }
 ];

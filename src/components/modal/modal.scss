@@ -1,0 +1,60 @@
+#modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0 auto;
+  transform: translate(-50%, -50%);
+  border: #e1a247 2px solid;
+  background-color: #fffbea;
+  min-width: 600px;
+
+  #modal-header {
+    background-color: #ffca65;
+
+    #title {
+      margin: 0;
+      padding: 6px 0;
+      text-align: center;
+    }
+  }
+
+  #modal-body {
+    display: flex;
+    padding: 6px 30px;
+    margin: 0 auto;
+    min-height: 70px;
+    align-items: center;
+
+    #message {
+      width: 600px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  #modal-footer {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    height: 75px;
+    padding: 6px 0;
+
+    .button {
+      background-color: #02b880;
+      border: 0;
+      color: #FFFFFF;
+      font-variant: all-petite-caps;
+      height: 70px;
+      width: 155px;
+      border-radius: 4px;
+
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+  }
+}
+
+

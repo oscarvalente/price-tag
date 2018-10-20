@@ -95,15 +95,16 @@ const DeleteButton = (props) => {
         <ItemContext.Consumer>
             {(({url}) => (
                 <div className={styles["item-delete"]}
-                     onClick={removeItem.bind(null, url, props.onItemRemoved)}
-                     title={props.title}></div>
+                     title={props.title}
+                     onClick={removeItem.bind(null, url, props.onItemRemoved)}></div>
             ))}
         </ItemContext.Consumer>
     );
 };
 
 DeleteButton.propTypes = {
-    title: PropTypes.string
+    title: PropTypes.string,
+    onItemRemoved: PropTypes.func
 };
 
 DeleteButton.propTypes = {

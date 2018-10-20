@@ -29,7 +29,7 @@
         "build": "yarn eslint && yarn assemble && rollup -c --environment BUILD:production",
         "build:watch": "yarn eslint && yarn assemble && rollup -c -w --environment BUILD:development",
         "assemble": "yarn clean && yarn copy:assets",
-        "copy:assets": "cp -R manifest.json assets vendor views *.html *.css dist",
+        "copy:assets": "cp -R manifest.json assets views *.html *.css dist",
         "clean": "rm -rf dist && mkdir dist",
         "eslint": "eslint --fix --cache 'src/**/*.js'"
     },

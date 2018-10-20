@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import styles from "./items-list.scss";
 import Item, {IconContainer, StatusContainer, LabelContainer, DeleteButton} from "../item";
 
-const mapItemsList = (items, onItemRemoved) =>
+const createItemsList = (items, onItemRemoved) =>
     items.map(item =>
         <li key={item.timestamp} className={styles["item-container"]}>
             <Item value={item}>
@@ -24,7 +24,7 @@ class ItemsList extends Component {
     render() {
         return (
             <ol id={styles["tracked-items-list"]}>
-                {mapItemsList(this.props.items, this.props.onItemRemoved)}
+                {createItemsList(this.props.items, this.props.onItemRemoved)}
             </ol>
         );
     }
