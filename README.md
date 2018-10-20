@@ -41,6 +41,7 @@ but there's a lot more, and more to come.
     * back button always visible ✅
     * BUG: after delete all items doesn't display 'no tracked items' ✅
     * minor styling ❗
+    * add undo delete button ❗
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
  * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ✅
