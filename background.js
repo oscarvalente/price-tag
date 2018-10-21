@@ -784,7 +784,7 @@ function updatePriceUpdateStatus(url, domain) {
     });
 }
 
-function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo) {
+function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
         State = enableCurrentPageTracked(State);
@@ -792,13 +792,12 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
         setDefaultAppearance();
         State = disableCurrentPageTracked(State);
     } else if (!forcePageTrackingTo) {
-        // TODO: Fix bug - if domain has (_isPathEnoughToTrack === true) then ALSO try to use the path only URL
-        // TODO: (cont.) However the currentURL needs to be used too because user may have chosen the path is enough
-        // TODO: not on the first item to be tracked in this domain
         chrome.storage.local.get([currentDomain], result => {
             const domainState = parseDomainState(result, currentDomain);
             if (domainState) {
-                const item = domainState[currentURL];
+                // NOTE: Making sure that full URL is also checked because item may have been saved with full URL
+                // in the past
+                const item = domainState[currentURL] || domainState[fullURL];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
                     State = enableCurrentPageTracked(State);
@@ -1021,7 +1020,7 @@ function onTabContextChange(tabId, url) {
 
                 updateAutoSaveStatus(State.currentURL, State.domain);
                 updatePriceUpdateStatus(State.currentURL, State.domain);
-                updateExtensionAppearance(State.domain, State.currentURL);
+                updateExtensionAppearance(State.domain, State.currentURL, null, url);
             } else {
                 // First thing to do, check:
                 // If canonical was updated (compared to the previously) + if it's relevant
@@ -1046,9 +1045,10 @@ function onTabContextChange(tabId, url) {
                             }
                         }
                     }
+
                     updateAutoSaveStatus(State.currentURL, State.domain);
                     updatePriceUpdateStatus(State.currentURL, State.domain);
-                    updateExtensionAppearance(State.domain, State.currentURL);
+                    updateExtensionAppearance(State.domain, State.currentURL, null, url);
                 });
             }
         });

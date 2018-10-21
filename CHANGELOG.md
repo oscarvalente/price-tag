@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.18.19
+* Bug fix: also use full URL to check if item is bring tracked
+
 # v0.18.18
 * Migrate modal to react
 

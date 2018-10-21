@@ -96,6 +96,7 @@ but there's a lot more, and more to come.
      * allow naming item ❗
         * toggle on
      * show if item is being tracked in popup.js
+ * BUG: force full URL checking for item tracking verification (on update extension appearance) - see `v0.18.19` ✅
  * save confirmation modal similar URLs message display as links ✅
  * pause button
  * wipe state options
