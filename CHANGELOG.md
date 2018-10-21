@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.19.0
+* Sort tracked items by time asc/price asc 
+
 # v0.18.19
 * Bug fix: also use full URL to check if item is bring tracked
 
