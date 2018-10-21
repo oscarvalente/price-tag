@@ -35,7 +35,7 @@ but there's a lot more, and more to come.
     * show current price vs target one ✅
     * improve item sorting ❗
         * by time ✅
-        * by price ❗
+        * by price ❗ `(wip)`
         * by domain, time
         * by domain, price
     * back button always visible ✅

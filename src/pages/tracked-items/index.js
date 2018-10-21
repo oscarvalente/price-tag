@@ -1,9 +1,12 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import isEqualWith from "lodash/isEqualWith";
 
 import styles from "./tracked-items.scss";
 import IconTitle from "../../components/icon-title";
 import ItemsList from "../../components/items-list";
+import OptionsList, {Option} from "../../components/options-list";
+import {TIME, CURRENT_PRICE} from "../../config/sort-tracked-items";
 
 const REFRESH_INTERVAL = 14000;
 
@@ -24,6 +27,15 @@ function updateTrackedItems() {
     chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, this.onTrackedItems);
 }
 
+function onSortChange({currentTarget}) {
+    const {id: sortByType} = currentTarget;
+    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.CHANGE_SORT", payload: {sortByType}}, this.updateTrackedItems);
+}
+
+function onOpenedTrackedItems() {
+    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.OPEN"});
+}
+
 const BackButton = (props) => {
     return <a href={props.href} id={styles["back-btn"]}>&lt; Back</a>;
 };
@@ -41,7 +53,9 @@ class TrackedItems extends Component {
         };
 
         this.onTrackedItems = this.onTrackedItems.bind(this);
+        this.onSortChange = onSortChange.bind(this);
         this.updateTrackedItems = updateTrackedItems.bind(this);
+        onOpenedTrackedItems();
     }
 
     componentDidMount() {
@@ -54,13 +68,19 @@ class TrackedItems extends Component {
     }
 
     shouldComponentUpdate(_, nextState) {
-        return this.state.items.length !== nextState.items.length;
+        return isEqualWith(this.state.items, nextState.items,
+            ({timestamp: tsA}, {timestamp: tsB}) => tsA === tsB);
     }
 
     render() {
         return (
             <section id={styles.container}>
                 <IconTitle icon="shopping" title="Tracked items"/>
+                <OptionsList name="Sort items by"
+                             value={{optionsName: "sortItems", onChange: this.onSortChange}}>
+                    <Option name="Time" id={TIME} isChecked={true}></Option>
+                    <Option name="Price" id={CURRENT_PRICE}></Option>
+                </OptionsList>
                 <ItemsList items={this.state.items} onItemRemoved={this.updateTrackedItems}/>
                 <BackButton href="popup.html"/>
             </section>

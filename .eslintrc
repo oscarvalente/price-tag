@@ -11,6 +11,7 @@
     },
     "rules": {
         "func-names": "off",
+        "no-console": "off",
         "prefer-arrow-callback": "off",
         "strict": "off",
         "no-restricted-globals": [

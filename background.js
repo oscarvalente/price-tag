@@ -1,3 +1,7 @@
+import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
+import * as SORT_BY_TYPES from "./src/config/sort-tracked-items";
+import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
+
 let State = {
     recordActive: false,
     notifications: {},
@@ -13,7 +17,8 @@ let State = {
     currentURL: null,
     canonicalURL: null,
     browserURL: null,
-    domain: null
+    domain: null,
+    _sortItemsBy: SORT_ITEMS_BY_TIME
 };
 
 const DEFAULT_ICON = "assets/icon_48.png";
@@ -398,6 +403,13 @@ function updateNotificationsItem(state, notificationId, notificationState) {
     };
 }
 
+function updateSortItemsBy(state, _sortItemsBy) {
+    return {
+        ...state,
+        _sortItemsBy
+    };
+}
+
 function canDisplayURLConfirmation(state, domain, callback) {
     chrome.storage.local.get([domain], result => {
         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
@@ -608,7 +620,7 @@ function checkForPriceChanges() {
     });
 }
 
-function getTrackedItems(callback) {
+function getTrackedItemsSortedBy(sortType, callback) {
     chrome.storage.local.get(null, result => {
         let trackedItems = [];
         Object.keys(result).forEach(key => {
@@ -630,7 +642,8 @@ function getTrackedItems(callback) {
                 }
             }
         });
-        trackedItems.sort(sortItemsByTime);
+        const sortByFn = sortTrackedItemsBy[sortType];
+        trackedItems.sort(sortByFn);
         callback(trackedItems);
     });
 }
@@ -723,10 +736,6 @@ function createHTMLTemplate(html) {
 
 function isCanonicalURLRelevant(canonical) {
     return canonical && matchesHostnameAndPath(canonical);
-}
-
-function sortItemsByTime({timestamp: tsA}, {timestamp: tsB}) {
-    return tsA - tsB;
 }
 
 function matchesDomain(string) {
@@ -1297,13 +1306,20 @@ function attachEvents() {
                         }, onSimilarElementHighlight);
                     }
                     break;
+                case "TRACKED_ITEMS.OPEN":
+                    State = updateSortItemsBy(State, SORT_ITEMS_BY_TIME);
+                    break;
                 case "TRACKED_ITEMS.GET":
-                    getTrackedItems(sendResponse);
+                    getTrackedItemsSortedBy(State._sortItemsBy, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.UNFOLLOW":
                     const {url: itemUrl} = payload;
                     removeTrackedItem(itemUrl, State.currentURL, sendResponse);
                     return true;
+                case "TRACKED_ITEMS.CHANGE_SORT":
+                    const {sortByType} = payload;
+                    State = updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
+                    break;
             }
         });
 
