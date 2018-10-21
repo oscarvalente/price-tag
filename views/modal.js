@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
                     title,
                     message,
                     buttons,
-                    generateButtonCallback: i => function onButtonClick() {
+                    generateOnButtonClickCallback: i => function onButtonClick() {
                         sendResponse({status: 1, index: i});
                     }
                 }

@@ -48,22 +48,22 @@ ModalButton.propTypes = {
     clickPayload: PropTypes.object
 };
 
-const createButtonsList = (buttons, generateButtonCallback) =>
+const createButtonsList = (buttons, generateOnButtonClickCallback) =>
     buttons.map((title, i) =>
-        <ModalButton key={i} title={title} onClick={generateButtonCallback(i)}/>
+        <ModalButton key={i} title={title} onClick={generateOnButtonClickCallback(i)}/>
     );
 
-const ModalFooter = ({buttons, generateButtonCallback}) => {
+const ModalFooter = ({buttons, generateOnButtonClickCallback}) => {
     return (
         <div id={styles["modal-footer"]}>
-            {createButtonsList(buttons, generateButtonCallback)}
+            {createButtonsList(buttons, generateOnButtonClickCallback)}
         </div>
     );
 };
 
 ModalFooter.propTypes = {
     buttons: PropTypes.array,
-    generateButtonCallback: PropTypes.func
+    generateOnButtonClickCallback: PropTypes.func
 };
 
 class Modal extends Component {

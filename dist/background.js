@@ -1,1 +1,1686 @@
-!function(){"use strict";function e(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}function t(t){for(var n=1;n<arguments.length;n++){var o=null!=arguments[n]?arguments[n]:{},r=Object.keys(o);"function"==typeof Object.getOwnPropertySymbols&&(r=r.concat(Object.getOwnPropertySymbols(o).filter(function(e){return Object.getOwnPropertyDescriptor(o,e).enumerable}))),r.forEach(function(n){e(t,n,o[n])})}return t}let n={recordActive:!1,notifications:{},notificationsCounter:0,autoSaveEnabled:!1,isPriceUpdateEnabled:!1,selection:null,isSimilarElementHighlighted:!1,originalBackgroundColor:null,isCurrentPageTracked:!1,faviconURL:null,_faviconURLMap:{},currentURL:null,canonicalURL:null,browserURL:null,domain:null};const o="assets/icon_48.png",r="assets/icon_active_48.png",i="Price Tag",s="Price Tag - This item is being tracked",c=18e4,a=12e4,l={PRICE_UPDATE:"./assets/time-is-money.svg",PRICE_NOT_FOUND:"./assets/time.svg",PRICE_FIX:"./assets/coin.svg"},u={PRICE:/((?:\d+[.,])?\d+(?:[.,]\d+)?)/,HOSTNAME:/https?:\/\/([\w.]+)\/*/,DOMAIN:/^([\w-]+\.)+[\w-]+\w$/,URL:/^https?:\/\/([\w-]+\.)+[\w-]+\w(\/[\w-=.]+)+\/?(\?([\w]+=?[\w-%!@()\\["#\]]+&?)*)?/,CAPTURE:{DOMAIN_IN_URL:/https?:\/\/([\w.]+)\/*/,HOSTNAME_AND_PATH:/^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,PROTOCOL_HOSTNAME_AND_PATH:/^(https?:\/\/(?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/}},f={WATCHED:"WATCHED",NOT_FOUND:"NOT_FOUND",INCREASED:"INCREASED",DECREASED:"DECREASED",ACK_DECREASE:"ACK_DECREASE",ACK_INCREASE:"ACK_INCREASE",FIXED:"FIXED"},E=Object.values(f);function g(e,n){return d(t({},e,{previousPrice:e.currentPrice,currentPrice:n}))}function d(e){const t=100*Math.abs(e.currentPrice-e.price)/e.price,n=parseFloat(t.toFixed(2));let o=null;return n&&((o=e.currentPrice>e.price?+n:-n)>0&&o<1?o=Math.ceil(o):o>-1&&o<0&&(o=Math.floor(o))),e.diffPercentage=o,e}function h(e,n,o,r,i=!1){o||(o=[]),r||(r=[]);const s=(c=[...function(e,t=[]){return t.length>0&&e.statuses.length>0?e.statuses.filter(e=>!t.includes(e)):e.statuses}(e,r),...o],Array.from(new Set(c)));var c;const a=t({},e,{statuses:s,lastUpdateTimestamp:(new Date).getTime()});return i&&(a.startingPrice=e.price),n&&(a.price=n),a}function m(e){return e.statuses.includes(f.WATCHED)}function A(e){return e.statuses.includes(f.NOT_FOUND)}function p(e){return e.statuses.includes(f.ACK_DECREASE)}function R(e){return e.statuses.includes(f.ACK_INCREASE)}function T(e,t,o,r,i,s,c,a){chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.CREATE",payload:{elementId:"price-tag--url-confirmation"}},({status:o})=>{if(1===o){const o=function(e,t,n){return{title:"This website recommends to follow this item through a different URL",message:`<u>${n}</u> says that a more accurate URL for this item would be:<br>`+`<i><a href="${e}" target="_blank">${e}</a></i><br>`+"If this is correct, we recommend you to follow it.<br><br><b>However</b> you can still opt to choose following the current browser URL:<br>"+`<i><a href="${t}" target="_blank">${t}</a></i><br><br>`+"Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",buttons:["Use recommended URL. Remember this option for this site","Use recommended URL but just this time","It's not correct, use the current browser URL. Remember this option","Don't use recommended URL. Use the current browser URL instead but just this time"]}}(n.canonicalURL,n.browserURL,t);chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.LOAD",payload:o},({status:o,index:r})=>{if(chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.REMOVE",payload:{elementId:"price-tag--url-confirmation"}}),1===o)switch(r){case 0:chrome.storage.local.get([t],e=>{const o=e&&e[t]&&JSON.parse(e[t])||{};o._canUseCanonical=!0,chrome.storage.local.set({[t]:JSON.stringify(o)}),n=I(n,n.canonicalURL),a(!0,!0)});break;case 1:n=I(n,n.canonicalURL),a(!0,!0);break;case 2:chrome.storage.local.get([t],e=>{const o=e&&e[t]&&JSON.parse(e[t])||{};o._canUseCanonical=!1,chrome.storage.local.set({[t]:JSON.stringify(o)}),n=I(n,n.browserURL),a(!0,!1)});break;case 3:n=I(n,n.browserURL),a(!0,!1);break;default:a(!1)}})}})}function C(){n=U(n)}function S(e,{status:t,url:o,domain:r,selection:i,price:s,faviconURL:c,faviconAlt:a}={}){t>=0?(n=M(n=y(n,n.faviconURL||c),i,s,n.faviconURL,a),e(!0)):e(!1)}function O({status:e,isHighlighted:o,originalBackgroundColor:r=null}){e>=0&&(n=function(e,n,o){return t({},e,{isSimilarElementHighlighted:n,originalBackgroundColor:o})}(n,o,r))}function b(e,t,o,r,i,s,c,a){chrome.storage.local.get([e],l=>{const u=l&&l[e]?JSON.parse(l[e]):{};u[t]=function(e,t,n,o,r,i){n||(n=null);const s=K(t);return{selection:e,price:s,currentPrice:s,startingPrice:s,previousPrice:n,faviconURL:o,faviconAlt:r,timestamp:(new Date).getTime(),statuses:i}}(o,r,void 0,i,s,c),chrome.storage.local.set({[e]:JSON.stringify(u)},()=>{n=H(n),a&&a()})})}function U(e){return t({},e,{recordActive:!1})}function N(e){return t({},e,{isCurrentPageTracked:!1})}function P(e){return t({},e,{isCurrentPageTracked:!0})}function I(e,n){return t({},e,{currentURL:n})}function D(e,n){return t({},e,{canonicalURL:n})}function _(e,n){return t({},e,{browserURL:n})}function y(e,n){return t({},e,{faviconURL:n})}function L(e,t,n){chrome.storage.local.get([t],o=>{const r=o&&o[t]&&JSON.parse(o[t])||null,i=!r||void 0===r._canUseCanonical;n(i&&!!e.canonicalURL&&e.canonicalURL!==e.browserURL)})}function v(){chrome.browserAction.setTitle({title:i}),chrome.browserAction.setIcon({path:o})}function w(){chrome.browserAction.setTitle({title:s}),chrome.browserAction.setIcon({path:r})}function H(e){return t({},e,{autoSaveEnabled:!1})}function k(e){return t({},e,{isPriceUpdateEnabled:!1})}function M(e,n,o,r,i){return t({},e,{selection:n,price:o,faviconURL:r,faviconAlt:i})}function J(){chrome.storage.local.get(null,e=>{for(let t in e)if(e.hasOwnProperty(t)&&x(t)){const o=JSON.parse(e[t]);for(let e in o)if(o.hasOwnProperty(e)&&X(e)&&m(o[e])){const r=new XMLHttpRequest,{price:i,currentPrice:s}=o[e];r.onload=function(){const r=j(this.response);try{let c=null;const a=r.querySelector(o[e].selection).textContent;if(a){const r=a.match(u.PRICE);if(r)if([,c]=r,c=K(c),i)if(c<s){const r=g(o[e],c);o[e]=h(r,null,[f.DECREASED],[f.INCREASED,f.NOT_FOUND,f.ACK_DECREASE]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{if(c<i&&!p(o[e])){$(`TRACK.PRICE_UPDATE-${n.notificationsCounter}`,l.PRICE_UPDATE,"Lower price!!",`${c} (previous ${i})`,e,e,t,f.DECREASED,{buttons:[{title:`Keep tracking but w/ new price (${c})`},{title:"Stop watching"}]})}})}else if(c>s){const r=g(o[e],c);o[e]=h(r,null,[f.INCREASED],[f.DECREASED,f.NOT_FOUND,f.ACK_INCREASE]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{if(!R(o[e])){const r=`TRACK.PRICE_UPDATE-${n.notificationsCounter}`,i=o[e].price!==o[e].previousPrice?{buttons:[{title:`Increase interest price to the previous (${o[e].previousPrice})`}]}:{buttons:[]};i.buttons.push({title:"Stop watching"}),$(r,l.PRICE_UPDATE,"Price increase",`${c} (previous ${o[e].previousPrice})`,e,e,t,f.INCREASED,i)}})}else A(o[e])?(o[e]=h(o[e],null,null,[f.NOT_FOUND]),chrome.storage.local.set({[t]:JSON.stringify(o)})):(o[e]=h(o[e],null,null,[f.NOT_FOUND]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{}));else o[e]=h(o[e],c,[f.FIXED],[f.NOT_FOUND]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{$(`TRACK.PRICE_FIXED-${n.notificationsCounter}`,l.PRICE_FIX,"Fixed price",`Ermm.. We've just fixed a wrongly set price to ${c}`,e,e,t)})}o[e].price&&!c&&(A(o[e])||(o[e]=h(o[e],null,[f.NOT_FOUND],[f.DECREASED,f.INCREASED,f.FIXED,f.ACK_DECREASE]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{const o=`TRACK.PRICE_NOT_FOUND-${n.notificationsCounter}`,r=i?` (previous ${i})`:"";$(o,l.PRICE_NOT_FOUND,"Price gone",`Price tag no longer found${r}`,e,e,t)})))}catch(r){A(o[e])||(console.warn(`Invalid price selection element in\n${e}:\t"${o[e].selection}"`),o[e]=h(o[e],null,[f.NOT_FOUND],[f.DECREASED,f.INCREASED,f.FIXED,f.ACK_DECREASE]),chrome.storage.local.set({[t]:JSON.stringify(o)},()=>{const o=`TRACK.PRICE_NOT_FOUND-${n.notificationsCounter}`,r=i?` (previous ${i})`:"";$(o,l.PRICE_NOT_FOUND,"Price gone",`Price tag no longer found${r}`,e,e,t)}))}},r.open("GET",e),r.send()}}})}function F(e){chrome.storage.local.get(null,n=>{let o=[];Object.keys(n).forEach(e=>{if(x(e)){const r=n[e],i=JSON.parse(r)||null;if(i){let e=[];Object.keys(i).forEach(n=>{if(function(e){return u.HOSTNAME.test(e)}(n)&&m(i[n])){const o=t({},i[n],{url:n});e.push(o)}}),o=[...o,...e]}}}),o.sort(B),e(o)})}function G(e,o){chrome.notifications.clear(e,r=>{if(r||o){const{domain:t,url:o,type:r}=n.notifications[e];chrome.storage.local.get([t],e=>{const n=e&&e[t]?JSON.parse(e[t]):null;switch(r){case f.DECREASED:n[o]=h(n[o],null,[f.ACK_DECREASE]);break;case f.INCREASED:n[o]=h(n[o],null,[f.ACK_INCREASE])}chrome.storage.local.set({[t]:JSON.stringify(n)})})}n=function(e,n){const o=t({},e);return delete o.notifications[n],o}(n,e)})}function $(e,o,r,i,s="",c,a,l,u={}){const f=t({type:"basic",title:r,message:i,iconUrl:o,contextMessage:s,requireInteraction:!0},u);var E;chrome.notifications.create(e,f,e=>{n=function(e,n,o){return t({},e,{notifications:t({},e.notifications,{[n]:o})})}(n,e,{url:c,domain:a,type:l})}),n=t({},E=n,{notificationsCounter:E.notificationsCounter+1})}function K(e){const t=parseFloat(e.replace(",",".")).toFixed(2);return parseFloat(t)}function j(e){var t=document.createElement("template");return e=e.trim(),t.innerHTML=e,t.content}function W(e){return e&&(t=e,u.CAPTURE.HOSTNAME_AND_PATH.test(t));var t}function B({timestamp:e},{timestamp:t}){return e-t}function x(e){return u.DOMAIN.test(e)}function X(e){return u.URL.test(e)}function q(e,o){chrome.storage.local.get([o],r=>{const i=r&&r[o]?JSON.parse(r[o]):{},s=!i[e]||!m(i[e]);if(i&&s){const e=Object.keys(i)[0];i[e]&&i[e].selection&&(n=function(e,n){return t({},e,{autoSaveEnabled:!0,selection:n=n||e.selection})}(n,i[e].selection))}else n=H(n)})}function V(e,o){chrome.storage.local.get([o],r=>{const i=(r&&r[o]?JSON.parse(r[o]):{})[e],s=i&&i.price!==i.currentPrice;n=s?function(e,n){return t({},e,{isPriceUpdateEnabled:!0,selection:n})}(n,i.selection):k(n)})}function Y(e,t,o,r){!0===o?(w(),n=P(n)):!1===o?(v(),n=N(n)):o||chrome.storage.local.get([e],o=>{const i=function(e,t){return e&&e[t]&&JSON.parse(e[t])||null}(o,e);if(i){const e=i[t]||i[r];e&&m(e)?(w(),n=P(n)):(v(),n=N(n))}else v(),n=N(n)})}function z(e){const t=e.match(u.CAPTURE.HOSTNAME_AND_PATH);let n=null;return t&&([,n]=t),n}function Q(e){const t=e.match(u.CAPTURE.PROTOCOL_HOSTNAME_AND_PATH);let n=null;return t&&([,n]=t),n}function Z(e,t,n){const o=z(t);for(let r in e)if(e.hasOwnProperty(r)&&X(r)&&m(e[r])){if(t===r)return void n(null);if(z(r)===o)return void n(r)}n(null)}function ee(e,t,n,o){chrome.storage.local.get([t],r=>{const i=r&&r[t]&&JSON.parse(r[t])||null;i?!0===i._isPathEnoughToTrack?Z(i,n,e=>{e?o(!1,!1):o(!0)}):!1===i._isPathEnoughToTrack?o(!0):Z(i,n,r=>{if(r){const s="price-tag--save-confirmation";chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.CREATE",payload:{elementId:s}},({status:c})=>{if(1===c){const c=function(e,t){return{title:"Item with similar URL to existing one",message:"It appears that the item URL you're trying to save:<br>"+`<i><a href="${e}" target="_blank">${e}</a></i><br>`+"is pretty similar to<br>"+`<i><a href="${t}" target="_blank">${t}</a></i><br><br>`+"Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",buttons:["It's not, save it! Remember this option for this site.","Don't save. Ask me again for items of this site!","Indeed the same item. Don't save! Remember this option for this site. (Use just URL path for accessing items)","For now save this item. Ask me again next time!"]}}(n,r);chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.LOAD",payload:c},({status:n,index:r})=>{if(chrome.tabs.sendMessage(e,{type:"CONFIRMATION_DISPLAY.REMOVE",payload:{elementId:s}}),1===n)switch(r){case 0:i._isPathEnoughToTrack=!1,chrome.storage.local.set({[t]:JSON.stringify(i)}),o(!0);break;case 1:o(!1,!0);break;case 2:i._isPathEnoughToTrack=!0,chrome.storage.local.set({[t]:JSON.stringify(i)}),o(!1,!1);break;case 3:o(!0);break;default:o(!1,!0)}else o(!1,!0)})}else o(!1,!0)})}else o(!0)}):o(!0)})}function te(e,o){const r=o.match(u.CAPTURE.DOMAIN_IN_URL);if(r){const[,e]=r;n=function(e,n){return t({},e,{domain:n})}(n,e),chrome.storage.local.get([e],t=>{const r=t&&t[e]&&JSON.parse(t[e])||null;if(r&&!1===r._canUseCanonical){if(n=_(n=I(n=D(n,null),o),o),!0===r._isPathEnoughToTrack){const e=Q(o);e&&(n=_(n=I(n,e),e))}q(n.currentURL,n.domain),V(n.currentURL,n.domain),Y(n.domain,n.currentURL,null,o)}else n=_(n,o),function(e,t){const n=new XMLHttpRequest;n.onload=function(){const e=j(this.response);t(e)},n.open("GET",e),n.send()}(o,e=>{const t=function(e){const t=e.querySelector('link[rel="canonical"]');return t&&t.getAttribute("href")}(e);if(W(t))n=D(n=I(n,t),t);else if(n=I(n=D(n,null),o),r&&!0===r._isPathEnoughToTrack){const e=Q(o);e&&(n=_(n=I(n,e),e))}q(n.currentURL,n.domain),V(n.currentURL,n.domain),Y(n.domain,n.currentURL,null,o)})})}}function ne(){chrome.runtime.onInstalled.addListener(()=>{console.log("Price tag installed.")}),chrome.tabs.onActivated.addListener(()=>{chrome.tabs.query({active:!0,currentWindow:!0},([{id:e,url:t}])=>{t.startsWith("http")?(te(0,t),n=y(n,n._faviconURLMap[e]||null)):v()})}),chrome.tabs.onUpdated.addListener((e,{status:o,favIconUrl:r},{active:i,url:s})=>{s.startsWith("http")?i&&r&&(n=y(n=function(e,n,o){return t({},e,{_faviconURLMap:t({},e._faviconURLMap,{[n]:o})})}(n,e,r),r)):v()}),chrome.webNavigation.onCompleted.addListener(({frameId:e})=>{0===e&&chrome.tabs.query({active:!0,currentWindow:!0},e=>{if(e.length>0){const[{id:t,url:n}]=e;te(0,n)}})}),chrome.webNavigation.onHistoryStateUpdated.addListener(()=>{chrome.tabs.query({active:!0,currentWindow:!0},e=>{if(e.length>0){const[{id:t,url:o}]=e;void 0!==o&&o!==n.browserURL&&te(0,o)}})}),chrome.runtime.onMessage.addListener(({type:e,payload:o={}},r,i)=>{const{id:s}=o;switch(e){case"POPUP.STATUS":const{recordActive:r,autoSaveEnabled:c,isPriceUpdateEnabled:a}=n;i({status:1,state:{recordActive:r,autoSaveEnabled:c,isPriceUpdateEnabled:a}});break;case"RECORD.ATTEMPT":if((n=function(e){return t({},e,{recordActive:!e.recordActive})}(n)).recordActive){const{url:e}=o;chrome.tabs.sendMessage(s,{type:"RECORD.START",payload:{url:e}},function(e,t){const{status:o,selection:r,price:i,faviconURL:s,faviconAlt:c}=t,{currentURL:a,domain:l}=n;o>0&&(L(n=y(n,n.faviconURL||s),l,t=>{t?T(e,l,0,0,0,0,0,(t,o)=>{if(t){const t=o?n.canonicalURL:n.browserURL;ee(e,l,t,e=>{e&&(b(l,t,r,i,n.faviconURL,c,[f.WATCHED]),Y(l,t,!0))})}}):ee(e,l,a,e=>{e&&(b(l,a,r,i,n.faviconURL,c,[f.WATCHED]),Y(l,a,!0))})}),n=U(n))}.bind(null,s))}else chrome.tabs.sendMessage(s,{type:"RECORD.CANCEL"},C);i({status:1,state:{recordActive:n.recordActive}});break;case"AUTO_SAVE.STATUS":const{currentURL:l,domain:u}=n;return chrome.storage.local.get([u],e=>{const t=e&&e[u]&&JSON.parse(e[u])||null;t&&!0===t._isPathEnoughToTrack?Z(t,l,e=>{e?i({status:-1}):chrome.tabs.sendMessage(s,{type:"AUTO_SAVE.CHECK_STATUS",payload:{url:l,selection:n.selection}},S.bind(null,i))}):chrome.tabs.sendMessage(s,{type:"AUTO_SAVE.CHECK_STATUS",payload:{url:l,selection:n.selection}},S.bind(null,i))}),!0;case"AUTO_SAVE.ATTEMPT":if(n.autoSaveEnabled){const{domain:e,currentURL:t,selection:o,price:r,faviconURL:c,faviconAlt:a,originalBackgroundColor:l}=n;return L(n,e,u=>{u?T(s,e,0,0,0,0,0,(t,u)=>{if(t){const t=u?n.canonicalURL:n.browserURL;ee(s,e,t,(u,E)=>{u?b(e,t,o,r,c,a,[f.WATCHED],()=>{chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.STOP",payload:{selection:o,originalBackgroundColor:l}},O),Y(e,t,!0),n=H(n),i(!1)}):E||(n=H(n))})}}):ee(s,e,t,u=>{u&&b(e,t,o,r,c,a,[f.WATCHED],()=>{chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.STOP",payload:{selection:o,originalBackgroundColor:l}},O),Y(e,t,!0),n=H(n),i(!1)})})}),!0}i(!1);break;case"AUTO_SAVE.HIGHLIGHT.PRE_START":if(n.autoSaveEnabled){const{selection:e}=n;chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.START",payload:{selection:e}},O)}break;case"AUTO_SAVE.HIGHLIGHT.PRE_STOP":if(n.autoSaveEnabled){const{selection:e,originalBackgroundColor:t}=n;chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.STOP",payload:{selection:e,originalBackgroundColor:t}},O)}break;case"PRICE_UPDATE.STATUS":return chrome.storage.local.get([n.domain],e=>{const t=(e&&e[n.domain]?JSON.parse(e[n.domain]):{})[n.currentURL];t?chrome.tabs.sendMessage(s,{type:"PRICE_UPDATE.CHECK_STATUS",payload:{selection:n.selection}},function(e,t,{status:o,selection:r,price:i,faviconURL:s,faviconAlt:c}={}){o>=0&&(n=M(n=y(n,n.faviconURL||s),r,i,n.faviconURL,c),K(i)!==t)?e(!0):e(!1)}.bind(null,i,t.price)):i(!1)}),!0;case"PRICE_UPDATE.ATTEMPT":if(n.isPriceUpdateEnabled){const{domain:e,currentURL:t,selection:o,price:r,originalBackgroundColor:c}=n,a=r&&K(r);chrome.storage.local.get([e],r=>{const l=r&&r[e]?JSON.parse(r[e]):{};l[t]=h(l[t],a,null,[f.INCREASED,f.ACK_INCREASE,f.DECREASED,f.INCREASED,f.DECREASED,f.ACK_DECREASE,f.DECREASED,f.DECREASED,f.NOT_FOUND]),l[t]=d(l[t]),chrome.storage.local.set({[e]:JSON.stringify(l)}),chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.STOP",payload:{selection:o,originalBackgroundColor:c}},O),n=k(n),i(!1)})}return!0;case"PRICE_UPDATE.HIGHLIGHT.PRE_START":if(n.isPriceUpdateEnabled){const{selection:e}=n;chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.START",payload:{selection:e}},O)}break;case"PRICE_UPDATE.HIGHLIGHT.PRE_STOP":if(n.isPriceUpdateEnabled){const{selection:e,originalBackgroundColor:t}=n;chrome.tabs.sendMessage(s,{type:"PRICE_TAG.HIGHLIGHT.STOP",payload:{selection:e,originalBackgroundColor:t}},O)}break;case"TRACKED_ITEMS.GET":return F(i),!0;case"TRACKED_ITEMS.UNFOLLOW":const{url:g}=o;return function(e,t,n){let o=!1;chrome.storage.local.get(null,r=>{Object.keys(r).forEach(i=>{if(x(i)){const s=r[i],c=JSON.parse(s)||null;c[e]&&(o=!0,c[e]=h(c[e],null,null,E),chrome.storage.local.set({[i]:JSON.stringify(c)},()=>{t===e&&(q(e,i),V(e,i),Y(i,e,!1)),n(!0)}))}}),o||n(!1)})}(g,n.currentURL,i),!0}}),chrome.notifications.onClicked.addListener(e=>{chrome.tabs.create({url:n.notifications[e].url}),G(e)}),chrome.notifications.onButtonClicked.addListener((e,t)=>{const{domain:o,url:r,type:i}=n.notifications[e];switch(t){case 0:switch(i){case f.DECREASED:chrome.storage.local.get([o],e=>{const t=e&&e[o]?JSON.parse(e[o]):{};if(t[r]){const{price:e}=t[r];t[r]=h(t[r],e,null,[f.DECREASED,f.ACK_DECREASE],!0),chrome.storage.local.set({[o]:JSON.stringify(t)})}});break;case f.INCREASED:chrome.storage.local.get([o],e=>{const t=e&&e[o]?JSON.parse(e[o]):{};if(t[r]){const{previousPrice:e}=t[r];t[r]=h(t[r],e,null,[f.INCREASED,f.ACK_INCREASE],!0),chrome.storage.local.set({[o]:JSON.stringify(t)})}})}break;case 1:switch(i){case f.INCREASED:chrome.storage.local.get([o],e=>{const t=e&&e[o]?JSON.parse(e[o]):{};t[r]&&(t[r]=h(t[r],null,null,E),chrome.storage.local.set({[o]:JSON.stringify(t)}))})}}}),chrome.notifications.onClosed.addListener(G)}function oe(e){let n={};for(let o in e)if(e.hasOwnProperty(o)&&x(o)&&e[o]){n=t({},n,{[o]:JSON.parse(e[o])})}return n}function re(e){return Object.keys(e).reduce((n,o)=>t({},n,{[o]:JSON.stringify(e[o])}),{})}function ie(){chrome.storage.local.get(null,e=>{const t=oe(e);chrome.storage.sync.get(null,e=>{const n=oe(e),o=JSON.parse(JSON.stringify(t));for(let e in n)if(n.hasOwnProperty(e)&&x(e)){const t=n[e];if(o[e]){for(let n in t)if(t.hasOwnProperty(n)){const r=t[n];o[e][n]?r.lastUpdateTimestamp>o[e][n].lastUpdateTimestamp&&(o[e][n]=JSON.parse(JSON.stringify(r))):o[e][n]=Object.assign({},r)}}else o[e]=JSON.parse(JSON.stringify(t))}chrome.storage.local.set(re(o)),chrome.storage.sync.set(re(o))})})}ie(),setInterval(ie,a),J(),setInterval(J,c),ne()}();
+(function () {
+  'use strict';
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _objectSpread(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+      var ownKeys = Object.keys(source);
+
+      if (typeof Object.getOwnPropertySymbols === 'function') {
+        ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+          return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+        }));
+      }
+
+      ownKeys.forEach(function (key) {
+        _defineProperty(target, key, source[key]);
+      });
+    }
+
+    return target;
+  }
+
+  function sortItemsByTime({
+    timestamp: tsA
+  }, {
+    timestamp: tsB
+  }) {
+    return tsA - tsB;
+  }
+
+  function sortItemsByCurrentPrice({
+    currentPrice: cpA
+  }, {
+    currentPrice: cpB
+  }) {
+    return cpA - cpB;
+  }
+
+  var sortTrackedItemsBy = {
+    TIME: sortItemsByTime,
+    CURRENT_PRICE: sortItemsByCurrentPrice
+  };
+
+  const TIME = "TIME";
+  const CURRENT_PRICE = "CURRENT_PRICE";
+
+  var SORT_BY_TYPES = /*#__PURE__*/Object.freeze({
+    TIME: TIME,
+    CURRENT_PRICE: CURRENT_PRICE
+  });
+
+  let State = {
+    recordActive: false,
+    notifications: {},
+    notificationsCounter: 0,
+    autoSaveEnabled: false,
+    isPriceUpdateEnabled: false,
+    selection: null,
+    isSimilarElementHighlighted: false,
+    originalBackgroundColor: null,
+    isCurrentPageTracked: false,
+    faviconURL: null,
+    _faviconURLMap: {},
+    currentURL: null,
+    canonicalURL: null,
+    browserURL: null,
+    domain: null,
+    _sortItemsBy: TIME
+  };
+  const DEFAULT_ICON = "assets/icon_48.png";
+  const TRACKED_ITEM_ICON = "assets/icon_active_48.png";
+  const DEFAULT_TITLE = "Price Tag";
+  const TRACKED_ITEM_TITLE = "Price Tag - This item is being tracked";
+  const PRICE_CHECKING_INTERVAL = 180000; // const PRICE_CHECKING_INTERVAL = 10000;
+
+  const SYNCHING_INTERVAL = 120000;
+  const ICONS = {
+    PRICE_UPDATE: "./assets/time-is-money.svg",
+    PRICE_NOT_FOUND: "./assets/time.svg",
+    PRICE_FIX: "./assets/coin.svg"
+  };
+  const MATCHES = {
+    PRICE: /((?:\d+[.,])?\d+(?:[.,]\d+)?)/,
+    HOSTNAME: /https?:\/\/([\w.]+)\/*/,
+    DOMAIN: /^([\w-]+\.)+[\w-]+\w$/,
+    URL: /^https?:\/\/([\w-]+\.)+[\w-]+\w(\/[\w-=.]+)+\/?(\?([\w]+=?[\w-%!@()\\["#\]]+&?)*)?/,
+    CAPTURE: {
+      DOMAIN_IN_URL: /https?:\/\/([\w.]+)\/*/,
+      HOSTNAME_AND_PATH: /^https?:\/\/((?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/,
+      PROTOCOL_HOSTNAME_AND_PATH: /^(https?:\/\/(?:[\w-]+\.)+[\w-]+\w(?:\/[\w-=.]+)+\/?)/
+    }
+  };
+  const ITEM_STATUS = {
+    WATCHED: "WATCHED",
+    NOT_FOUND: "NOT_FOUND",
+    INCREASED: "INCREASED",
+    DECREASED: "DECREASED",
+    ACK_DECREASE: "ACK_DECREASE",
+    ACK_INCREASE: "ACK_INCREASE",
+    FIXED: "FIXED"
+  };
+  const ALL_ITEM_STATUSES = Object.values(ITEM_STATUS);
+
+  function removeStatuses(item, statusesToRemove = []) {
+    return statusesToRemove.length > 0 && item.statuses.length > 0 ? item.statuses.filter(status => !statusesToRemove.includes(status)) : item.statuses;
+  }
+
+  function toUnique(array) {
+    return Array.from(new Set(array));
+  }
+
+  function updateItemCurrentPrice(item, newPrice) {
+    const previousPrice = item.currentPrice;
+
+    const newItem = _objectSpread({}, item, {
+      previousPrice,
+      currentPrice: newPrice
+    });
+
+    return updateItemDiffPercentage(newItem);
+  }
+
+  function updateItemDiffPercentage(item) {
+    const diff = Math.abs(item.currentPrice - item.price) * 100 / item.price;
+    const diffPerc = parseFloat(diff.toFixed(2));
+    let diffPercentage = null;
+
+    if (diffPerc) {
+      diffPercentage = item.currentPrice > item.price ? +diffPerc : -diffPerc;
+
+      if (diffPercentage > 0 && diffPercentage < 1) {
+        diffPercentage = Math.ceil(diffPercentage);
+      } else if (diffPercentage > -1 && diffPercentage < 0) {
+        diffPercentage = Math.floor(diffPercentage);
+      }
+    }
+
+    item.diffPercentage = diffPercentage;
+    return item;
+  }
+
+  function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
+    if (!statusesToAdd) {
+      statusesToAdd = [];
+    }
+
+    if (!statusesToRemove) {
+      statusesToRemove = [];
+    }
+
+    const statuses = toUnique([...removeStatuses(item, statusesToRemove), ...statusesToAdd]);
+
+    const updatedItem = _objectSpread({}, item, {
+      statuses,
+      lastUpdateTimestamp: new Date().getTime()
+    });
+
+    if (forceStartingPrice) {
+      updatedItem.startingPrice = item.price;
+    }
+
+    if (newPrice) {
+      updatedItem.price = newPrice;
+    }
+
+    return updatedItem;
+  }
+
+  function isWatched(item) {
+    return item.statuses.includes(ITEM_STATUS.WATCHED);
+  }
+
+  function isNotFound(item) {
+    return item.statuses.includes(ITEM_STATUS.NOT_FOUND);
+  }
+
+  function hasAcknowledgeDecrease(item) {
+    return item.statuses.includes(ITEM_STATUS.ACK_DECREASE);
+  }
+
+  function hasAcknowledgeIncrease(item) {
+    return item.statuses.includes(ITEM_STATUS.ACK_INCREASE);
+  }
+
+  function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
+    const modalElementId = "price-tag--url-confirmation";
+    chrome.tabs.sendMessage(tabId, {
+      type: "CONFIRMATION_DISPLAY.CREATE",
+      payload: {
+        elementId: modalElementId
+      }
+    }, ({
+      status
+    }) => {
+      if (status === 1) {
+        const payload = buildURLConfirmationPayload(State.canonicalURL, State.browserURL, domain);
+        chrome.tabs.sendMessage(tabId, {
+          type: "CONFIRMATION_DISPLAY.LOAD",
+          payload
+        }, ({
+          status,
+          index
+        }) => {
+          chrome.tabs.sendMessage(tabId, {
+            type: "CONFIRMATION_DISPLAY.REMOVE",
+            payload: {
+              elementId: modalElementId
+            }
+          });
+
+          if (status === 1) {
+            switch (index) {
+              case 0:
+                // said Yes, can use canonical and remember this option
+                chrome.storage.local.get([domain], result => {
+                  const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
+                  domainState._canUseCanonical = true;
+                  chrome.storage.local.set({
+                    [domain]: JSON.stringify(domainState)
+                  });
+                  State = updateCurrentURL(State, State.canonicalURL);
+                  callback(true, true);
+                });
+                break;
+
+              case 1:
+                // said Yes, but use canonical just this time
+                State = updateCurrentURL(State, State.canonicalURL);
+                callback(true, true);
+                break;
+
+              case 2:
+                // said No, use browser URL and remember this option
+                chrome.storage.local.get([domain], result => {
+                  const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
+                  domainState._canUseCanonical = false;
+                  chrome.storage.local.set({
+                    [domain]: JSON.stringify(domainState)
+                  });
+                  State = updateCurrentURL(State, State.browserURL);
+                  callback(true, false);
+                });
+                break;
+
+              case 3:
+                // said No, use browser URL but ask again
+                State = updateCurrentURL(State, State.browserURL);
+                callback(true, false);
+                break;
+
+              default:
+                // cannot recognize this modal button click
+                callback(false);
+                break;
+            }
+          }
+        });
+      }
+    });
+  }
+
+  function onRecordDone(tabId, payload) {
+    const {
+      status,
+      selection,
+      price,
+      faviconURL,
+      faviconAlt
+    } = payload;
+    const {
+      currentURL,
+      domain
+    } = State;
+
+    if (status > 0) {
+      State = updateFaviconURL(State, State.faviconURL || faviconURL);
+      canDisplayURLConfirmation(State, domain, canDisplay => {
+        if (canDisplay) {
+          onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
+            if (canSave) {
+              const url = useCaninocal ? State.canonicalURL : State.browserURL;
+              checkForURLSimilarity(tabId, domain, url, isToSave => {
+                if (isToSave) {
+                  createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+                  updateExtensionAppearance(domain, url, true);
+                }
+              });
+            }
+          });
+        } else {
+          checkForURLSimilarity(tabId, domain, currentURL, isToSave => {
+            if (isToSave) {
+              createItem(domain, currentURL, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
+              updateExtensionAppearance(domain, currentURL, true);
+            }
+          });
+        }
+      });
+      State = disableRecord(State);
+    }
+  }
+
+  function onRecordCancel() {
+    State = disableRecord(State);
+  }
+
+  function onAutoSaveCheckStatus(sendResponse, {
+    status,
+    url,
+    domain,
+    selection,
+    price,
+    faviconURL,
+    faviconAlt
+  } = {}) {
+    if (status >= 0) {
+      State = updateFaviconURL(State, State.faviconURL || faviconURL);
+      State = setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+      sendResponse(true);
+    } else {
+      sendResponse(false);
+    }
+  }
+
+  function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {
+    status,
+    selection,
+    price,
+    faviconURL,
+    faviconAlt
+  } = {}) {
+    if (status >= 0) {
+      State = updateFaviconURL(State, State.faviconURL || faviconURL);
+      State = setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+
+      if (toPrice(price) !== trackedPrice) {
+        sendResponse(true);
+        return;
+      }
+    }
+
+    sendResponse(false);
+  }
+
+  function onSimilarElementHighlight({
+    status,
+    isHighlighted: isSimilarElementHighlighted,
+    originalBackgroundColor = null
+  }) {
+    if (status >= 0) {
+      State = setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
+    }
+  }
+
+  function createTrackedItem(selection, trackedPrice, previousPrice, faviconURL, faviconAlt, statuses) {
+    if (!previousPrice) {
+      previousPrice = null;
+    }
+
+    const price = toPrice(trackedPrice);
+    return {
+      selection,
+      price,
+      currentPrice: price,
+      startingPrice: price,
+      previousPrice,
+      faviconURL,
+      faviconAlt,
+      timestamp: new Date().getTime(),
+      statuses
+    };
+  } // TODO: price becomes a class
+
+
+  function createItem(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
+    chrome.storage.local.get([domain], result => {
+      const items = result && result[domain] ? JSON.parse(result[domain]) : {};
+      items[url] = createTrackedItem(selection, price, undefined, faviconURL, faviconAlt, statuses);
+      chrome.storage.local.set({
+        [domain]: JSON.stringify(items)
+      }, () => {
+        State = disableAutoSave(State);
+
+        if (callback) {
+          callback();
+        } // TODO: sendResponse("done"); // foi gravado ou não
+
+      });
+    });
+  }
+
+  function toggleRecord(state) {
+    return _objectSpread({}, state, {
+      recordActive: !state.recordActive
+    });
+  }
+
+  function disableRecord(state) {
+    return _objectSpread({}, state, {
+      recordActive: false
+    });
+  }
+
+  function disableCurrentPageTracked(state) {
+    return _objectSpread({}, state, {
+      isCurrentPageTracked: false
+    });
+  }
+
+  function enableCurrentPageTracked(state) {
+    return _objectSpread({}, state, {
+      isCurrentPageTracked: true
+    });
+  }
+
+  function updateCurrentDomain(state, domain) {
+    return _objectSpread({}, state, {
+      domain
+    });
+  }
+
+  function updateCurrentURL(state, currentURL) {
+    return _objectSpread({}, state, {
+      currentURL
+    });
+  }
+
+  function updateCanonicalURL(state, canonicalURL) {
+    return _objectSpread({}, state, {
+      canonicalURL
+    });
+  }
+
+  function updateBrowserURL(state, browserURL) {
+    return _objectSpread({}, state, {
+      browserURL
+    });
+  }
+
+  function updateFaviconURL(state, faviconURL) {
+    return _objectSpread({}, state, {
+      faviconURL
+    });
+  }
+
+  function updateFaviconURLMapItem(state, tabId, faviconURL) {
+    return _objectSpread({}, state, {
+      _faviconURLMap: _objectSpread({}, state._faviconURLMap, {
+        [tabId]: faviconURL
+      })
+    });
+  }
+
+  function incrementNotificationsCounter(state) {
+    const notificationsCounter = state.notificationsCounter + 1;
+    return _objectSpread({}, state, {
+      notificationsCounter
+    });
+  }
+
+  function deleteNotificationsItem(state, notificationId) {
+    const newState = _objectSpread({}, state);
+
+    delete newState.notifications[notificationId];
+    return newState;
+  }
+
+  function updateNotificationsItem(state, notificationId, notificationState) {
+    return _objectSpread({}, state, {
+      notifications: _objectSpread({}, state.notifications, {
+        [notificationId]: notificationState
+      })
+    });
+  }
+
+  function updateSortItemsBy(state, _sortItemsBy) {
+    return _objectSpread({}, state, {
+      _sortItemsBy
+    });
+  }
+
+  function canDisplayURLConfirmation(state, domain, callback) {
+    chrome.storage.local.get([domain], result => {
+      const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+      const isUseCanonicalPrefUnset = !domainState || domainState._canUseCanonical === undefined;
+      callback(isUseCanonicalPrefUnset && !!state.canonicalURL && state.canonicalURL !== state.browserURL);
+    });
+  }
+
+  function setDefaultAppearance() {
+    chrome.browserAction.setTitle({
+      title: DEFAULT_TITLE
+    });
+    chrome.browserAction.setIcon({
+      path: DEFAULT_ICON
+    });
+  }
+
+  function setTrackedItemAppearance() {
+    chrome.browserAction.setTitle({
+      title: TRACKED_ITEM_TITLE
+    });
+    chrome.browserAction.setIcon({
+      path: TRACKED_ITEM_ICON
+    });
+  }
+
+  function enableAutoSave(state, selection) {
+    selection = selection || state.selection;
+    return _objectSpread({}, state, {
+      autoSaveEnabled: true,
+      selection
+    });
+  }
+
+  function disableAutoSave(state) {
+    return _objectSpread({}, state, {
+      autoSaveEnabled: false
+    });
+  }
+
+  function enablePriceUpdate(state, selection) {
+    return _objectSpread({}, state, {
+      isPriceUpdateEnabled: true,
+      selection
+    });
+  }
+
+  function disablePriceUpdate(state) {
+    return _objectSpread({}, state, {
+      isPriceUpdateEnabled: false
+    });
+  }
+
+  function setSelectionInfo(state, selection, price, faviconURL, faviconAlt) {
+    return _objectSpread({}, state, {
+      selection,
+      price,
+      faviconURL,
+      faviconAlt
+    });
+  }
+
+  function setSimilarElementHighlight(state, isSimilarElementHighlighted, originalBackgroundColor) {
+    return _objectSpread({}, state, {
+      isSimilarElementHighlighted,
+      originalBackgroundColor
+    });
+  }
+
+  function checkForPriceChanges() {
+    chrome.storage.local.get(null, result => {
+      for (let domain in result) {
+        if (result.hasOwnProperty(domain) && matchesDomain(domain)) {
+          const domainItems = JSON.parse(result[domain]);
+
+          for (let url in domainItems) {
+            if (domainItems.hasOwnProperty(url) && matchesURL(url) && isWatched(domainItems[url])) {
+              const request = new XMLHttpRequest();
+              const {
+                price: targetPrice,
+                currentPrice
+              } = domainItems[url];
+
+              request.onload = function () {
+                const template = createHTMLTemplate(this.response);
+
+                try {
+                  let newPrice = null;
+                  const textContent = template.querySelector(domainItems[url].selection).textContent;
+
+                  if (textContent) {
+                    const textContentMatch = textContent.match(MATCHES.PRICE);
+
+                    if (textContentMatch) {
+                      [, newPrice] = textContentMatch;
+                      newPrice = toPrice(newPrice);
+
+                      if (!targetPrice) {
+                        domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice, [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
+                        chrome.storage.local.set({
+                          [domain]: JSON.stringify(domainItems)
+                        }, () => {
+                          const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
+                          createNotification(notificationId, ICONS.PRICE_FIX, "Fixed price", `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
+                        });
+                      } else if (newPrice < currentPrice) {
+                        const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice);
+                        domainItems[url] = updateItemTrackStatus(updatedItem, null, [ITEM_STATUS.DECREASED], [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
+                        chrome.storage.local.set({
+                          [domain]: JSON.stringify(domainItems)
+                        }, () => {
+                          // TODO: sendResponse("done"); // foi actualizado ou não
+                          if (newPrice < targetPrice && !hasAcknowledgeDecrease(domainItems[url])) {
+                            const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                            createNotification(notificationId, ICONS.PRICE_UPDATE, "Lower price!!", `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED, {
+                              buttons: [{
+                                title: `Keep tracking but w/ new price (${newPrice})`
+                              }, {
+                                title: "Stop watching"
+                              }]
+                            });
+                          }
+                        });
+                      } else if (newPrice > currentPrice) {
+                        const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice); // update current price and previous
+
+                        domainItems[url] = updateItemTrackStatus(updatedItem, null, [ITEM_STATUS.INCREASED], [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE]);
+                        chrome.storage.local.set({
+                          [domain]: JSON.stringify(domainItems)
+                        }, () => {
+                          // TODO: sendResponse("done"); // foi actualizado ou não
+                          if (!hasAcknowledgeIncrease(domainItems[url])) {
+                            const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                            const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ? {
+                              buttons: [{
+                                title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
+                              }]
+                            } : {
+                              buttons: []
+                            };
+                            notificationOptions.buttons.push({
+                              title: "Stop watching"
+                            });
+                            createNotification(notificationId, ICONS.PRICE_UPDATE, "Price increase", `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED, notificationOptions);
+                          }
+                        });
+                      } else if (!isNotFound(domainItems[url])) {
+                        // NOTE: Here, price is the same
+                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, [ITEM_STATUS.NOT_FOUND]);
+                        chrome.storage.local.set({
+                          [domain]: JSON.stringify(domainItems)
+                        }, () => {// TODO: sendResponse("done"); // foi actualizado ou não
+                        });
+                      } else {
+                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, [ITEM_STATUS.NOT_FOUND]);
+                        chrome.storage.local.set({
+                          [domain]: JSON.stringify(domainItems)
+                        });
+                      }
+                    }
+                  }
+
+                  if (domainItems[url].price && !newPrice) {
+                    if (!isNotFound(domainItems[url])) {
+                      domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.NOT_FOUND], [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+                      chrome.storage.local.set({
+                        [domain]: JSON.stringify(domainItems)
+                      }, () => {
+                        // TODO: sendResponse("done"); // foi actualizado ou não
+                        const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                        const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
+                        createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
+                      });
+                    }
+                  }
+                } catch (e) {
+                  if (!isNotFound(domainItems[url])) {
+                    console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
+                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.NOT_FOUND], [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+                    chrome.storage.local.set({
+                      [domain]: JSON.stringify(domainItems)
+                    }, () => {
+                      const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                      const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
+                      createNotification(notificationId, ICONS.PRICE_NOT_FOUND, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
+                    });
+                  }
+                }
+              };
+
+              request.open("GET", url);
+              request.send();
+            }
+          }
+        }
+      }
+    });
+  }
+
+  function getTrackedItemsSortedBy(sortType, callback) {
+    chrome.storage.local.get(null, result => {
+      let trackedItems = [];
+      Object.keys(result).forEach(key => {
+        if (matchesDomain(key)) {
+          const domainData = result[key];
+          const domainItems = JSON.parse(domainData) || null;
+
+          if (domainItems) {
+            let items = [];
+            Object.keys(domainItems).forEach(url => {
+              if (matchesHostname(url) && isWatched(domainItems[url])) {
+                const item = _objectSpread({}, domainItems[url], {
+                  url: url
+                });
+
+                items.push(item);
+              }
+            });
+            trackedItems = [...trackedItems, ...items];
+          }
+        }
+      });
+      const sortByFn = sortTrackedItemsBy[sortType];
+      trackedItems.sort(sortByFn);
+      callback(trackedItems);
+    });
+  }
+
+  function removeTrackedItem(url, currentURL, callback) {
+    let found = false;
+    chrome.storage.local.get(null, result => {
+      Object.keys(result).forEach(domain => {
+        if (matchesDomain(domain)) {
+          const domainData = result[domain];
+          const domainItems = JSON.parse(domainData) || null;
+
+          if (domainItems[url]) {
+            found = true;
+            domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
+
+            chrome.storage.local.set({
+              [domain]: JSON.stringify(domainItems)
+            }, () => {
+              if (currentURL === url) {
+                updateAutoSaveStatus(url, domain);
+                updatePriceUpdateStatus(url, domain);
+                updateExtensionAppearance(domain, url, false);
+              }
+
+              callback(true);
+            });
+          }
+        }
+      });
+
+      if (!found) {
+        callback(false);
+      }
+    });
+  }
+
+  function clearNotification(notifId, wasClosedByUser) {
+    chrome.notifications.clear(notifId, wasClickedByUser => {
+      if (wasClickedByUser || wasClosedByUser) {
+        const {
+          domain,
+          url,
+          type
+        } = State.notifications[notifId];
+        chrome.storage.local.get([domain], result => {
+          const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
+
+          switch (type) {
+            case ITEM_STATUS.DECREASED:
+              domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_DECREASE]);
+              break;
+
+            case ITEM_STATUS.INCREASED:
+              domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_INCREASE]);
+              break;
+          }
+
+          chrome.storage.local.set({
+            [domain]: JSON.stringify(domainItems)
+          });
+        });
+      }
+
+      State = deleteNotificationsItem(State, notifId);
+    });
+  }
+
+  function createNotification(notifId, iconUrl, title, message, contextMessage = "", url, domain, type, extraOptions = {}) {
+    const options = _objectSpread({
+      type: "basic",
+      title,
+      message,
+      iconUrl,
+      contextMessage,
+      requireInteraction: true
+    }, extraOptions);
+
+    chrome.notifications.create(notifId, options, id => {
+      State = updateNotificationsItem(State, id, {
+        url,
+        domain,
+        type
+      });
+    });
+    State = incrementNotificationsCounter(State);
+  }
+
+  function toPrice(price) {
+    const priceNumber = parseFloat(price.replace(",", "."));
+    const formattedPrice = priceNumber.toFixed(2);
+    return parseFloat(formattedPrice);
+  }
+
+  function createHTMLTemplate(html) {
+    var template = document.createElement("template");
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content;
+  }
+
+  function isCanonicalURLRelevant(canonical) {
+    return canonical && matchesHostnameAndPath(canonical);
+  }
+
+  function matchesDomain(string) {
+    return MATCHES.DOMAIN.test(string);
+  }
+
+  function matchesHostname(string) {
+    return MATCHES.HOSTNAME.test(string);
+  }
+
+  function matchesHostnameAndPath(string) {
+    return MATCHES.CAPTURE.HOSTNAME_AND_PATH.test(string);
+  }
+
+  function matchesURL(string) {
+    return MATCHES.URL.test(string);
+  }
+
+  function parseDomainState(result, domain) {
+    return result && result[domain] && JSON.parse(result[domain]) || null;
+  }
+
+  function setupTrackingPolling() {
+    checkForPriceChanges(); // TODO: remove settimeout (for test purposes)
+    // setTimeout(checkForPriceChanges, 20000);
+
+    setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
+  }
+
+  function updateAutoSaveStatus(url, domain) {
+    chrome.storage.local.get([domain], result => {
+      const items = result && result[domain] ? JSON.parse(result[domain]) : {};
+      const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
+
+      if (items && isItemNullOrUnwatched) {
+        const urlFromDomain = Object.keys(items)[0];
+
+        if (items[urlFromDomain] && items[urlFromDomain].selection) {
+          State = enableAutoSave(State, items[urlFromDomain].selection);
+        }
+      } else {
+        State = disableAutoSave(State);
+      }
+    });
+  }
+
+  function updatePriceUpdateStatus(url, domain) {
+    chrome.storage.local.get([domain], result => {
+      const items = result && result[domain] ? JSON.parse(result[domain]) : {};
+      const item = items[url];
+      const hasItemPriceIncOrDec = item && item.price !== item.currentPrice;
+
+      if (hasItemPriceIncOrDec) {
+        State = enablePriceUpdate(State, item.selection);
+      } else {
+        State = disablePriceUpdate(State);
+      }
+    });
+  }
+
+  function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
+    if (forcePageTrackingTo === true) {
+      setTrackedItemAppearance();
+      State = enableCurrentPageTracked(State);
+    } else if (forcePageTrackingTo === false) {
+      setDefaultAppearance();
+      State = disableCurrentPageTracked(State);
+    } else if (!forcePageTrackingTo) {
+      chrome.storage.local.get([currentDomain], result => {
+        const domainState = parseDomainState(result, currentDomain);
+
+        if (domainState) {
+          // NOTE: Making sure that full URL is also checked because item may have been saved with full URL
+          // in the past
+          const item = domainState[currentURL] || domainState[fullURL];
+
+          if (item && isWatched(item)) {
+            setTrackedItemAppearance();
+            State = enableCurrentPageTracked(State);
+          } else {
+            setDefaultAppearance();
+            State = disableCurrentPageTracked(State);
+          }
+        } else {
+          setDefaultAppearance();
+          State = disableCurrentPageTracked(State);
+        }
+      });
+    }
+  }
+
+  function captureHostAndPathFromURL(url) {
+    const captureHostAndPath = url.match(MATCHES.CAPTURE.HOSTNAME_AND_PATH);
+    let hostAndPath = null;
+
+    if (captureHostAndPath) {
+      [, hostAndPath] = captureHostAndPath;
+    }
+
+    return hostAndPath;
+  }
+
+  function captureProtocolHostAndPathFromURL(url) {
+    const captureProtocolHostAndPath = url.match(MATCHES.CAPTURE.PROTOCOL_HOSTNAME_AND_PATH);
+    let protocolHostAndPath = null;
+
+    if (captureProtocolHostAndPath) {
+      [, protocolHostAndPath] = captureProtocolHostAndPath;
+    }
+
+    return protocolHostAndPath;
+  }
+
+  function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
+    const currentHostAndPath = captureHostAndPathFromURL(currentURL);
+
+    for (let url in domainState) {
+      if (domainState.hasOwnProperty(url) && matchesURL(url)) {
+        if (isWatched(domainState[url])) {
+          if (currentURL === url) {
+            //    if they're exactly the same
+            callback(null);
+            return;
+          } else {
+            const hostAndPath = captureHostAndPathFromURL(url);
+
+            if (hostAndPath === currentHostAndPath) {
+              callback(url);
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    callback(null);
+  }
+
+  function buildSaveConfirmationPayload(currentURL, similarURL) {
+    return {
+      title: "Item with similar URL to existing one",
+      message: "It appears that the item URL you're trying to save:<br>" + `<i><a href="${currentURL}" target="_blank">${currentURL}</a></i><br>` + "is pretty similar to<br>" + `<i><a href="${similarURL}" target="_blank">${similarURL}</a></i><br><br>` + "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
+      buttons: ["It's not, save it! Remember this option for this site.", "Don't save. Ask me again for items of this site!", "Indeed the same item. Don't save! Remember this option for this site. (Use just URL path for accessing items)", "For now save this item. Ask me again next time!"]
+    };
+  }
+
+  function buildURLConfirmationPayload(canonicalURL, browserURL, domain) {
+    return {
+      title: "This website recommends to follow this item through a different URL",
+      message: `<u>${domain}</u> says that a more accurate URL for this item would be:<br>` + `<i><a href="${canonicalURL}" target="_blank">${canonicalURL}</a></i><br>` + "If this is correct, we recommend you to follow it.<br><br>" + "<b>However</b> you can still opt to choose following the current browser URL:<br>" + `<i><a href="${browserURL}" target="_blank">${browserURL}</a></i><br><br>` + "Since your choice will affect the way items are tracked in this site futurely,<br>please help us helping you by choosing carefully one of the following options:",
+      buttons: ["Use recommended URL. Remember this option for this site", "Use recommended URL but just this time", "It's not correct, use the current browser URL. Remember this option", "Don't use recommended URL. Use the current browser URL instead but just this time"]
+    };
+  }
+
+  function checkForURLSimilarity(tabId, domain, currentURL, callback) {
+    chrome.storage.local.get([domain], result => {
+      const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+
+      if (domainState) {
+        if (domainState._isPathEnoughToTrack === true) {
+          // since it's true we can say that that domain items' path is enough to track items in this domain
+          searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
+            if (similarURL) {
+              callback(false, false);
+            } else {
+              callback(true);
+            }
+          });
+        } else if (domainState._isPathEnoughToTrack === false) {
+          callback(true);
+        } else {
+          // it's the first time user is being inquired about items similarity in this domain
+          searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
+            if (similarURL) {
+              // found an URL whose host and path are equals to the currentURL trying to be saved
+              // prompt user to confirm if the item is the same
+              // TODO: Currently this is limited, it needs:
+              // TODO: Option to say "if URL differs then item is different, stop annoying me!"
+              const modalElementId = "price-tag--save-confirmation";
+              chrome.tabs.sendMessage(tabId, {
+                type: "CONFIRMATION_DISPLAY.CREATE",
+                payload: {
+                  elementId: modalElementId
+                }
+              }, ({
+                status
+              }) => {
+                if (status === 1) {
+                  const payload = buildSaveConfirmationPayload(currentURL, similarURL);
+                  chrome.tabs.sendMessage(tabId, {
+                    type: "CONFIRMATION_DISPLAY.LOAD",
+                    payload
+                  }, ({
+                    status,
+                    index
+                  }) => {
+                    chrome.tabs.sendMessage(tabId, {
+                      type: "CONFIRMATION_DISPLAY.REMOVE",
+                      payload: {
+                        elementId: modalElementId
+                      }
+                    });
+
+                    if (status === 1) {
+                      switch (index) {
+                        case 0:
+                          // said Yes: not the same item
+                          domainState._isPathEnoughToTrack = false;
+                          chrome.storage.local.set({
+                            [domain]: JSON.stringify(domainState)
+                          });
+                          callback(true);
+                          break;
+
+                        case 1:
+                          callback(false, true);
+                          break;
+
+                        case 2:
+                          // said No: same item (path is enough for this site items)
+                          domainState._isPathEnoughToTrack = true;
+                          chrome.storage.local.set({
+                            [domain]: JSON.stringify(domainState)
+                          });
+                          callback(false, false);
+                          break;
+
+                        case 3:
+                          // said Save this but for others Ask me later
+                          callback(true);
+                          break;
+
+                        default:
+                          // cannot recognize this modal button click
+                          callback(false, true);
+                          break;
+                      }
+                    } else {
+                      // something in buttons click
+                      callback(false, true);
+                    }
+                  });
+                } else {
+                  // something went wrong creating the modal
+                  callback(false, true);
+                }
+              });
+            } else {
+              // no URL has host and path equals to the currentURL (can save the item)
+              callback(true);
+            }
+          });
+        }
+      } else {
+        // this means it's the first item being saved belonging to this domain (can save the item)
+        callback(true);
+      }
+    });
+  }
+
+  function getCanonicalPathFromSource(source) {
+    const canonicalElement = source.querySelector("link[rel=\"canonical\"]");
+    return canonicalElement && canonicalElement.getAttribute("href");
+  }
+
+  function onXHR(url, callback) {
+    const request = new XMLHttpRequest();
+
+    request.onload = function () {
+      const template = createHTMLTemplate(this.response);
+      callback(template);
+    };
+
+    request.open("GET", url);
+    request.send();
+  }
+
+  function onTabContextChange(tabId, url) {
+    const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+
+    if (captureDomain) {
+      const [, domain] = captureDomain;
+      State = updateCurrentDomain(State, domain);
+      chrome.storage.local.get([domain], result => {
+        const domainState = result && result[domain] && JSON.parse(result[domain]) || null; // check if user has already a preference to use the canonical URL if available
+
+        if (domainState && domainState._canUseCanonical === false) {
+          State = updateCanonicalURL(State, null);
+          State = updateCurrentURL(State, url);
+          State = updateBrowserURL(State, url);
+
+          if (domainState._isPathEnoughToTrack === true) {
+            const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
+
+            if (protocolHostAndPathFromURL) {
+              State = updateCurrentURL(State, protocolHostAndPathFromURL);
+              State = updateBrowserURL(State, protocolHostAndPathFromURL);
+            }
+          }
+
+          updateAutoSaveStatus(State.currentURL, State.domain);
+          updatePriceUpdateStatus(State.currentURL, State.domain);
+          updateExtensionAppearance(State.domain, State.currentURL, null, url);
+        } else {
+          // First thing to do, check:
+          // If canonical was updated (compared to the previously) + if it's relevant
+          State = updateBrowserURL(State, url);
+          onXHR(url, template => {
+            const canonicalURL = getCanonicalPathFromSource(template);
+            const canUseCanonical = isCanonicalURLRelevant(canonicalURL);
+
+            if (canUseCanonical) {
+              State = updateCurrentURL(State, canonicalURL);
+              State = updateCanonicalURL(State, canonicalURL);
+            } else {
+              State = updateCanonicalURL(State, null);
+              State = updateCurrentURL(State, url);
+
+              if (domainState && domainState._isPathEnoughToTrack === true) {
+                const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
+
+                if (protocolHostAndPathFromURL) {
+                  State = updateCurrentURL(State, protocolHostAndPathFromURL);
+                  State = updateBrowserURL(State, protocolHostAndPathFromURL);
+                }
+              }
+            }
+
+            updateAutoSaveStatus(State.currentURL, State.domain);
+            updatePriceUpdateStatus(State.currentURL, State.domain);
+            updateExtensionAppearance(State.domain, State.currentURL, null, url);
+          });
+        }
+      });
+    }
+  } // TODO: break this down into smaller functions
+
+
+  function attachEvents() {
+    chrome.runtime.onInstalled.addListener(() => {
+      console.log("Price tag installed.");
+    });
+    chrome.tabs.onActivated.addListener(() => {
+      chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      }, ([{
+        id,
+        url
+      }]) => {
+        if (url.startsWith("http")) {
+          onTabContextChange(id, url);
+          State = updateFaviconURL(State, State._faviconURLMap[id] || null);
+        } else {
+          setDefaultAppearance();
+        }
+      });
+    });
+    chrome.tabs.onUpdated.addListener((tabId, {
+      status,
+      favIconUrl
+    }, {
+      active,
+      url
+    }) => {
+      if (url.startsWith("http")) {
+        if (active) {
+          if (favIconUrl) {
+            State = updateFaviconURLMapItem(State, tabId, favIconUrl);
+            State = updateFaviconURL(State, favIconUrl);
+          }
+        }
+      } else {
+        setDefaultAppearance();
+      }
+    });
+    chrome.webNavigation.onCompleted.addListener(({
+      frameId
+    }) => {
+      if (frameId === 0) {
+        chrome.tabs.query({
+          active: true,
+          currentWindow: true
+        }, tabs => {
+          if (tabs.length > 0) {
+            const [{
+              id,
+              url
+            }] = tabs;
+            onTabContextChange(id, url);
+          }
+        });
+      }
+    });
+    chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
+      chrome.tabs.query({
+        active: true,
+        currentWindow: true
+      }, tabs => {
+        if (tabs.length > 0) {
+          const [{
+            id: tabId,
+            url
+          }] = tabs;
+
+          if (url !== undefined && url !== State.browserURL) {
+            onTabContextChange(tabId, url);
+          }
+        }
+      });
+    });
+    chrome.runtime.onMessage.addListener(({
+      type,
+      payload = {}
+    }, sender, sendResponse) => {
+      const {
+        id
+      } = payload;
+
+      switch (type) {
+        case "POPUP.STATUS":
+          const {
+            recordActive,
+            autoSaveEnabled,
+            isPriceUpdateEnabled
+          } = State;
+          sendResponse({
+            status: 1,
+            state: {
+              recordActive,
+              autoSaveEnabled,
+              isPriceUpdateEnabled
+            }
+          });
+          break;
+
+        case "RECORD.ATTEMPT":
+          State = toggleRecord(State);
+
+          if (State.recordActive) {
+            const {
+              url
+            } = payload;
+            chrome.tabs.sendMessage(id, {
+              type: "RECORD.START",
+              payload: {
+                url
+              }
+            }, onRecordDone.bind(null, id));
+          } else {
+            chrome.tabs.sendMessage(id, {
+              type: "RECORD.CANCEL"
+            }, onRecordCancel);
+          }
+
+          sendResponse({
+            status: 1,
+            state: {
+              recordActive: State.recordActive
+            }
+          });
+          break;
+
+        case "AUTO_SAVE.STATUS":
+          const {
+            currentURL: url,
+            domain
+          } = State;
+          chrome.storage.local.get([domain], result => {
+            const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
+
+            if (domainState) {
+              if (domainState._isPathEnoughToTrack === true) {
+                // since it's true we can say that that domain items' path is enough to track items in this domain
+                searchForEqualPathWatchedItem(domainState, url, similarURL => {
+                  if (!similarURL) {
+                    chrome.tabs.sendMessage(id, {
+                      type: "AUTO_SAVE.CHECK_STATUS",
+                      payload: {
+                        url,
+                        selection: State.selection
+                      }
+                    }, onAutoSaveCheckStatus.bind(null, sendResponse));
+                  } else {
+                    sendResponse({
+                      status: -1
+                    });
+                  }
+                });
+              } else {
+                chrome.tabs.sendMessage(id, {
+                  type: "AUTO_SAVE.CHECK_STATUS",
+                  payload: {
+                    url,
+                    selection: State.selection
+                  }
+                }, onAutoSaveCheckStatus.bind(null, sendResponse));
+              }
+            } else {
+              // domain doesn't exist
+              chrome.tabs.sendMessage(id, {
+                type: "AUTO_SAVE.CHECK_STATUS",
+                payload: {
+                  url,
+                  selection: State.selection
+                }
+              }, onAutoSaveCheckStatus.bind(null, sendResponse));
+            }
+          });
+          return true;
+
+        case "AUTO_SAVE.ATTEMPT":
+          if (State.autoSaveEnabled) {
+            const {
+              domain,
+              currentURL: stateUrl,
+              selection,
+              price,
+              faviconURL,
+              faviconAlt,
+              originalBackgroundColor
+            } = State;
+            canDisplayURLConfirmation(State, domain, canDisplay => {
+              if (canDisplay) {
+                onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
+                  if (canSave) {
+                    const url = useCaninocal ? State.canonicalURL : State.browserURL;
+                    checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
+                      if (isToSave) {
+                        createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                          chrome.tabs.sendMessage(id, {
+                            type: "PRICE_TAG.HIGHLIGHT.STOP",
+                            payload: {
+                              selection,
+                              originalBackgroundColor
+                            }
+                          }, onSimilarElementHighlight);
+                          updateExtensionAppearance(domain, url, true);
+                          State = disableAutoSave(State);
+                          sendResponse(false);
+                        });
+                      } else {
+                        // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                        if (!autoSaveStatus) {
+                          State = disableAutoSave(State);
+                        }
+                      }
+                    });
+                  }
+                });
+              } else {
+                checkForURLSimilarity(id, domain, stateUrl, isToSave => {
+                  if (isToSave) {
+                    createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                      chrome.tabs.sendMessage(id, {
+                        type: "PRICE_TAG.HIGHLIGHT.STOP",
+                        payload: {
+                          selection,
+                          originalBackgroundColor
+                        }
+                      }, onSimilarElementHighlight);
+                      updateExtensionAppearance(domain, stateUrl, true);
+                      State = disableAutoSave(State);
+                      sendResponse(false);
+                    });
+                  }
+                });
+              }
+            });
+            return true;
+          } else {
+            sendResponse(false);
+          }
+
+          break;
+
+        case "AUTO_SAVE.HIGHLIGHT.PRE_START":
+          if (State.autoSaveEnabled) {
+            const {
+              selection
+            } = State;
+            chrome.tabs.sendMessage(id, {
+              type: "PRICE_TAG.HIGHLIGHT.START",
+              payload: {
+                selection
+              }
+            }, onSimilarElementHighlight);
+          }
+
+          break;
+
+        case "AUTO_SAVE.HIGHLIGHT.PRE_STOP":
+          if (State.autoSaveEnabled) {
+            const {
+              selection,
+              originalBackgroundColor
+            } = State;
+            chrome.tabs.sendMessage(id, {
+              type: "PRICE_TAG.HIGHLIGHT.STOP",
+              payload: {
+                selection,
+                originalBackgroundColor
+              }
+            }, onSimilarElementHighlight);
+          }
+
+          break;
+
+        case "PRICE_UPDATE.STATUS":
+          chrome.storage.local.get([State.domain], result => {
+            const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
+            const item = domainItems[State.currentURL];
+
+            if (item) {
+              chrome.tabs.sendMessage(id, {
+                type: "PRICE_UPDATE.CHECK_STATUS",
+                payload: {
+                  selection: State.selection
+                }
+              }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
+            } else {
+              sendResponse(false);
+            }
+          });
+          return true;
+
+        case "PRICE_UPDATE.ATTEMPT":
+          if (State.isPriceUpdateEnabled) {
+            const {
+              domain,
+              currentURL: stateUrl,
+              selection,
+              price: updatedPrice,
+              originalBackgroundColor
+            } = State;
+            const price = updatedPrice && toPrice(updatedPrice);
+            chrome.storage.local.get([domain], result => {
+              const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+              domainItems[stateUrl] = updateItemTrackStatus(domainItems[stateUrl], price, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND]);
+              domainItems[stateUrl] = updateItemDiffPercentage(domainItems[stateUrl]);
+              chrome.storage.local.set({
+                [domain]: JSON.stringify(domainItems)
+              });
+              chrome.tabs.sendMessage(id, {
+                type: "PRICE_TAG.HIGHLIGHT.STOP",
+                payload: {
+                  selection,
+                  originalBackgroundColor
+                }
+              }, onSimilarElementHighlight);
+              State = disablePriceUpdate(State);
+              sendResponse(false);
+            });
+          }
+
+          return true;
+
+        case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
+          if (State.isPriceUpdateEnabled) {
+            const {
+              selection
+            } = State;
+            chrome.tabs.sendMessage(id, {
+              type: "PRICE_TAG.HIGHLIGHT.START",
+              payload: {
+                selection
+              }
+            }, onSimilarElementHighlight);
+          }
+
+          break;
+
+        case "PRICE_UPDATE.HIGHLIGHT.PRE_STOP":
+          if (State.isPriceUpdateEnabled) {
+            const {
+              selection,
+              originalBackgroundColor
+            } = State;
+            chrome.tabs.sendMessage(id, {
+              type: "PRICE_TAG.HIGHLIGHT.STOP",
+              payload: {
+                selection,
+                originalBackgroundColor
+              }
+            }, onSimilarElementHighlight);
+          }
+
+          break;
+
+        case "TRACKED_ITEMS.OPEN":
+          State = updateSortItemsBy(State, TIME);
+          break;
+
+        case "TRACKED_ITEMS.GET":
+          getTrackedItemsSortedBy(State._sortItemsBy, sendResponse);
+          return true;
+
+        case "TRACKED_ITEMS.UNFOLLOW":
+          const {
+            url: itemUrl
+          } = payload;
+          removeTrackedItem(itemUrl, State.currentURL, sendResponse);
+          return true;
+
+        case "TRACKED_ITEMS.CHANGE_SORT":
+          const {
+            sortByType
+          } = payload;
+          State = updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
+          break;
+      }
+    });
+    chrome.notifications.onClicked.addListener(notifId => {
+      chrome.tabs.create({
+        url: State.notifications[notifId].url
+      });
+      clearNotification(notifId);
+    }); // TODO: update and keep tracking
+
+    chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
+      const {
+        domain,
+        url,
+        type
+      } = State.notifications[notifId];
+
+      switch (buttonIndex) {
+        case 0:
+          switch (type) {
+            case ITEM_STATUS.DECREASED:
+              chrome.storage.local.get([domain], result => {
+                const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+
+                if (domainItems[url]) {
+                  const {
+                    price: newPrice
+                  } = domainItems[url];
+                  domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
+                  chrome.storage.local.set({
+                    [domain]: JSON.stringify(domainItems)
+                  });
+                }
+              });
+              break;
+
+            case ITEM_STATUS.INCREASED:
+              chrome.storage.local.get([domain], result => {
+                const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+
+                if (domainItems[url]) {
+                  const {
+                    previousPrice: priceBeforeIncreasing
+                  } = domainItems[url];
+                  domainItems[url] = updateItemTrackStatus(domainItems[url], priceBeforeIncreasing, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
+                  chrome.storage.local.set({
+                    [domain]: JSON.stringify(domainItems)
+                  });
+                }
+              });
+              break;
+          }
+
+          break;
+
+        case 1:
+          switch (type) {
+            case (ITEM_STATUS.INCREASED):
+              chrome.storage.local.get([domain], result => {
+                const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+
+                if (domainItems[url]) {
+                  domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
+
+                  chrome.storage.local.set({
+                    [domain]: JSON.stringify(domainItems)
+                  });
+                }
+              });
+              break;
+          }
+
+          break;
+      }
+    });
+    chrome.notifications.onClosed.addListener(clearNotification);
+  }
+
+  function filterAllTrackedItems(result) {
+    let filteredResult = {};
+
+    for (let domain in result) {
+      if (result.hasOwnProperty(domain) && matchesDomain(domain) && result[domain]) {
+        const domainItems = JSON.parse(result[domain]);
+        filteredResult = _objectSpread({}, filteredResult, {
+          [domain]: domainItems
+        });
+      }
+    }
+
+    return filteredResult;
+  }
+
+  function toStorageStateFormat(state) {
+    return Object.keys(state).reduce((newState, domain) => {
+      return _objectSpread({}, newState, {
+        [domain]: JSON.stringify(state[domain])
+      });
+    }, {});
+  }
+
+  function syncStorageState() {
+    chrome.storage.local.get(null, localResult => {
+      const localState = filterAllTrackedItems(localResult);
+      chrome.storage.sync.get(null, syncResult => {
+        const syncState = filterAllTrackedItems(syncResult); // TODO: replace this with a lodash cloneDeep !!
+
+        const freshState = JSON.parse(JSON.stringify(localState));
+
+        for (let syncDomain in syncState) {
+          if (syncState.hasOwnProperty(syncDomain) && matchesDomain(syncDomain)) {
+            const syncStateDomain = syncState[syncDomain];
+
+            if (!freshState[syncDomain]) {
+              // TODO: replace this with a lodash cloneDeep !!
+              freshState[syncDomain] = JSON.parse(JSON.stringify(syncStateDomain));
+            } else {
+              for (let syncUrl in syncStateDomain) {
+                if (syncStateDomain.hasOwnProperty(syncUrl)) {
+                  const syncItem = syncStateDomain[syncUrl];
+
+                  if (!freshState[syncDomain][syncUrl]) {
+                    freshState[syncDomain][syncUrl] = Object.assign({}, syncItem);
+                  } else if (syncItem.lastUpdateTimestamp > freshState[syncDomain][syncUrl].lastUpdateTimestamp) {
+                    // TODO: replace this with a lodash cloneDeep !!
+                    freshState[syncDomain][syncUrl] = JSON.parse(JSON.stringify(syncItem));
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        chrome.storage.local.set(toStorageStateFormat(freshState));
+        chrome.storage.sync.set(toStorageStateFormat(freshState));
+      });
+    });
+  }
+
+  function setupSyncStorageState() {
+    syncStorageState();
+    setInterval(syncStorageState, SYNCHING_INTERVAL);
+  }
+
+  function bootstrap() {
+    setupSyncStorageState();
+    setupTrackingPolling();
+    attachEvents();
+  }
+
+  bootstrap();
+
+}());
+//# sourceMappingURL=background.js.map

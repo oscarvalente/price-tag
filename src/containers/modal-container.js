@@ -8,7 +8,8 @@ class ModalContainer extends Component {
             <Modal>
                 <ModalHeader title={this.props.title}/>
                 <ModalBody message={this.props.message}/>
-                <ModalFooter buttons={this.props.buttons} generateButtonCallback={this.props.generateButtonCallback}/>
+                <ModalFooter buttons={this.props.buttons}
+                             generateOnButtonClickCallback={this.props.generateOnButtonClickCallback}/>
             </Modal>
         )
     }
@@ -18,7 +19,7 @@ ModalContainer.propTypes = {
     title: ModalHeader.propTypes.title,
     message: ModalBody.propTypes.message,
     buttons: ModalFooter.propTypes.buttons,
-    generateButtonCallback: ModalFooter.propTypes.generateButtonCallback
+    generateOnButtonClickCallback: ModalFooter.propTypes.generateOnButtonClickCallback
 };
 
 export default ModalContainer;

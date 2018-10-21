@@ -83,20 +83,14 @@ LabelContainer.propTypes = {
     targetPriceTitle: PropTypes.string
 };
 
-function removeItem(url, callback) {
-    chrome.runtime.sendMessage({
-        type: "TRACKED_ITEMS.UNFOLLOW",
-        payload: {url}
-    }, callback);
-}
-
 const DeleteButton = (props) => {
+    // TODO: This is generic enough not be in Item Context
     return (
         <ItemContext.Consumer>
-            {(({url}) => (
+            {(() => (
                 <div className={styles["item-delete"]}
                      title={props.title}
-                     onClick={removeItem.bind(null, url, props.onItemRemoved)}></div>
+                     onClick={props.onItemRemoved}></div>
             ))}
         </ItemContext.Consumer>
     );

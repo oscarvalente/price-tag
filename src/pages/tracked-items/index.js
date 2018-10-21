@@ -44,6 +44,15 @@ BackButton.propTypes = {
     href: PropTypes.string
 };
 
+function generateOnItemRemovedCallback(url) {
+    return () => {
+        chrome.runtime.sendMessage({
+            type: "TRACKED_ITEMS.UNFOLLOW",
+            payload: {url}
+        }, this.updateTrackedItems);
+    };
+}
+
 
 class TrackedItems extends Component {
     constructor(props) {
@@ -55,6 +64,7 @@ class TrackedItems extends Component {
         this.onTrackedItems = this.onTrackedItems.bind(this);
         this.onSortChange = onSortChange.bind(this);
         this.updateTrackedItems = updateTrackedItems.bind(this);
+        this.generateOnItemRemovedCallback = generateOnItemRemovedCallback.bind(this);
         onOpenedTrackedItems();
     }
 
@@ -81,7 +91,7 @@ class TrackedItems extends Component {
                     <Option name="Time" id={TIME} isChecked={true}></Option>
                     <Option name="Price" id={CURRENT_PRICE}></Option>
                 </OptionsList>
-                <ItemsList items={this.state.items} onItemRemoved={this.updateTrackedItems}/>
+                <ItemsList items={this.state.items} generateOnItemRemovedCallback={this.generateOnItemRemovedCallback}/>
                 <BackButton href="popup.html"/>
             </section>
         );
