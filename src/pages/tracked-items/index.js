@@ -84,7 +84,7 @@ class TrackedItems extends Component {
 
     render() {
         return (
-            <section id={styles.container}>
+            <section className={styles.container}>
                 <IconTitle icon="shopping" title="Tracked items"/>
                 <OptionsList name="Sort items by"
                              value={{optionsName: "sortItems", onChange: this.onSortChange}}>
