@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.19.1
+* Rel noopener on modal links
+
 # v0.19.0
 * Sort tracked items by time asc/price asc 
 
