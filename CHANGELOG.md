@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+# v0.19.2
+* Minor styling to sort by picker
+
 # v0.19.1
 * Rel noopener on modal links
 

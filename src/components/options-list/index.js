@@ -1,20 +1,22 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
 
-// import styles from "./options-list.scss";
+import styles from "./options-list.scss";
 
 const OptionsListContext = React.createContext();
 
 const Option = ({name, id, isChecked}) =>
     <OptionsListContext.Consumer>
         {({optionsName, onChange}) => (
-            <div>
+            <div className={styles["option-container"]}>
                 {isChecked ?
-                    <input type="radio" name={optionsName} id={id} value={id} onChange={onChange} defaultChecked/>
+                    <input className={styles.input} type="radio" name={optionsName} id={id} value={id} onChange={onChange} defaultChecked/>
                     :
-                    <input type="radio" name={optionsName} id={id} value={id} onChange={onChange}/>
+                    <input className={styles.input} type="radio" name={optionsName} id={id} value={id} onChange={onChange}/>
                 }
-                <label htmlFor={id}>{name}</label>
+                <div className={styles["label-container"]}>
+                    <label className={styles.label} htmlFor={id}>{name}</label>
+                </div>
             </div>
         )}
     </OptionsListContext.Consumer>;
@@ -28,8 +30,8 @@ Option.propTypes = {
 class OptionsList extends Component {
     render() {
         return (
-            <fieldset>
-                <legend>{this.props.name}</legend>
+            <fieldset className={styles["options-fieldset"]}>
+                <legend className={styles.legend}>{this.props.name}</legend>
                 <OptionsListContext.Provider {...this.props}>
                     {this.props.children}
                 </OptionsListContext.Provider>

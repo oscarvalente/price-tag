@@ -86,7 +86,7 @@ class TrackedItems extends Component {
         return (
             <section className={styles.container}>
                 <IconTitle icon="shopping" title="Tracked items"/>
-                <OptionsList name="Sort items by"
+                <OptionsList name="Sort by"
                              value={{optionsName: "sortItems", onChange: this.onSortChange}}>
                     <Option name="Time" id={TIME} isChecked={true}></Option>
                     <Option name="Price" id={CURRENT_PRICE}></Option>

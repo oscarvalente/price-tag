@@ -1,0 +1,54 @@
+$first-option--border-radius: 4px 0 0 4px;
+$last-option--border-radius: 0 4px 4px 0;
+$label-container--height: 22px;
+
+.options-fieldset {
+  position: relative;
+  float: right;
+  border: 0;
+
+  .legend {
+    position: absolute;
+    top: -12px;
+    right: calc(50% - 30px);
+    padding: 0 8px;
+    z-index: -1;
+  }
+}
+
+.option-container {
+  display: inline-block;
+  border: 1px solid #000;
+  overflow: hidden;
+
+  &:nth-of-type(1) {
+    border-radius: $first-option--border-radius;
+  }
+
+  &:nth-of-type(2) {
+    border-radius: $last-option--border-radius;
+  }
+
+  .input {
+    display: none;
+
+    &:checked + .label-container {
+      background-color: #878a91;
+      color: #FFF;
+    }
+  }
+
+  .label-container {
+    display: inline-block;
+    height: $label-container--height;
+    width: 60px;
+    text-align: center;
+
+    .label {
+      display: block;
+      user-select: none;
+      line-height: $label-container--height;
+    }
+  }
+}
+
