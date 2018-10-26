@@ -33,7 +33,7 @@ but there's a lot more, and more to come.
     * show favicon image next to item ✅
     * show diff percentage ✅
     * show current price vs target one ✅
-    * improve item sorting ❗
+    * improve item sorting
         * by time ✅
         * by price ✅
         * by domain, time
@@ -41,7 +41,7 @@ but there's a lot more, and more to come.
     * back button always visible ✅
     * BUG: after delete all items doesn't display 'no tracked items' ✅
     * minor styling ❗
-    * add undo delete button ❗
+    * add undo delete button ❗ `(wip)`
  * periodical save in storage.sync: no conflicts resolution - simple version ✅
  * extension icon and title displaying page is being tracked ✅
  * diff percentage - when (0 < diff < 1) round up; when (-1 < diff < 0) round down ✅
@@ -149,6 +149,7 @@ but there's a lot more, and more to come.
         * refactor modal ✅
         * modal dist ✅
         * evaluate folder containers vs components
+ * Use Docker for build ❗❗
  
  **Legend:**
  * ❗️ urgent/priority development

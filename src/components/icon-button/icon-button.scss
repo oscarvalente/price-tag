@@ -1,0 +1,11 @@
+@svg-load icon-undo url(../../../assets/undo.svg) {
+}
+
+.icon {
+  height: 16px;
+  width: 16px;
+
+  &.undo {
+    background: svg-inline(icon-undo) no-repeat;
+  }
+}

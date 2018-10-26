@@ -12,58 +12,50 @@ const BUTTON_STATUS = {
 
 function updateRecordButton(buttonActive) {
     if (buttonActive) {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             recordButtonStatus: BUTTON_STATUS.active
-        }));
+        });
     } else {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             recordButtonStatus: BUTTON_STATUS.inactive
-        }));
+        });
     }
 }
 
 function updateAutosaveButton(buttonEnabled) {
     if (buttonEnabled === true) {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             autosaveButtonStatus: BUTTON_STATUS.active
-        }));
+        });
     } else if (buttonEnabled === false) {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             autosaveButtonStatus: BUTTON_STATUS.inactive
-        }));
+        });
     }
 }
 
 function updatePriceUpdateButton(buttonEnabled) {
     if (buttonEnabled === true) {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             priceUpdateButtonStatus: BUTTON_STATUS.active
-        }));
+        });
     } else if (buttonEnabled === false) {
-        this.setState(state => ({
-            ...state,
+        this.setState({
             priceUpdateButtonStatus: BUTTON_STATUS.inactive
-        }));
+        });
     }
 }
 
 async function setPendingAutosave() {
-    await this.setState(state => ({
-        ...state,
+    await this.setState({
         autosaveButtonStatus: BUTTON_STATUS.pending
-    }));
+    });
 }
 
 async function setPendingPriceUpdate() {
-    await this.setState(state => ({
-        ...state,
+    await this.setState({
         priceUpdateButtonStatus: BUTTON_STATUS.pending
-    }));
+    });
 }
 
 class Popup extends Component {

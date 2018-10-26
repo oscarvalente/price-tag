@@ -1,8 +1,21 @@
 .container {
   height: 550px;
+
+  .sub-header {
+    .undo-button-container {
+      float: right;
+      padding-top: 7px;
+      width: 20px;
+      height: 30px;
+
+      &.inactive {
+        display: none;
+      }
+    }
+  }
 }
 
-#back-btn{
+#back-btn {
   display: inline-block;
   margin: 16px 0 0 8px;
   position: fixed;

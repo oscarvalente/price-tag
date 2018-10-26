@@ -1,6 +1,14 @@
-import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
 import * as SORT_BY_TYPES from "./src/config/sort-tracked-items";
 import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
+import STATE_CONFIG from "./src/config/state";
+import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
+import {
+    addUndoRemovedItem,
+    getUndoRemovedItemsHead,
+    removeUndoRemovedItem,
+    resetUndoRemovedItems,
+    setUndoRemovedItemsResetTask
+} from "./src/utils/state";
 
 let State = {
     recordActive: false,
@@ -18,7 +26,9 @@ let State = {
     canonicalURL: null,
     browserURL: null,
     domain: null,
-    _sortItemsBy: SORT_ITEMS_BY_TIME
+    _sortItemsBy: SORT_ITEMS_BY_TIME,
+    _undoRemovedItems: [],
+    _undoRemovedItemsResetTask: null
 };
 
 const DEFAULT_ICON = "assets/icon_48.png";
@@ -241,7 +251,7 @@ function onRecordCancel() {
     State = disableRecord(State);
 }
 
-function onAutoSaveCheckStatus(sendResponse, {status, url, domain, selection, price, faviconURL, faviconAlt} = {}) {
+function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
         State = updateFaviconURL(State, State.faviconURL || faviconURL);
         State = setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
@@ -493,7 +503,7 @@ function checkForPriceChanges() {
                             const template = createHTMLTemplate(this.response);
                             try {
                                 let newPrice = null;
-                                const textContent = template.querySelector(domainItems[url].selection).textContent;
+                                const {textContent} = template.querySelector(domainItems[url].selection);
                                 if (textContent) {
                                     const textContentMatch = textContent.match(MATCHES.PRICE);
                                     if (textContentMatch) {
@@ -658,7 +668,29 @@ function removeTrackedItem(url, currentURL, callback) {
                 if (domainItems[url]) {
                     found = true;
 
-                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ALL_ITEM_STATUSES); // stop watching
+                    if (State._undoRemovedItemsResetTask) {
+                        clearTimeout(State._undoRemovedItemsResetTask);
+                        State = setUndoRemovedItemsResetTask(State, null);
+                    }
+
+                    const removedItem = {...domainItems[url]};
+                    State = addUndoRemovedItem(State, url, removedItem, STATE_CONFIG.MAX_UNDO_REMOVED_ITEMS);
+                    chrome.runtime.sendMessage({
+                        type: "TRACKED_ITEMS.UNDO_STATUS",
+                        payload: {isUndoStatusActive: true}
+                    });
+
+                    const undoRemovedItemsTask = setTimeout(() => {
+                        State = resetUndoRemovedItems(State);
+                        chrome.runtime.sendMessage({
+                            type: "TRACKED_ITEMS.UNDO_STATUS",
+                            payload: {isUndoStatusActive: false}
+                        });
+                    }, STATE_CONFIG.UNDO_REMOVED_ITEMS_TIMEOUT);
+
+                    State = setUndoRemovedItemsResetTask(State, undoRemovedItemsTask);
+
+                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, [ITEM_STATUS.WATCHED]); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         if (currentURL === url) {
                             updateAutoSaveStatus(url, domain);
@@ -672,6 +704,35 @@ function removeTrackedItem(url, currentURL, callback) {
         });
         if (!found) {
             callback(false);
+        }
+    });
+}
+
+function undoRemoveTrackedItem(url, currentURL, callback) {
+    let found = false;
+    chrome.storage.local.get(null, result => {
+        Object.keys(result).forEach(domain => {
+            if (matchesDomain(domain)) {
+                const domainData = result[domain];
+                const domainItems = JSON.parse(domainData) || null;
+                if (domainItems[url]) {
+                    found = true;
+
+                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.WATCHED], null); // start watch again
+                    chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                        if (currentURL === url) {
+                            updateAutoSaveStatus(url, domain);
+                            updatePriceUpdateStatus(url, domain);
+                            updateExtensionAppearance(domain, url, false);
+                        }
+                        callback(true);
+                    });
+                }
+            }
+        });
+        if (!found) {
+            // No special treatment if item is not found; we can't undo nothing
+            callback(true);
         }
     });
 }
@@ -760,8 +821,6 @@ function parseDomainState(result, domain) {
 
 function setupTrackingPolling() {
     checkForPriceChanges();
-    // TODO: remove settimeout (for test purposes)
-    // setTimeout(checkForPriceChanges, 20000);
     setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
 }
 
@@ -922,9 +981,6 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
                         // found an URL whose host and path are equals to the currentURL trying to be saved
                         // prompt user to confirm if the item is the same
 
-                        // TODO: Currently this is limited, it needs:
-                        // TODO: Option to say "if URL differs then item is different, stop annoying me!"
-
                         const modalElementId = "price-tag--save-confirmation";
                         chrome.tabs.sendMessage(tabId, {
                             type: "CONFIRMATION_DISPLAY.CREATE",
@@ -1081,7 +1137,7 @@ function attachEvents() {
         });
     });
 
-    chrome.tabs.onUpdated.addListener((tabId, {status, favIconUrl}, {active, url}) => {
+    chrome.tabs.onUpdated.addListener((tabId, {favIconUrl}, {active, url}) => {
         if (url.startsWith("http")) {
             if (active) {
                 if (favIconUrl) {
@@ -1118,10 +1174,11 @@ function attachEvents() {
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
-            const {id} = payload;
+            let isUndoStatusActive;
+            const {id, url: itemUrl, sortByType} = payload;
+            const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain} = State;
             switch (type) {
                 case "POPUP.STATUS":
-                    const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = State;
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
@@ -1139,7 +1196,6 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive: State.recordActive}});
                     break;
                 case "AUTO_SAVE.STATUS":
-                    const {currentURL: url, domain} = State;
                     chrome.storage.local.get([domain], result => {
                         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
                         if (domainState) {
@@ -1308,17 +1364,34 @@ function attachEvents() {
                     break;
                 case "TRACKED_ITEMS.OPEN":
                     State = updateSortItemsBy(State, SORT_ITEMS_BY_TIME);
+                    isUndoStatusActive = State._undoRemovedItems.length > 0;
+                    sendResponse({isUndoStatusActive});
                     break;
                 case "TRACKED_ITEMS.GET":
                     getTrackedItemsSortedBy(State._sortItemsBy, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.UNFOLLOW":
-                    const {url: itemUrl} = payload;
                     removeTrackedItem(itemUrl, State.currentURL, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.CHANGE_SORT":
-                    const {sortByType} = payload;
                     State = updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
+                    break;
+                case "TRACKED_ITEMS.UNDO_ATTEMPT":
+                    if (State._undoRemovedItems.length > 0) {
+                        const undoRemovedItem = getUndoRemovedItemsHead(State);
+
+                        undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
+                            if (response) {
+                                State = removeUndoRemovedItem(State);
+                                State._undoRemovedItems.length === 0 ?
+                                    sendResponse({isUndoStatusActive: false}) :
+                                    sendResponse({isUndoStatusActive: true});
+                            }
+                        });
+                        return true;
+                    } else {
+                        sendResponse({isUndoStatusActive: false})
+                    }
                     break;
             }
         });

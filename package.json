@@ -1,6 +1,6 @@
 {
     "name": "price-tag",
-    "version": "0.19.2",
+    "version": "0.20.0",
     "description": "Records and tracks online shopping item prices",
     "main": "index.js",
     "repository": "git@bitbucket.org:oscarv_08/price-tag.git",
@@ -31,7 +31,7 @@
         "assemble": "yarn clean && yarn copy:assets",
         "copy:assets": "cp -R manifest.json assets views *.html *.css dist",
         "clean": "rm -rf dist && mkdir dist",
-        "eslint": "eslint --fix --cache 'src/**/*.js'"
+        "eslint": "eslint --fix --cache 'src/**/*.js' '*.js'"
     },
     "engines": {
         "node": "= 8.11.1"

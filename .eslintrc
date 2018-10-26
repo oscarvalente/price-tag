@@ -4,10 +4,17 @@
         "plugin:react/recommended"
     ],
     "globals": {
+        "process": true,
         "console": true,
         "document": true,
         "window": true,
-        "chrome": true
+        "chrome": true,
+        "Set": true,
+        "XMLHttpRequest": true,
+        "clearTimeout": true,
+        "setTimeout": true,
+        "setInterval": true,
+        "location": true
     },
     "rules": {
         "func-names": "off",

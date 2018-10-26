@@ -1,5 +1,10 @@
 ### CHANGELOG
 
+# v0.20.0
+* Undo removed items (up to 10 in a bulk)
+* Eslint all the app and fixes
+* React-related code fixes
+
 # v0.19.2
 * Minor styling to sort by picker
 

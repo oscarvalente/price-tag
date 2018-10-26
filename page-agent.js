@@ -92,10 +92,14 @@ function displaySaveConfirmation(elementId, sendResponse) {
 
 function attachEvents() {
     chrome.runtime.onMessage.addListener(({type, payload = {}}, sender, sendResponse) => {
-        const {selection} = payload;
+        let originalBGColor;
+        let elementToHighlight;
+        let elementToStopHighlight;
+        let confirmationModal;
+        let {originalBackgroundColor} = payload;
+        const {selection, elementId} = payload;
         switch (type) {
             case "RECORD.START":
-                let originalBGColor;
 
                 document.body.style.cursor = "pointer";
                 window.focus();
@@ -180,8 +184,7 @@ function attachEvents() {
                     return false;
                 }
             case "PRICE_TAG.HIGHLIGHT.START":
-                const {selection: elementSelection} = payload;
-                const elementToHighlight = document.body.querySelector(elementSelection);
+                elementToHighlight = document.body.querySelector(selection);
                 if (elementToHighlight) {
                     const originalBackgroundColor = elementToHighlight.style.backgroundColor;
                     elementToHighlight.style.backgroundColor = "#c9ecfc";
@@ -191,10 +194,8 @@ function attachEvents() {
                 }
                 break;
             case "PRICE_TAG.HIGHLIGHT.STOP":
-                const {selection: elementHighlighted} = payload;
-                let {originalBackgroundColor} = payload;
                 originalBackgroundColor = originalBackgroundColor || "";
-                const elementToStopHighlight = document.body.querySelector(elementHighlighted);
+                elementToStopHighlight = document.body.querySelector(selection);
                 if (elementToStopHighlight) {
                     elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
                     sendResponse({status: 1, isHighlighted: false});
@@ -203,11 +204,9 @@ function attachEvents() {
                 }
                 break;
             case "CONFIRMATION_DISPLAY.CREATE":
-                const {elementId: idToCreate} = payload;
-                return displaySaveConfirmation(idToCreate, sendResponse);
+                return displaySaveConfirmation(elementId, sendResponse);
             case "CONFIRMATION_DISPLAY.REMOVE":
-                const {elementId: idToRemove} = payload;
-                const confirmationModal = document.getElementById(idToRemove);
+                confirmationModal = document.getElementById(elementId);
                 if (confirmationModal) {
                     confirmationModal.remove();
                 }
