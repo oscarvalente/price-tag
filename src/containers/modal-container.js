@@ -6,7 +6,7 @@ class ModalContainer extends Component {
     render() {
         return (
             <Modal>
-                <ModalHeader title={this.props.title}/>
+                <ModalHeader title={this.props.title} onCloseClick={this.props.onCloseClick}/>
                 <ModalBody message={this.props.message}/>
                 <ModalFooter buttons={this.props.buttons}
                              generateOnButtonClickCallback={this.props.generateOnButtonClickCallback}/>
@@ -17,6 +17,7 @@ class ModalContainer extends Component {
 
 ModalContainer.propTypes = {
     title: ModalHeader.propTypes.title,
+    onCloseClick: ModalHeader.propTypes.onCloseClick,
     message: ModalBody.propTypes.message,
     buttons: ModalFooter.propTypes.buttons,
     generateOnButtonClickCallback: ModalFooter.propTypes.generateOnButtonClickCallback

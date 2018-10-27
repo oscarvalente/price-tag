@@ -172,43 +172,52 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                     payload: {elementId: modalElementId}
                 });
 
-                if (status === 1) {
-                    switch (index) {
-                        case 0:
-                            // said Yes, can use canonical and remember this option
-                            chrome.storage.local.get([domain], result => {
-                                const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                                domainState._canUseCanonical = true;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                switch (status) {
+                    case 1:
+                        switch (index) {
+                            case 0:
+                                // said Yes, can use canonical and remember this option
+                                chrome.storage.local.get([domain], result => {
+                                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
+                                    domainState._canUseCanonical = true;
+                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                    State = updateCurrentURL(State, State.canonicalURL);
+                                    callback(true, true);
+                                });
+                                break;
+                            case 1:
+                                // said Yes, but use canonical just this time
                                 State = updateCurrentURL(State, State.canonicalURL);
                                 callback(true, true);
-                            });
-                            break;
-                        case 1:
-                            // said Yes, but use canonical just this time
-                            State = updateCurrentURL(State, State.canonicalURL);
-                            callback(true, true);
-                            break;
-                        case 2:
-                            // said No, use browser URL and remember this option
-                            chrome.storage.local.get([domain], result => {
-                                const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                                domainState._canUseCanonical = false;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                break;
+                            case 2:
+                                // said No, use browser URL and remember this option
+                                chrome.storage.local.get([domain], result => {
+                                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
+                                    domainState._canUseCanonical = false;
+                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                    State = updateCurrentURL(State, State.browserURL);
+                                    callback(true, false);
+                                });
+                                break;
+                            case 3:
+                                // said No, use browser URL but ask again
                                 State = updateCurrentURL(State, State.browserURL);
                                 callback(true, false);
-                            });
-                            break;
-                        case 3:
-                            // said No, use browser URL but ask again
-                            State = updateCurrentURL(State, State.browserURL);
-                            callback(true, false);
-                            break;
-                        default:
-                            // cannot recognize this modal button click
-                            callback(false);
-                            break;
-                    }
+                                break;
+                            default:
+                                // cannot recognize this modal button click
+                                callback(false);
+                                break;
+                        }
+                        break;
+                    case 2:
+                        // close modal
+                        callback(false);
+                        break;
+                    default:
+                        callback(false);
+                        break;
                 }
             });
         }
@@ -996,35 +1005,42 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
                                         type: "CONFIRMATION_DISPLAY.REMOVE",
                                         payload: {elementId: modalElementId}
                                     });
-                                    if (status === 1) {
-                                        switch (index) {
-                                            case 0:
-                                                // said Yes: not the same item
-                                                domainState._isPathEnoughToTrack = false;
-                                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                                callback(true);
-                                                break;
-                                            case 1:
-                                                callback(false, true);
-                                                break;
-                                            case 2:
-                                                // said No: same item (path is enough for this site items)
-                                                domainState._isPathEnoughToTrack = true;
-                                                chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                                callback(false, false);
-                                                break;
-                                            case 3:
-                                                // said Save this but for others Ask me later
-                                                callback(true);
-                                                break;
-                                            default:
-                                                // cannot recognize this modal button click
-                                                callback(false, true);
-                                                break;
-                                        }
-                                    } else {
-                                        // something in buttons click
-                                        callback(false, true);
+                                    switch (status) {
+                                        case 1:
+                                            switch (index) {
+                                                case 0:
+                                                    // said Yes: not the same item
+                                                    domainState._isPathEnoughToTrack = false;
+                                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                                    callback(true);
+                                                    break;
+                                                case 1:
+                                                    callback(false, true);
+                                                    break;
+                                                case 2:
+                                                    // said No: same item (path is enough for this site items)
+                                                    domainState._isPathEnoughToTrack = true;
+                                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
+                                                    callback(false, false);
+                                                    break;
+                                                case 3:
+                                                    // said Save this but for others Ask me later
+                                                    callback(true);
+                                                    break;
+                                                default:
+                                                    // cannot recognize this modal button click
+                                                    callback(false, true);
+                                                    break;
+                                            }
+                                            break;
+                                        case 2:
+                                            // close modal
+                                            callback(false, true);
+                                            break;
+                                        default:
+                                            // something wrong with modal interaction
+                                            callback(false, true);
+                                            break;
                                     }
                                 });
                             } else {

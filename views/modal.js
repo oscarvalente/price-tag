@@ -15,6 +15,9 @@ chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => 
             render(createElement(Title, [{title: documentTitle}]), document.getElementById("document-title"));
             render(createElement(ModalContainer, {
                     title,
+                    onCloseClick: () => {
+                        sendResponse({status: 2});
+                    },
                     message,
                     buttons,
                     generateOnButtonClickCallback: i => function onButtonClick() {

@@ -10,6 +10,7 @@ const ModalHeader = (props) => {
             {(() => (
                 <div id={styles["modal-header"]}>
                     <h3 id={styles.title}>{props.title}</h3>
+                    <div id={styles["close-button"]} onClick={props.onCloseClick}></div>
                 </div>
             ))}
         </ModalContext.Consumer>
@@ -17,7 +18,8 @@ const ModalHeader = (props) => {
 };
 
 ModalHeader.propTypes = {
-    title: PropTypes.string
+    title: PropTypes.string,
+    onCloseClick: PropTypes.func
 };
 
 const ModalBody = (props) => {

@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.21.0
+* Add cancel button to modal and apply to 2 existing modals
+
 #0.20.1
 * Migrate "No tracked items" in tracked items panel (forgotten)
 

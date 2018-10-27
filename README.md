@@ -58,6 +58,8 @@ but there's a lot more, and more to come.
  * BUG: duplicated content script *SPA's url update (www.amazon.es)* - insert declaratively in manifest ✅
  * extension icon displaying if storage is not sync-ed
  * internationalization ❗
+    * language picker
+    * english and portuguese support
  * price tracking - part ii `(wip)` ❗
      * dismiss notifications ✅
         * lower price ✅
@@ -92,7 +94,7 @@ but there's a lot more, and more to come.
      * add cancel button to warning modals ❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
-     * tech debt: record action doesn't deal with domain and url; state manages them ❗
+     * tech debt: record action doesn't deal with domain and url; state manages them ✅
      * allow naming item ❗
         * toggle on
      * show if item is being tracked in popup.js
