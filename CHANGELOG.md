@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.20.1
+* Migrate "No tracked items" in tracked items panel (forgotten)
+
 # v0.20.0
 * Undo removed items (up to 10 in a bulk)
 * Eslint all the app and fixes

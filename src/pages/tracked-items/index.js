@@ -122,13 +122,22 @@ class TrackedItems extends Component {
                         <IconButton icon="undo" title="Undo remove item"
                                     onClick={this.generateOnUndoRemoveClickCallback()}/>
                     </div>
-                    <OptionsList name="Sort by"
-                                 value={{optionsName: "sortItems", onChange: this.onSortChange}}>
-                        <Option name="Time" id={TIME} isChecked={true}></Option>
-                        <Option name="Price" id={CURRENT_PRICE}></Option>
-                    </OptionsList>
+                    {
+                        this.state.items.length > 0 &&
+                        <OptionsList name="Sort by"
+                                     value={{optionsName: "sortItems", onChange: this.onSortChange}}>
+                            <Option name="Time" id={TIME} isChecked={true}></Option>
+                            <Option name="Price" id={CURRENT_PRICE}></Option>
+                        </OptionsList>
+                    }
                 </div>
-                <ItemsList items={this.state.items} generateOnItemRemovedCallback={this.generateOnItemRemovedCallback}/>
+                {
+                    this.state.items.length > 0 &&
+                    <ItemsList items={this.state.items}
+                               generateOnItemRemovedCallback={this.generateOnItemRemovedCallback}/>
+                    ||
+                    <h4>No items currently being tracked.</h4>
+                }
                 <BackButton href="popup.html"/>
             </section>
         );
