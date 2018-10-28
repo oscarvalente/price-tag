@@ -1,44 +1,21 @@
+import uniq from "lodash/uniq";
 import * as SORT_BY_TYPES from "./src/config/sort-tracked-items";
 import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
-import STATE_CONFIG from "./src/config/state";
+import {PRICE_CHECKING_INTERVAL, SYNCHING_INTERVAL, MAX_UNDO_REMOVED_ITEMS, UNDO_REMOVED_ITEMS_TIMEOUT}
+    from "./src/config/background";
+import StateFactory from "./src/core/factories/state";
+import Item from "./src/core/entities/item";
 import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
-import {
-    addUndoRemovedItem,
-    getUndoRemovedItemsHead,
-    removeUndoRemovedItem,
-    resetUndoRemovedItems,
-    setUndoRemovedItemsResetTask
-} from "./src/utils/state";
+import {createHTMLTemplate, getCanonicalPathFromSource} from "./src/utils/dom";
+import {toPrice} from "./src/utils/lang";
 
-let State = {
-    recordActive: false,
-    notifications: {},
-    notificationsCounter: 0,
-    autoSaveEnabled: false,
-    isPriceUpdateEnabled: false,
-    selection: null,
-    isSimilarElementHighlighted: false,
-    originalBackgroundColor: null,
-    isCurrentPageTracked: false,
-    faviconURL: null,
-    _faviconURLMap: {},
-    currentURL: null,
-    canonicalURL: null,
-    browserURL: null,
-    domain: null,
-    _sortItemsBy: SORT_ITEMS_BY_TIME,
-    _undoRemovedItems: [],
-    _undoRemovedItemsResetTask: null
-};
+let State = StateFactory.createState(SORT_ITEMS_BY_TIME);
 
 const DEFAULT_ICON = "assets/icon_48.png";
 const TRACKED_ITEM_ICON = "assets/icon_active_48.png";
 const DEFAULT_TITLE = "Price Tag";
 const TRACKED_ITEM_TITLE = "Price Tag - This item is being tracked";
 
-const PRICE_CHECKING_INTERVAL = 180000;
-// const PRICE_CHECKING_INTERVAL = 10000;
-const SYNCHING_INTERVAL = 120000;
 const ICONS = {
     PRICE_UPDATE: "./assets/time-is-money.svg",
     PRICE_NOT_FOUND: "./assets/time.svg",
@@ -73,10 +50,6 @@ function removeStatuses(item, statusesToRemove = []) {
     return statusesToRemove.length > 0 && item.statuses.length > 0 ?
         item.statuses.filter(status => !statusesToRemove.includes(status)) :
         item.statuses;
-}
-
-function toUnique(array) {
-    return Array.from(new Set(array));
 }
 
 function updateItemCurrentPrice(item, newPrice) {
@@ -121,7 +94,7 @@ function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, 
         statusesToRemove = [];
     }
 
-    const statuses = toUnique([...removeStatuses(item, statusesToRemove), ...statusesToAdd]);
+    const statuses = uniq([...removeStatuses(item, statusesToRemove), ...statusesToAdd]);
     const updatedItem = {
         ...item,
         statuses,
@@ -181,13 +154,13 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                                     const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                     domainState._canUseCanonical = true;
                                     chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    State = updateCurrentURL(State, State.canonicalURL);
+                                    State = StateFactory.updateCurrentURL(State, State.canonicalURL);
                                     callback(true, true);
                                 });
                                 break;
                             case 1:
                                 // said Yes, but use canonical just this time
-                                State = updateCurrentURL(State, State.canonicalURL);
+                                State = StateFactory.updateCurrentURL(State, State.canonicalURL);
                                 callback(true, true);
                                 break;
                             case 2:
@@ -196,13 +169,13 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                                     const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                     domainState._canUseCanonical = false;
                                     chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    State = updateCurrentURL(State, State.browserURL);
+                                    State = StateFactory.updateCurrentURL(State, State.browserURL);
                                     callback(true, false);
                                 });
                                 break;
                             case 3:
                                 // said No, use browser URL but ask again
-                                State = updateCurrentURL(State, State.browserURL);
+                                State = StateFactory.updateCurrentURL(State, State.browserURL);
                                 callback(true, false);
                                 break;
                             default:
@@ -228,7 +201,7 @@ function onRecordDone(tabId, payload) {
     const {status, selection, price, faviconURL, faviconAlt} = payload;
     const {currentURL, domain} = State;
     if (status > 0) {
-        State = updateFaviconURL(State, State.faviconURL || faviconURL);
+        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
         canDisplayURLConfirmation(State, domain, canDisplay => {
             if (canDisplay) {
                 onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
@@ -252,18 +225,18 @@ function onRecordDone(tabId, payload) {
             }
         });
 
-        State = disableRecord(State);
+        State = StateFactory.disableRecord(State);
     }
 }
 
 function onRecordCancel() {
-    State = disableRecord(State);
+    State = StateFactory.disableRecord(State);
 }
 
 function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
-        State = updateFaviconURL(State, State.faviconURL || faviconURL);
-        State = setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
+        State = StateFactory.setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
         sendResponse(true);
     } else {
         sendResponse(false);
@@ -272,8 +245,8 @@ function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconU
 
 function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
-        State = updateFaviconURL(State, State.faviconURL || faviconURL);
-        State = setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
+        State = StateFactory.setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
         if (toPrice(price) !== trackedPrice) {
             sendResponse(true);
             return;
@@ -285,148 +258,24 @@ function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection
 
 function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
     if (status >= 0) {
-        State = setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
+        State = StateFactory.setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
     }
-}
-
-function createTrackedItem(selection, trackedPrice, previousPrice, faviconURL, faviconAlt, statuses) {
-    if (!previousPrice) {
-        previousPrice = null;
-    }
-
-    const price = toPrice(trackedPrice);
-
-    return {
-        selection,
-        price,
-        currentPrice: price,
-        startingPrice: price,
-        previousPrice,
-        faviconURL,
-        faviconAlt,
-        timestamp: new Date().getTime(),
-        statuses
-    };
 }
 
 // TODO: price becomes a class
 function createItem(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = createTrackedItem(selection, price, undefined, faviconURL, faviconAlt, statuses);
+        items[url] = new Item(selection, toPrice(price), null, faviconURL, faviconAlt, statuses);
 
         chrome.storage.local.set({[domain]: JSON.stringify(items)}, () => {
-            State = disableAutoSave(State);
+            State = StateFactory.disableAutoSave(State);
             if (callback) {
                 callback();
             }
             // TODO: sendResponse("done"); // foi gravado ou não
         });
     });
-}
-
-function toggleRecord(state) {
-    return {
-        ...state,
-        recordActive: !state.recordActive
-    }
-}
-
-function disableRecord(state) {
-    return {
-        ...state,
-        recordActive: false
-    }
-}
-
-function disableCurrentPageTracked(state) {
-    return {
-        ...state,
-        isCurrentPageTracked: false
-    };
-}
-
-function enableCurrentPageTracked(state) {
-    return {
-        ...state,
-        isCurrentPageTracked: true
-    };
-}
-
-function updateCurrentDomain(state, domain) {
-    return {
-        ...state,
-        domain
-    };
-}
-
-function updateCurrentURL(state, currentURL) {
-    return {
-        ...state,
-        currentURL
-    };
-}
-
-function updateCanonicalURL(state, canonicalURL) {
-    return {
-        ...state,
-        canonicalURL
-    };
-}
-
-function updateBrowserURL(state, browserURL) {
-    return {
-        ...state,
-        browserURL
-    };
-}
-
-function updateFaviconURL(state, faviconURL) {
-    return {
-        ...state,
-        faviconURL
-    };
-}
-
-function updateFaviconURLMapItem(state, tabId, faviconURL) {
-    return {
-        ...state,
-        _faviconURLMap: {
-            ...state._faviconURLMap,
-            [tabId]: faviconURL
-        }
-    };
-}
-
-function incrementNotificationsCounter(state) {
-    const notificationsCounter = state.notificationsCounter + 1;
-    return {
-        ...state,
-        notificationsCounter
-    }
-}
-
-function deleteNotificationsItem(state, notificationId) {
-    const newState = {...state};
-    delete newState.notifications[notificationId];
-    return newState;
-}
-
-function updateNotificationsItem(state, notificationId, notificationState) {
-    return {
-        ...state,
-        notifications: {
-            ...state.notifications,
-            [notificationId]: notificationState
-        }
-    };
-}
-
-function updateSortItemsBy(state, _sortItemsBy) {
-    return {
-        ...state,
-        _sortItemsBy
-    };
 }
 
 function canDisplayURLConfirmation(state, domain, callback) {
@@ -446,55 +295,6 @@ function setDefaultAppearance() {
 function setTrackedItemAppearance() {
     chrome.browserAction.setTitle({title: TRACKED_ITEM_TITLE});
     chrome.browserAction.setIcon({path: TRACKED_ITEM_ICON});
-}
-
-function enableAutoSave(state, selection) {
-    selection = selection || state.selection;
-    return {
-        ...state,
-        autoSaveEnabled: true,
-        selection
-    };
-}
-
-function disableAutoSave(state) {
-    return {
-        ...state,
-        autoSaveEnabled: false
-    };
-}
-
-function enablePriceUpdate(state, selection) {
-    return {
-        ...state,
-        isPriceUpdateEnabled: true,
-        selection
-    };
-}
-
-function disablePriceUpdate(state) {
-    return {
-        ...state,
-        isPriceUpdateEnabled: false
-    };
-}
-
-function setSelectionInfo(state, selection, price, faviconURL, faviconAlt) {
-    return {
-        ...state,
-        selection,
-        price,
-        faviconURL,
-        faviconAlt
-    };
-}
-
-function setSimilarElementHighlight(state, isSimilarElementHighlighted, originalBackgroundColor) {
-    return {
-        ...state,
-        isSimilarElementHighlighted,
-        originalBackgroundColor
-    };
 }
 
 function checkForPriceChanges() {
@@ -679,25 +479,25 @@ function removeTrackedItem(url, currentURL, callback) {
 
                     if (State._undoRemovedItemsResetTask) {
                         clearTimeout(State._undoRemovedItemsResetTask);
-                        State = setUndoRemovedItemsResetTask(State, null);
+                        State = StateFactory.setUndoRemovedItemsResetTask(State, null);
                     }
 
                     const removedItem = {...domainItems[url]};
-                    State = addUndoRemovedItem(State, url, removedItem, STATE_CONFIG.MAX_UNDO_REMOVED_ITEMS);
+                    State = StateFactory.addUndoRemovedItem(State, url, removedItem, MAX_UNDO_REMOVED_ITEMS);
                     chrome.runtime.sendMessage({
                         type: "TRACKED_ITEMS.UNDO_STATUS",
                         payload: {isUndoStatusActive: true}
                     });
 
                     const undoRemovedItemsTask = setTimeout(() => {
-                        State = resetUndoRemovedItems(State);
+                        State = StateFactory.resetUndoRemovedItems(State);
                         chrome.runtime.sendMessage({
                             type: "TRACKED_ITEMS.UNDO_STATUS",
                             payload: {isUndoStatusActive: false}
                         });
-                    }, STATE_CONFIG.UNDO_REMOVED_ITEMS_TIMEOUT);
+                    }, UNDO_REMOVED_ITEMS_TIMEOUT);
 
-                    State = setUndoRemovedItemsResetTask(State, undoRemovedItemsTask);
+                    State = StateFactory.setUndoRemovedItemsResetTask(State, undoRemovedItemsTask);
 
                     domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, [ITEM_STATUS.WATCHED]); // stop watching
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
@@ -765,7 +565,7 @@ function clearNotification(notifId, wasClosedByUser) {
             });
         }
 
-        State = deleteNotificationsItem(State, notifId);
+        State = StateFactory.deleteNotificationsItem(State, notifId);
     });
 }
 
@@ -781,27 +581,14 @@ function createNotification(notifId, iconUrl, title, message, contextMessage = "
     };
 
     chrome.notifications.create(notifId, options, id => {
-        State = updateNotificationsItem(State, id, {
+        State = StateFactory.updateNotificationsItem(State, id, {
             url,
             domain,
             type
         });
     });
 
-    State = incrementNotificationsCounter(State);
-}
-
-function toPrice(price) {
-    const priceNumber = parseFloat(price.replace(",", "."));
-    const formattedPrice = priceNumber.toFixed(2);
-    return parseFloat(formattedPrice);
-}
-
-function createHTMLTemplate(html) {
-    var template = document.createElement("template");
-    html = html.trim();
-    template.innerHTML = html;
-    return template.content;
+    State = StateFactory.incrementNotificationsCounter(State);
 }
 
 function isCanonicalURLRelevant(canonical) {
@@ -840,10 +627,10 @@ function updateAutoSaveStatus(url, domain) {
         if (items && isItemNullOrUnwatched) {
             const urlFromDomain = Object.keys(items)[0];
             if (items[urlFromDomain] && items[urlFromDomain].selection) {
-                State = enableAutoSave(State, items[urlFromDomain].selection);
+                State = StateFactory.enableAutoSave(State, items[urlFromDomain].selection);
             }
         } else {
-            State = disableAutoSave(State);
+            State = StateFactory.disableAutoSave(State);
         }
     });
 }
@@ -854,9 +641,9 @@ function updatePriceUpdateStatus(url, domain) {
         const item = items[url];
         const hasItemPriceIncOrDec = item && item.price !== item.currentPrice;
         if (hasItemPriceIncOrDec) {
-            State = enablePriceUpdate(State, item.selection);
+            State = StateFactory.enablePriceUpdate(State, item.selection);
         } else {
-            State = disablePriceUpdate(State);
+            State = StateFactory.disablePriceUpdate(State);
         }
     });
 }
@@ -864,10 +651,10 @@ function updatePriceUpdateStatus(url, domain) {
 function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
-        State = enableCurrentPageTracked(State);
+        State = StateFactory.enableCurrentPageTracked(State);
     } else if (forcePageTrackingTo === false) {
         setDefaultAppearance();
-        State = disableCurrentPageTracked(State);
+        State = StateFactory.disableCurrentPageTracked(State);
     } else if (!forcePageTrackingTo) {
         chrome.storage.local.get([currentDomain], result => {
             const domainState = parseDomainState(result, currentDomain);
@@ -877,14 +664,14 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
                 const item = domainState[currentURL] || domainState[fullURL];
                 if (item && isWatched(item)) {
                     setTrackedItemAppearance();
-                    State = enableCurrentPageTracked(State);
+                    State = StateFactory.enableCurrentPageTracked(State);
                 } else {
                     setDefaultAppearance();
-                    State = disableCurrentPageTracked(State);
+                    State = StateFactory.disableCurrentPageTracked(State);
                 }
             } else {
                 setDefaultAppearance();
-                State = disableCurrentPageTracked(State);
+                State = StateFactory.disableCurrentPageTracked(State);
             }
         });
     }
@@ -1062,11 +849,6 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     });
 }
 
-function getCanonicalPathFromSource(source) {
-    const canonicalElement = source.querySelector("link[rel=\"canonical\"]");
-    return canonicalElement && canonicalElement.getAttribute("href");
-}
-
 function onXHR(url, callback) {
     const request = new XMLHttpRequest();
     request.onload = function () {
@@ -1082,20 +864,20 @@ function onTabContextChange(tabId, url) {
     const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
     if (captureDomain) {
         const [, domain] = captureDomain;
-        State = updateCurrentDomain(State, domain);
+        State = StateFactory.updateCurrentDomain(State, domain);
         chrome.storage.local.get([domain], result => {
             const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
             // check if user has already a preference to use the canonical URL if available
             if (domainState && domainState._canUseCanonical === false) {
-                State = updateCanonicalURL(State, null);
-                State = updateCurrentURL(State, url);
-                State = updateBrowserURL(State, url);
+                State = StateFactory.updateCanonicalURL(State, null);
+                State = StateFactory.updateCurrentURL(State, url);
+                State = StateFactory.updateBrowserURL(State, url);
 
                 if (domainState._isPathEnoughToTrack === true) {
                     const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
                     if (protocolHostAndPathFromURL) {
-                        State = updateCurrentURL(State, protocolHostAndPathFromURL);
-                        State = updateBrowserURL(State, protocolHostAndPathFromURL);
+                        State = StateFactory.updateCurrentURL(State, protocolHostAndPathFromURL);
+                        State = StateFactory.updateBrowserURL(State, protocolHostAndPathFromURL);
                     }
                 }
 
@@ -1105,24 +887,24 @@ function onTabContextChange(tabId, url) {
             } else {
                 // First thing to do, check:
                 // If canonical was updated (compared to the previously) + if it's relevant
-                State = updateBrowserURL(State, url);
+                State = StateFactory.updateBrowserURL(State, url);
 
                 onXHR(url, template => {
                     const canonicalURL = getCanonicalPathFromSource(template);
                     const canUseCanonical = isCanonicalURLRelevant(canonicalURL);
 
                     if (canUseCanonical) {
-                        State = updateCurrentURL(State, canonicalURL);
-                        State = updateCanonicalURL(State, canonicalURL);
+                        State = StateFactory.updateCurrentURL(State, canonicalURL);
+                        State = StateFactory.updateCanonicalURL(State, canonicalURL);
                     } else {
-                        State = updateCanonicalURL(State, null);
-                        State = updateCurrentURL(State, url);
+                        State = StateFactory.updateCanonicalURL(State, null);
+                        State = StateFactory.updateCurrentURL(State, url);
 
                         if (domainState && domainState._isPathEnoughToTrack === true) {
                             const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
                             if (protocolHostAndPathFromURL) {
-                                State = updateCurrentURL(State, protocolHostAndPathFromURL);
-                                State = updateBrowserURL(State, protocolHostAndPathFromURL);
+                                State = StateFactory.updateCurrentURL(State, protocolHostAndPathFromURL);
+                                State = StateFactory.updateBrowserURL(State, protocolHostAndPathFromURL);
                             }
                         }
                     }
@@ -1146,7 +928,7 @@ function attachEvents() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
             if (url.startsWith("http")) {
                 onTabContextChange(id, url);
-                State = updateFaviconURL(State, State._faviconURLMap[id] || null);
+                State = StateFactory.updateFaviconURL(State, State._faviconURLMap[id] || null);
             } else {
                 setDefaultAppearance();
             }
@@ -1157,8 +939,8 @@ function attachEvents() {
         if (url.startsWith("http")) {
             if (active) {
                 if (favIconUrl) {
-                    State = updateFaviconURLMapItem(State, tabId, favIconUrl);
-                    State = updateFaviconURL(State, favIconUrl);
+                    State = StateFactory.updateFaviconURLMapItem(State, tabId, favIconUrl);
+                    State = StateFactory.updateFaviconURL(State, favIconUrl);
                 }
             }
         } else {
@@ -1198,7 +980,7 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    State = toggleRecord(State);
+                    State = StateFactory.toggleRecord(State);
 
                     if (State.recordActive) {
                         const {url} = payload;
@@ -1261,14 +1043,14 @@ function attachEvents() {
                                                     }, onSimilarElementHighlight);
 
                                                     updateExtensionAppearance(domain, url, true);
-                                                    State = disableAutoSave(State);
+                                                    State = StateFactory.disableAutoSave(State);
 
                                                     sendResponse(false);
                                                 });
                                             } else {
                                                 // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
                                                 if (!autoSaveStatus) {
-                                                    State = disableAutoSave(State);
+                                                    State = StateFactory.disableAutoSave(State);
                                                 }
                                             }
                                         });
@@ -1284,7 +1066,7 @@ function attachEvents() {
                                             }, onSimilarElementHighlight);
 
                                             updateExtensionAppearance(domain, stateUrl, true);
-                                            State = disableAutoSave(State);
+                                            State = StateFactory.disableAutoSave(State);
 
                                             sendResponse(false);
                                         });
@@ -1355,7 +1137,7 @@ function attachEvents() {
                                 payload: {selection, originalBackgroundColor}
                             }, onSimilarElementHighlight);
 
-                            State = disablePriceUpdate(State);
+                            State = StateFactory.disablePriceUpdate(State);
                             sendResponse(false);
                         });
                     }
@@ -1379,7 +1161,7 @@ function attachEvents() {
                     }
                     break;
                 case "TRACKED_ITEMS.OPEN":
-                    State = updateSortItemsBy(State, SORT_ITEMS_BY_TIME);
+                    State = StateFactory.updateSortItemsBy(State, SORT_ITEMS_BY_TIME);
                     isUndoStatusActive = State._undoRemovedItems.length > 0;
                     sendResponse({isUndoStatusActive});
                     break;
@@ -1390,15 +1172,15 @@ function attachEvents() {
                     removeTrackedItem(itemUrl, State.currentURL, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.CHANGE_SORT":
-                    State = updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
+                    State = StateFactory.updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
                     break;
                 case "TRACKED_ITEMS.UNDO_ATTEMPT":
                     if (State._undoRemovedItems.length > 0) {
-                        const undoRemovedItem = getUndoRemovedItemsHead(State);
+                        const undoRemovedItem = StateFactory.getUndoRemovedItemsHead(State);
 
                         undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
                             if (response) {
-                                State = removeUndoRemovedItem(State);
+                                State = StateFactory.removeUndoRemovedItem(State);
                                 State._undoRemovedItems.length === 0 ?
                                     sendResponse({isUndoStatusActive: false}) :
                                     sendResponse({isUndoStatusActive: true});
@@ -1479,15 +1261,6 @@ function filterAllTrackedItems(result) {
     return filteredResult;
 }
 
-function toStorageStateFormat(state) {
-    return Object.keys(state).reduce((newState, domain) => {
-        return {
-            ...newState,
-            [domain]: JSON.stringify(state[domain])
-        }
-    }, {});
-}
-
 function syncStorageState() {
     chrome.storage.local.get(null, localResult => {
         const localState = filterAllTrackedItems(localResult);
@@ -1520,8 +1293,8 @@ function syncStorageState() {
                     }
                 }
 
-                chrome.storage.local.set(toStorageStateFormat(freshState));
-                chrome.storage.sync.set(toStorageStateFormat(freshState));
+                chrome.storage.local.set(StateFactory.toStorageStateFormat(freshState));
+                chrome.storage.sync.set(StateFactory.toStorageStateFormat(freshState));
             }
         );
     });

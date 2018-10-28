@@ -1,4 +1,0 @@
-export default {
-    MAX_UNDO_REMOVED_ITEMS: 10,
-    UNDO_REMOVED_ITEMS_TIMEOUT: 120000
-};

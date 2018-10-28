@@ -62,6 +62,19 @@ const getPostCSSConfig = (env => {
     }
 }).bind(null, process.env.BUILD);
 
+const scriptConfig = {
+    ...getCommonConfig(),
+    plugins: [
+        ...getCommonConfig().plugins,
+        commonjs({
+            sourceMap: false,
+            include: [
+                "node_modules/**"
+            ]
+        })
+    ]
+};
+
 const viewConfig = {
     ...getCommonConfig(),
     plugins: [
@@ -101,7 +114,7 @@ export default [
             format: "iife",
             ...getOutputEntryConfig()
         },
-        ...getCommonConfig()
+        ...scriptConfig
     }, {
         input: "page-agent.js",
         output: {

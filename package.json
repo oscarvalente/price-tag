@@ -1,6 +1,6 @@
 {
     "name": "price-tag",
-    "version": "0.21.0",
+    "version": "0.21.1",
     "description": "Records and tracks online shopping item prices",
     "main": "index.js",
     "repository": "git@bitbucket.org:oscarv_08/price-tag.git",

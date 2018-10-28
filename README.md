@@ -91,7 +91,7 @@ but there's a lot more, and more to come.
      * Allow HTML modal messages ✅
      * BUG: change link "target" inside modal to blank ✅
      * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
-     * add cancel button to warning modals ❗
+     * add cancel button to warning modals ✅
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
      * tech debt: record action doesn't deal with domain and url; state manages them ✅
@@ -100,7 +100,7 @@ but there's a lot more, and more to come.
      * show if item is being tracked in popup.js
  * BUG: force full URL checking for item tracking verification (on update extension appearance) - see `v0.18.19` ✅
  * save confirmation modal similar URLs message display as links ✅
- * pause button
+ * pause button ❗
  * wipe state options
     * wipe site-related preferences
     * wipe all sites preferences
@@ -151,6 +151,7 @@ but there's a lot more, and more to come.
         * refactor modal ✅
         * modal dist ✅
         * evaluate folder containers vs components
+ * Refactor background script ❗❗ `(wip)`
  * Use Docker for build ❗❗
  
  **Legend:**
