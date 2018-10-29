@@ -3,22 +3,14 @@ import PropTypes from "prop-types";
 import isEqualWith from "lodash/isEqualWith";
 import isEqual from "lodash/isEqual";
 
+import {REFRESH_INTERVAL} from "../../config/tracked-items";
+import ITEM_STATUS from "../../config/item-statuses";
 import {TIME, CURRENT_PRICE} from "../../config/sort-tracked-items";
 import styles from "./tracked-items.scss";
 import IconTitle from "../../components/icon-title";
 import ItemsList from "../../components/items-list";
 import OptionsList, {Option} from "../../components/options-list";
 import IconButton from "../../components/icon-button";
-
-const REFRESH_INTERVAL = 14000;
-
-const ITEM_STATUS = {
-    WATCHED: "WATCHED",
-    NOT_FOUND: "NOT_FOUND",
-    INCREASED: "INCREASED",
-    DECREASED: "DECREASED",
-    FIXED: "FIXED"
-};
 
 const UNDO_STATUS = {
     ACTIVE: "active",

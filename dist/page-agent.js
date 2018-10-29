@@ -1,30 +1,6 @@
 (function () {
     'use strict';
 
-    function buildElementSelection(path, maxElements) {
-      const pathSelection = [];
-      let elemCount = 1;
-
-      for (let _ref of path) {
-        let {
-          localName,
-          className,
-          id
-        } = _ref;
-
-        if (maxElements >= elemCount) {
-          const pathElementSelection = className ? `${localName.trim()}.${className.trim().replace(/\s/g, ".")}` : id ? `${localName.trim()}#${id}` : localName.trim();
-          pathSelection.push(pathElementSelection);
-        } else {
-          break;
-        }
-
-        elemCount++;
-      }
-
-      return pathSelection.reverse().join(" ");
-    }
-
     function getFaviconPath() {
       const nodeList = document.getElementsByTagName("link");
 
@@ -51,6 +27,30 @@
       }
 
       return null;
+    }
+
+    function buildElementSelection(path, maxElements) {
+      const pathSelection = [];
+      let elemCount = 1;
+
+      for (let _ref of path) {
+        let {
+          localName,
+          className,
+          id
+        } = _ref;
+
+        if (maxElements >= elemCount) {
+          const pathElementSelection = className ? `${localName.trim()}.${className.trim().replace(/\s/g, ".")}` : id ? `${localName.trim()}#${id}` : localName.trim();
+          pathSelection.push(pathElementSelection);
+        } else {
+          break;
+        }
+
+        elemCount++;
+      }
+
+      return pathSelection.reverse().join(" ");
     }
 
     function evaluatePriceTag(selection, sendResponse) {

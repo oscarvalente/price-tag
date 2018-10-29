@@ -1,14 +1,6 @@
 import uniq from "lodash/uniq";
 
-const ITEM_STATUS = {
-    WATCHED: "WATCHED",
-    NOT_FOUND: "NOT_FOUND",
-    INCREASED: "INCREASED",
-    DECREASED: "DECREASED",
-    ACK_DECREASE: "ACK_DECREASE",
-    ACK_INCREASE: "ACK_INCREASE",
-    FIXED: "FIXED"
-};
+import ITEM_STATUS from "../../config/item-statuses";
 
 class Item {
     constructor(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage = 0) {
