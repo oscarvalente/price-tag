@@ -2286,10 +2286,10 @@
     });
   }
 
-  function updatePriceUpdateStatus(url, domain) {
+  function updatePriceUpdateStatus(url, domain, fullURL) {
     chrome.storage.local.get([domain], result => {
       const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-      const item = items[url];
+      const item = items[url] && ItemFactory.createItemFromObject(items[url]) || items[fullURL] && ItemFactory.createItemFromObject(items[fullURL]);
       const hasItemPriceIncOrDec = item && item.price !== item.currentPrice;
 
       if (hasItemPriceIncOrDec) {
@@ -2509,7 +2509,7 @@
           }
 
           updateAutoSaveStatus(State.currentURL, State.domain, url);
-          updatePriceUpdateStatus(State.currentURL, State.domain);
+          updatePriceUpdateStatus(State.currentURL, State.domain, url);
           updateExtensionAppearance(State.domain, State.currentURL, null, url);
         } else {
           // First thing to do, check:
@@ -2537,7 +2537,7 @@
             }
 
             updateAutoSaveStatus(State.currentURL, State.domain, url);
-            updatePriceUpdateStatus(State.currentURL, State.domain);
+            updatePriceUpdateStatus(State.currentURL, State.domain, url);
             updateExtensionAppearance(State.domain, State.currentURL, null, url);
           });
         }

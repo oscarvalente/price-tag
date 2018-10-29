@@ -155,6 +155,7 @@ but there's a lot more, and more to come.
     * Independent functions code split ❗❗ `(wip)`
     * Reactive architecture/behaviours
  * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
+ * BUG: Price-update status with full URL not updating properly ✅
  * Use Docker for build ❗❗
  
  **Legend:**
