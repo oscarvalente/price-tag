@@ -5,8 +5,10 @@ class ItemFactory {
         return new Item(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage);
     }
 
-    static createItemFromObject({selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage}) {
-        return new Item(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage);
+    static createItemFromObject({selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage,
+                                    timestamp, lastUpdateTimestamp}) {
+        return new Item(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage,
+            timestamp, lastUpdateTimestamp);
     }
 }
 

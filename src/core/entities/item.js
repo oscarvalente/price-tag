@@ -3,7 +3,8 @@ import uniq from "lodash/uniq";
 import ITEM_STATUS from "../../config/item-statuses";
 
 class Item {
-    constructor(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage = 0) {
+    constructor(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage = null,
+                timestamp, lastUpdateTimestamp) {
         this.selection = selection;
         this.price = price;
         this.currentPrice = price;
@@ -11,8 +12,8 @@ class Item {
         this.previousPrice = !previousPrice ? null : previousPrice;
         this.faviconURL = faviconURL;
         this.faviconAlt = faviconAlt;
-        this.timestamp = new Date().getTime();
-        this.lastUpdateTimestamp = new Date().getTime();
+        this.timestamp = timestamp || new Date().getTime();
+        this.lastUpdateTimestamp = lastUpdateTimestamp || new Date().getTime();
         this.statuses = statuses;
         this.diffPercentage = diffPercentage;
     }
