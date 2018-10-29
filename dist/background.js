@@ -1924,8 +1924,7 @@
     if (status >= 0) {
       State = StateFactory.setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
     }
-  } // TODO: price becomes a class
-
+  }
 
   function createItem(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
     chrome.storage.local.get([domain], result => {
@@ -2820,7 +2819,7 @@
         case "PRICE_UPDATE.STATUS":
           chrome.storage.local.get([State.domain], result => {
             const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
-            const item = domainItems[State.currentURL];
+            const item = domainItems[State.currentURL] && ItemFactory.createItemFromObject(domainItems[State.currentURL]) || domainItems[State.browserURL] && ItemFactory.createItemFromObject(domainItems[State.browserURL]);
 
             if (item) {
               chrome.tabs.sendMessage(id, {

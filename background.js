@@ -230,7 +230,6 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     }
 }
 
-// TODO: price becomes a class
 function createItem(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
@@ -994,7 +993,8 @@ function attachEvents() {
                 case "PRICE_UPDATE.STATUS":
                     chrome.storage.local.get([State.domain], result => {
                         const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
-                        const item = domainItems[State.currentURL];
+                        const item = (domainItems[State.currentURL] && ItemFactory.createItemFromObject(domainItems[State.currentURL])) ||
+                            (domainItems[State.browserURL] && ItemFactory.createItemFromObject(domainItems[State.browserURL]));
                         if (item) {
                             chrome.tabs.sendMessage(id, {
                                 type: "PRICE_UPDATE.CHECK_STATUS",
