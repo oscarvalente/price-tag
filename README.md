@@ -152,6 +152,10 @@ but there's a lot more, and more to come.
         * modal dist ✅
         * evaluate folder containers vs components
  * Refactor background script ❗❗ `(wip)`
+    * Independent functions code split ❗❗ `(wip)`
+    * Reactive architecture/behaviours
+ * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
+ * BUG: Price-update status with full URL not updating properly ❗❗❗❗ `(wip)`
  * Use Docker for build ❗❗
  
  **Legend:**
