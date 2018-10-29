@@ -732,7 +732,7 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
                         if (currentURL === url) {
                             updateAutoSaveStatus(url, domain);
                             updatePriceUpdateStatus(url, domain);
-                            updateExtensionAppearance(domain, url, false);
+                            updateExtensionAppearance(domain, url, true);
                         }
                         callback(true);
                     });
@@ -833,11 +833,13 @@ function setupTrackingPolling() {
     setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
 }
 
-function updateAutoSaveStatus(url, domain) {
+function updateAutoSaveStatus(url, domain, fullURL) {
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        const isItemNullOrUnwatched = !items[url] || !isWatched(items[url]);
-        if (items && isItemNullOrUnwatched) {
+        // TODO: review this condition
+        const isItemDefinedAndWatched = (items[url] && isWatched(items[url])) ||
+            (items[fullURL] && isWatched(items[fullURL]));
+        if (items && !isItemDefinedAndWatched) {
             const urlFromDomain = Object.keys(items)[0];
             if (items[urlFromDomain] && items[urlFromDomain].selection) {
                 State = enableAutoSave(State, items[urlFromDomain].selection);
@@ -1099,7 +1101,7 @@ function onTabContextChange(tabId, url) {
                     }
                 }
 
-                updateAutoSaveStatus(State.currentURL, State.domain);
+                updateAutoSaveStatus(State.currentURL, State.domain, url);
                 updatePriceUpdateStatus(State.currentURL, State.domain);
                 updateExtensionAppearance(State.domain, State.currentURL, null, url);
             } else {
@@ -1127,7 +1129,7 @@ function onTabContextChange(tabId, url) {
                         }
                     }
 
-                    updateAutoSaveStatus(State.currentURL, State.domain);
+                    updateAutoSaveStatus(State.currentURL, State.domain, url);
                     updatePriceUpdateStatus(State.currentURL, State.domain);
                     updateExtensionAppearance(State.domain, State.currentURL, null, url);
                 });
