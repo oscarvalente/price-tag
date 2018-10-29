@@ -48,18 +48,6 @@ function removeStatuses(item, statusesToRemove = []) {
         item.statuses;
 }
 
-function updateItemCurrentPrice(item, newPrice) {
-    const previousPrice = item.currentPrice;
-
-    const newItem = {
-        ...item,
-        previousPrice,
-        currentPrice: newPrice
-    };
-
-    return updateItemDiffPercentage(newItem);
-}
-
 function updateItemDiffPercentage(item) {
     const diff = Math.abs(item.currentPrice - item.price) * 100 / item.price;
     const diffPerc = parseFloat(diff.toFixed(2));
@@ -106,22 +94,6 @@ function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, 
     }
 
     return updatedItem;
-}
-
-function isWatched(item) {
-    return item.statuses.includes(ITEM_STATUS.WATCHED);
-}
-
-function isNotFound(item) {
-    return item.statuses.includes(ITEM_STATUS.NOT_FOUND);
-}
-
-function hasAcknowledgeDecrease(item) {
-    return item.statuses.includes(ITEM_STATUS.ACK_DECREASE);
-}
-
-function hasAcknowledgeIncrease(item) {
-    return item.statuses.includes(ITEM_STATUS.ACK_INCREASE);
 }
 
 function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
@@ -290,105 +262,128 @@ function checkForPriceChanges() {
                 const domainItems = JSON.parse(result[domain]);
 
                 for (let url in domainItems) {
-                    if (domainItems.hasOwnProperty(url) && matchesURL(url) && isWatched(domainItems[url])) {
-                        const {price: targetPrice, currentPrice} = domainItems[url];
-                        onXHR(url, template => {
-                            try {
-                                let newPrice = null;
-                                const {textContent} = template.querySelector(domainItems[url].selection);
-                                if (textContent) {
-                                    const textContentMatch = textContent.match(MATCHES.PRICE);
-                                    if (textContentMatch) {
-                                        [, newPrice] = textContentMatch;
+                    if (domainItems.hasOwnProperty(url) && matchesURL(url)) {
+                        const item = ItemFactory.createItemFromObject(domainItems[url]);
+                        if (item.isWatched()) {
+                            const {price: targetPrice, currentPrice} = item;
+                            onXHR(url, template => {
+                                try {
+                                    let newPrice = null;
+                                    const {textContent} = template.querySelector(domainItems[url].selection);
+                                    if (textContent) {
+                                        const textContentMatch = textContent.match(MATCHES.PRICE);
+                                        if (textContentMatch) {
+                                            [, newPrice] = textContentMatch;
 
-                                        newPrice = toPrice(newPrice);
+                                            newPrice = toPrice(newPrice);
 
-                                        if (!targetPrice) {
-                                            domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice,
-                                                [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
-                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                                const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
-                                                createNotification(notificationId, PRICE_FIX_ICON, "Fixed price",
-                                                    `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
-                                            });
-                                        } else if (newPrice < currentPrice) {
-                                            const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice);
-                                            domainItems[url] = updateItemTrackStatus(updatedItem, null,
-                                                [ITEM_STATUS.DECREASED],
-                                                [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
+                                            if (!targetPrice) {
+                                                item.updateTrackStatus(newPrice,
+                                                    [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
+                                                domainItems[url] = item;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
+                                                    createNotification(notificationId, PRICE_FIX_ICON, "Fixed price",
+                                                        `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
+                                                });
+                                            } else if (newPrice < currentPrice) {
+                                                item.updateCurrentPrice(newPrice);
+                                                item.updateTrackStatus(null,
+                                                    [ITEM_STATUS.DECREASED],
+                                                    [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
+                                                domainItems[url] = item;
 
-                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                                // TODO: sendResponse("done"); // foi actualizado ou não
-                                                if (newPrice < targetPrice && !hasAcknowledgeDecrease(domainItems[url])) {
-                                                    const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
-                                                    createNotification(notificationId, PRICE_UPDATE_ICON, "Lower price!!",
-                                                        `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED,
-                                                        {
-                                                            buttons: [
-                                                                {
-                                                                    title: `Keep tracking but w/ new price (${newPrice})`
-                                                                },
-                                                                {
-                                                                    title: "Stop watching"
-                                                                }
-                                                            ]
-                                                        });
-                                                }
-                                            });
-                                        } else if (newPrice > currentPrice) {
-                                            const updatedItem = updateItemCurrentPrice(domainItems[url], newPrice); // update current price and previous
-                                            domainItems[url] = updateItemTrackStatus(updatedItem, null,
-                                                [ITEM_STATUS.INCREASED],
-                                                [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE]);
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    // TODO: sendResponse("done"); // foi actualizado ou não
+                                                    if (newPrice < targetPrice && !item.hasAcknowledgeDecrease()) {
+                                                        const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                                                        createNotification(notificationId, PRICE_UPDATE_ICON, "Lower price!!",
+                                                            `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED,
+                                                            {
+                                                                buttons: [
+                                                                    {
+                                                                        title: `Keep tracking but w/ new price (${newPrice})`
+                                                                    },
+                                                                    {
+                                                                        title: "Stop watching"
+                                                                    }
+                                                                ]
+                                                            });
+                                                    }
+                                                });
+                                            } else if (newPrice > currentPrice) {
+                                                item.updateCurrentPrice(newPrice); // update current price and previous
+                                                item.updateTrackStatus(null,
+                                                    [ITEM_STATUS.INCREASED],
+                                                    [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE]);
 
-                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                                // TODO: sendResponse("done"); // foi actualizado ou não
+                                                domainItems[url] = item;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    // TODO: sendResponse("done"); // foi actualizado ou não
 
-                                                if (!hasAcknowledgeIncrease(domainItems[url])) {
-                                                    const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
-                                                    const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ?
-                                                        {
-                                                            buttons: [
-                                                                {
-                                                                    title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
-                                                                }
-                                                            ]
-                                                        } :
-                                                        {
-                                                            buttons: []
-                                                        };
-                                                    notificationOptions.buttons.push(
-                                                        {
-                                                            title: "Stop watching"
-                                                        }
-                                                    );
-                                                    createNotification(notificationId, PRICE_UPDATE_ICON, "Price increase",
-                                                        `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED,
-                                                        notificationOptions);
-                                                }
-                                            });
-                                        } else if (!isNotFound(domainItems[url])) { // NOTE: Here, price is the same
-                                            domainItems[url] = updateItemTrackStatus(domainItems[url], null,
-                                                null, [ITEM_STATUS.NOT_FOUND]);
-                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                                // TODO: sendResponse("done"); // foi actualizado ou não
-                                            });
-                                        } else {
-                                            domainItems[url] = updateItemTrackStatus(domainItems[url], null,
-                                                null, [ITEM_STATUS.NOT_FOUND]);
-                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
+                                                    if (!item.hasAcknowledgeIncrease()) {
+                                                        const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                                                        const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ?
+                                                            {
+                                                                buttons: [
+                                                                    {
+                                                                        title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
+                                                                    }
+                                                                ]
+                                                            } :
+                                                            {
+                                                                buttons: []
+                                                            };
+                                                        notificationOptions.buttons.push(
+                                                            {
+                                                                title: "Stop watching"
+                                                            }
+                                                        );
+                                                        createNotification(notificationId, PRICE_UPDATE_ICON, "Price increase",
+                                                            `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED,
+                                                            notificationOptions);
+                                                    }
+                                                });
+                                            } else if (!item.isNotFound()) { // NOTE: Here, price is the same
+                                                item.updateTrackStatus(null,
+                                                    null, [ITEM_STATUS.NOT_FOUND]);
+                                                domainItems[url] = item;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                    // TODO: sendResponse("done"); // foi actualizado ou não
+                                                });
+                                            } else {
+                                                item.updateTrackStatus(null,
+                                                    null, [ITEM_STATUS.NOT_FOUND]);
+                                                domainItems[url] = item;
+                                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
+                                            }
                                         }
                                     }
-                                }
 
-                                if (domainItems[url].price && !newPrice) {
-                                    if (!isNotFound(domainItems[url])) {
-                                        domainItems[url] = updateItemTrackStatus(domainItems[url], null,
+                                    if (item.price && !newPrice) {
+                                        if (!item.isNotFound()) {
+                                            item.updateTrackStatus(null,
+                                                [ITEM_STATUS.NOT_FOUND],
+                                                [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+                                            domainItems[url] = item;
+                                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
+                                                // TODO: sendResponse("done"); // foi actualizado ou não
+                                                const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                                                const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
+                                                createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
+                                                    `Price tag no longer found${previousPrice}`, url, url, domain);
+                                            });
+                                        }
+                                    }
+                                } catch (e) {
+                                    if (!item.isNotFound()) {
+                                        console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
+                                        item.updateTrackStatus(null,
                                             [ITEM_STATUS.NOT_FOUND],
                                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+                                        domainItems[url] = item;
 
                                         chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                            // TODO: sendResponse("done"); // foi actualizado ou não
                                             const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
                                             const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
                                             createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
@@ -396,22 +391,8 @@ function checkForPriceChanges() {
                                         });
                                     }
                                 }
-                            } catch (e) {
-                                if (!isNotFound(domainItems[url])) {
-                                    console.warn(`Invalid price selection element in\n${url}:\t"${domainItems[url].selection}"`);
-                                    domainItems[url] = updateItemTrackStatus(domainItems[url], null,
-                                        [ITEM_STATUS.NOT_FOUND],
-                                        [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
-
-                                    chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                        const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
-                                        const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
-                                        createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
-                                            `Price tag no longer found${previousPrice}`, url, url, domain);
-                                    });
-                                }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             }
@@ -429,12 +410,14 @@ function getTrackedItemsSortedBy(sortType, callback) {
                 if (domainItems) {
                     let items = [];
                     Object.keys(domainItems).forEach(url => {
-                        if (matchesHostname(url) && isWatched(domainItems[url])) {
-                            const item = {
-                                ...domainItems[url],
-                                url: url
-                            };
-                            items.push(item);
+                        if (matchesHostname(url)) {
+                            const item = ItemFactory.createItemFromObject(domainItems[url]);
+                            if (item.isWatched()) {
+                                items.push({
+                                    ...item,
+                                    url
+                                });
+                            }
                         }
                     });
                     trackedItems = [...trackedItems, ...items];
@@ -579,13 +562,16 @@ function setupTrackingPolling() {
 function updateAutoSaveStatus(url, domain, fullURL) {
     chrome.storage.local.get([domain], result => {
         const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        // TODO: review this condition
-        const isItemDefinedAndWatched = (items[url] && isWatched(items[url])) ||
-            (items[fullURL] && isWatched(items[fullURL]));
+        const item = items[url] && ItemFactory.createItemFromObject(items[url]);
+        const itemFallback = items[fullURL] && ItemFactory.createItemFromObject(items[fullURL]);
+
+        const isItemDefinedAndWatched = (item && item.isWatched()) ||
+            (itemFallback && itemFallback.isWatched());
         if (items && !isItemDefinedAndWatched) {
             const urlFromDomain = Object.keys(items)[0];
-            if (items[urlFromDomain] && items[urlFromDomain].selection) {
-                State = StateFactory.enableAutoSave(State, items[urlFromDomain].selection);
+            const exampleFromDomain = items[urlFromDomain] && ItemFactory.createItemFromObject(items[urlFromDomain]);
+            if (exampleFromDomain && exampleFromDomain.selection) {
+                State = StateFactory.enableAutoSave(State, exampleFromDomain.selection);
             }
         } else {
             State = StateFactory.disableAutoSave(State);
@@ -619,8 +605,9 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
             if (domainState) {
                 // NOTE: Making sure that full URL is also checked because item may have been saved with full URL
                 // in the past
-                const item = domainState[currentURL] || domainState[fullURL];
-                if (item && isWatched(item)) {
+                const itemObject = domainState[currentURL] || domainState[fullURL];
+                const item = itemObject && ItemFactory.createItemFromObject(itemObject);
+                if (item && item.isWatched()) {
                     setTrackedItemAppearance();
                     State = StateFactory.enableCurrentPageTracked(State);
                 } else {
@@ -640,7 +627,8 @@ function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
     let foundOne = false;
     for (let url in domainState) {
         if (domainState.hasOwnProperty(url) && matchesURL(url)) {
-            if (isWatched(domainState[url])) {
+            const item = ItemFactory.createItemFromObject(domainState[url]);
+            if (item.isWatched()) {
                 if (currentURL === url) {
                     //    if they're exactly the same
                     callback(null);

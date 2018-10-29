@@ -43,7 +43,7 @@ class Item {
         this.diffPercentage = diffPercentage;
     }
 
-    updateTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
+    updateTrackStatus(newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
         if (!statusesToAdd) {
             statusesToAdd = [];
         }
