@@ -1,7 +1,10 @@
 ### CHANGELOG
 
+#0.21.2
+* Refactor background (split code)
+
 #0.21.1
-*Refactor background (reactive behaviours)
+* Items that use full URL don't get auto-save updated correctly
 
 #0.21.0
 * Add cancel button to modal and apply to 2 existing modals
