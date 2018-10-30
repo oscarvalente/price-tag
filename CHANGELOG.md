@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.21.3
+* Remove item-related functions from background.js
+
 #0.21.2
 * Refactor background (split code)
 * Price update full URL bug fix

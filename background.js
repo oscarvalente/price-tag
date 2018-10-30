@@ -23,7 +23,8 @@ import {
 import StateFactory from "./src/core/factories/state";
 import ItemFactory from "./src/core/factories/item";
 import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
-import {createHTMLTemplate, getCanonicalPathFromSource} from "./src/utils/dom";
+import {getCanonicalPathFromSource} from "./src/utils/dom";
+import {onXHR} from "./src/utils/http";
 import {
     toPrice,
     isCanonicalURLRelevant,
@@ -693,17 +694,6 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
             callback(true);
         }
     });
-}
-
-function onXHR(url, callback) {
-    const request = new XMLHttpRequest();
-    request.onload = function () {
-        const template = createHTMLTemplate(this.response);
-        callback(template);
-    };
-    request.open("GET", url);
-    request.send();
-
 }
 
 function onTabContextChange(tabId, url) {

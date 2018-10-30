@@ -157,6 +157,7 @@ but there's a lot more, and more to come.
  * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
  * BUG: Price-update status with full URL not updating properly ✅
  * Use Docker for build ❗❗
+ * Drag n' drop to aggregate similar items ❗
  
  **Legend:**
  * ❗️ urgent/priority development

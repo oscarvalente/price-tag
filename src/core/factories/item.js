@@ -6,8 +6,8 @@ class ItemFactory {
     }
 
     static createItemFromObject({selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage,
-                                    timestamp, lastUpdateTimestamp}) {
-        return new Item(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage,
+                                    currentPrice, timestamp, lastUpdateTimestamp}) {
+        return new Item(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage, currentPrice,
             timestamp, lastUpdateTimestamp);
     }
 }

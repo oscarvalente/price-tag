@@ -4,10 +4,10 @@ import ITEM_STATUS from "../../config/item-statuses";
 
 class Item {
     constructor(selection, price, previousPrice, faviconURL, faviconAlt, statuses, diffPercentage = null,
-                timestamp, lastUpdateTimestamp) {
+                currentPrice = price, timestamp, lastUpdateTimestamp) {
         this.selection = selection;
         this.price = price;
-        this.currentPrice = price;
+        this.currentPrice = currentPrice;
         this.startingPrice = price;
         this.previousPrice = !previousPrice ? null : previousPrice;
         this.faviconURL = faviconURL;
