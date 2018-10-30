@@ -1,4 +1,3 @@
-import uniq from "lodash/uniq";
 import * as SORT_BY_TYPES from "./src/config/sort-tracked-items";
 import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
 import {
@@ -42,60 +41,6 @@ import {
 import {findURLKey} from "./src/utils/storage";
 
 let State = StateFactory.createState(SORT_ITEMS_BY_TIME);
-
-function removeStatuses(item, statusesToRemove = []) {
-    return statusesToRemove.length > 0 && item.statuses.length > 0 ?
-        item.statuses.filter(status => !statusesToRemove.includes(status)) :
-        item.statuses;
-}
-
-function updateItemDiffPercentage(item) {
-    const diff = Math.abs(item.currentPrice - item.price) * 100 / item.price;
-    const diffPerc = parseFloat(diff.toFixed(2));
-    let diffPercentage = null;
-    if (diffPerc) {
-        diffPercentage = item.currentPrice > item.price ?
-            +diffPerc :
-            -diffPerc;
-
-        if (diffPercentage > 0 && diffPercentage < 1) {
-            diffPercentage = Math.ceil(diffPercentage);
-        } else if (diffPercentage > -1 && diffPercentage < 0) {
-            diffPercentage = Math.floor(diffPercentage);
-        }
-    }
-
-    item.diffPercentage = diffPercentage;
-
-    return item;
-}
-
-function updateItemTrackStatus(item, newPrice, statusesToAdd, statusesToRemove, forceStartingPrice = false) {
-    if (!statusesToAdd) {
-        statusesToAdd = [];
-    }
-
-    if (!statusesToRemove) {
-        statusesToRemove = [];
-    }
-
-    const statuses = uniq([...removeStatuses(item, statusesToRemove), ...statusesToAdd]);
-    const updatedItem = {
-        ...item,
-        statuses,
-        lastUpdateTimestamp: new Date().getTime()
-    };
-
-    if (forceStartingPrice) {
-        updatedItem.startingPrice = item.price;
-    }
-
-    if (newPrice) {
-        updatedItem.price = newPrice;
-    }
-
-    return updatedItem;
-}
 
 function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
     const modalElementId = "price-tag--url-confirmation";
@@ -437,7 +382,8 @@ function removeTrackedItem(url, currentURL, callback) {
             if (matchesDomain(domain)) {
                 const domainData = result[domain];
                 const domainItems = JSON.parse(domainData) || null;
-                if (domainItems[url]) {
+                const item = domainItems[url] && ItemFactory.createItemFromObject(domainItems[url]);
+                if (item) {
                     found = true;
 
                     if (State._undoRemovedItemsResetTask) {
@@ -445,7 +391,7 @@ function removeTrackedItem(url, currentURL, callback) {
                         State = StateFactory.setUndoRemovedItemsResetTask(State, null);
                     }
 
-                    const removedItem = {...domainItems[url]};
+                    const removedItem = {...item};
                     State = StateFactory.addUndoRemovedItem(State, url, removedItem, MAX_UNDO_REMOVED_ITEMS);
                     chrome.runtime.sendMessage({
                         type: "TRACKED_ITEMS.UNDO_STATUS",
@@ -462,7 +408,8 @@ function removeTrackedItem(url, currentURL, callback) {
 
                     State = StateFactory.setUndoRemovedItemsResetTask(State, undoRemovedItemsTask);
 
-                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, [ITEM_STATUS.WATCHED]); // stop watching
+                    item.updateTrackStatus(null, null, [ITEM_STATUS.WATCHED]); // stop watching
+                    domainItems[url] = item;
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         if (currentURL === url) {
                             updateAutoSaveStatus(url, domain);
@@ -487,10 +434,12 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
             if (matchesDomain(domain)) {
                 const domainData = result[domain];
                 const domainItems = JSON.parse(domainData) || null;
-                if (domainItems[url]) {
+                const item = domainItems[url] && ItemFactory.createItemFromObject(domainItems[url]);
+                if (item) {
                     found = true;
 
-                    domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.WATCHED], null); // start watch again
+                    item.updateTrackStatus(null, [ITEM_STATUS.WATCHED], null); // start watch again
+                    domainItems[url] = item;
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         if (currentURL === url) {
                             updateAutoSaveStatus(url, domain);
@@ -515,14 +464,17 @@ function clearNotification(notifId, wasClosedByUser) {
             const {domain, url, type} = State.notifications[notifId];
             chrome.storage.local.get([domain], result => {
                 const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
+                const item = ItemFactory.createItemFromObject(domainItems[url]);
                 switch (type) {
                     case ITEM_STATUS.DECREASED:
-                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_DECREASE]);
+                        item.updateTrackStatus(null, [ITEM_STATUS.ACK_DECREASE]);
                         break;
                     case ITEM_STATUS.INCREASED:
-                        domainItems[url] = updateItemTrackStatus(domainItems[url], null, [ITEM_STATUS.ACK_INCREASE]);
+                        item.updateTrackStatus(null, [ITEM_STATUS.ACK_INCREASE]);
                         break;
                 }
+
+                domainItems[url] = item;
 
                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
             });
@@ -1014,7 +966,9 @@ function attachEvents() {
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
 
-                            domainItems[stateUrl] = updateItemTrackStatus(domainItems[stateUrl], price,
+                            const item = ItemFactory.createItemFromObject(domainItems[stateUrl]);
+
+                            item.updateTrackStatus(price,
                                 null,
                                 [
                                     ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE,
@@ -1023,8 +977,9 @@ function attachEvents() {
                                     ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED,
                                     ITEM_STATUS.NOT_FOUND
                                 ]);
-                            domainItems[stateUrl] = updateItemDiffPercentage(domainItems[stateUrl]);
+                            item.updateDiffPercentage();
 
+                            domainItems[stateUrl] = item;
                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
 
                             chrome.tabs.sendMessage(id, {
@@ -1105,8 +1060,10 @@ function attachEvents() {
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
                             if (domainItems[url]) {
-                                const {price: newPrice} = domainItems[url];
-                                domainItems[url] = updateItemTrackStatus(domainItems[url], newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
+                                const item = ItemFactory.createItemFromObject(domainItems[url]);
+                                const newPrice = item.price;
+                                item.updateTrackStatus(newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
+                                domainItems[url] = item;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
                             }
                         });
@@ -1115,8 +1072,9 @@ function attachEvents() {
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
                             if (domainItems[url]) {
-                                const {previousPrice: priceBeforeIncreasing} = domainItems[url];
-                                domainItems[url] = updateItemTrackStatus(domainItems[url], priceBeforeIncreasing, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
+                                const item = ItemFactory.createItemFromObject(domainItems[url]);
+                                item.updateTrackStatus(item.previousPrice, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
+                                domainItems[url] = item;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
                             }
                         });
@@ -1128,8 +1086,10 @@ function attachEvents() {
                     case ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED:
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                domainItems[url] = updateItemTrackStatus(domainItems[url], null, null, ITEM_STATUS.ALL_STATUSES); // stop watching
+                            const item = domainItems[url] && ItemFactory.createItemFromObject(domainItems[url]);
+                            if (item) {
+                                item.updateTrackStatus(null, null, ITEM_STATUS.ALL_STATUSES); // stop watching
+                                domainItems[url] = item;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
                             }
                         });
