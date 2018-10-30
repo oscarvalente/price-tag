@@ -2,6 +2,9 @@
 
 #0.21.2
 * Refactor background (split code)
+* Price update full URL bug fix
+* Auto-save get URL selection example from same domain bug fix
+* Fix tracked-items panel width flicker when no items
 
 #0.21.1
 * Items that use full URL don't get auto-save updated correctly

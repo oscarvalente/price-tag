@@ -1,4 +1,5 @@
-import {matchesDomain} from "./lang";
+import {matchesDomain, matchesURL} from "./lang";
+import findKey from "lodash/findKey";
 
 function filterAllTrackedItems(result) {
     let filteredResult = {};
@@ -14,6 +15,11 @@ function filterAllTrackedItems(result) {
     return filteredResult;
 }
 
+function findURLKey(object) {
+    return findKey(object, (_, key) => matchesURL(key));
+}
+
 export {
-    filterAllTrackedItems
+    filterAllTrackedItems,
+    findURLKey
 };

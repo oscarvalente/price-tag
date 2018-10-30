@@ -39,6 +39,7 @@ import {
     buildSaveConfirmationPayload,
     buildURLConfirmationPayload
 } from "./src/utils/view";
+import {findURLKey} from "./src/utils/storage";
 
 let State = StateFactory.createState(SORT_ITEMS_BY_TIME);
 
@@ -567,7 +568,7 @@ function updateAutoSaveStatus(url, domain, fullURL) {
         const isItemDefinedAndWatched = (item && item.isWatched()) ||
             (itemFallback && itemFallback.isWatched());
         if (items && !isItemDefinedAndWatched) {
-            const urlFromDomain = Object.keys(items)[0];
+            const urlFromDomain = findURLKey(items);
             const exampleFromDomain = items[urlFromDomain] && ItemFactory.createItemFromObject(items[urlFromDomain]);
             if (exampleFromDomain && exampleFromDomain.selection) {
                 State = StateFactory.enableAutoSave(State, exampleFromDomain.selection);
