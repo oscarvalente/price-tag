@@ -1,7 +1,7 @@
 ### CHANGELOG
 
 #0.21.4
-* Add Rx to installed event
+* Add Rx to installed and basic tab change-related events
 
 #0.21.3
 * Remove item-related functions from background.js
