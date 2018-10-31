@@ -40,6 +40,10 @@ import {
     buildURLConfirmationPayload
 } from "./src/utils/view";
 import {findURLKey} from "./src/utils/storage";
+import onInstalled$ from "./src/core/events/internal/installed";
+import onUpdated$ from "./src/core/events/internal/updated";
+import onActivatedTab$ from "./src/core/events/activated-tab";
+import onCompletedTab$ from "./src/core/events/completed-tab";
 
 let State = StateFactory.createState(SORT_ITEMS_BY_TIME);
 
@@ -756,54 +760,34 @@ function onTabContextChange(tabId, url) {
 
 // TODO: break this down into smaller functions
 function attachEvents() {
-    chrome.runtime.onInstalled.addListener(() => {
+    onInstalled$().subscribe(() => {
         console.log("Price tag installed.");
     });
 
-    chrome.tabs.onActivated.addListener(() => {
-        chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-            if (url.startsWith("http")) {
-                onTabContextChange(id, url);
-                State = StateFactory.updateFaviconURL(State, State._faviconURLMap[id] || null);
-            } else {
-                setDefaultAppearance();
-            }
-        });
+    onActivatedTab$().subscribe(({id, url}) => {
+        if (url.startsWith("http")) {
+            onTabContextChange(id, url);
+            State = StateFactory.updateFaviconURL(State, State._faviconURLMap[id] || null);
+        } else {
+            setDefaultAppearance();
+        }
     });
 
-    chrome.tabs.onUpdated.addListener((tabId, {favIconUrl}, {active, url}) => {
+    onUpdated$().subscribe(({tabId, favIconUrl, active, url}) => {
         if (url.startsWith("http")) {
-            if (active) {
-                if (favIconUrl) {
-                    State = StateFactory.updateFaviconURLMapItem(State, tabId, favIconUrl);
-                    State = StateFactory.updateFaviconURL(State, favIconUrl);
-                }
+            if (active && favIconUrl) {
+                State = StateFactory.updateFaviconURLMapItem(State, tabId, favIconUrl);
+                State = StateFactory.updateFaviconURL(State, favIconUrl);
             }
         } else {
             setDefaultAppearance();
         }
     });
 
-    chrome.webNavigation.onCompleted.addListener(({frameId}) => {
-        if (frameId === 0) {
-            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-                if (tabs.length > 0) {
-                    const [{id, url}] = tabs;
-                    onTabContextChange(id, url);
-                }
-            });
+    onCompletedTab$().subscribe(({id, url}) => {
+        if (url !== State.browserURL) {
+            onTabContextChange(id, url);
         }
-    });
-
-    chrome.webNavigation.onHistoryStateUpdated.addListener(() => {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs.length > 0) {
-                const [{id: tabId, url}] = tabs;
-                if (url !== undefined && url !== State.browserURL) {
-                    onTabContextChange(tabId, url);
-                }
-            }
-        });
     });
 
     chrome.runtime.onMessage.addListener(

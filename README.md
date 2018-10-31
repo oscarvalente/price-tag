@@ -153,7 +153,7 @@ but there's a lot more, and more to come.
         * evaluate folder containers vs components
  * Refactor background script ❗❗ `(wip)`
     * Independent functions code split ✅
-    * Reactive architecture/behaviours (remaining functions) ❗❗
+    * Reactive architecture/behaviours (remaining functions) ❗❗ `(wip)`
  * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
  * BUG: Price-update status with full URL not updating properly ✅
  * Use Docker for build ❗❗

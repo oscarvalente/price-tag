@@ -1,1 +1,299 @@
-!function(){"use strict";function t(){const t=function(){const t=document.getElementsByTagName("link");for(let e of t)if("icon"===e.getAttribute("rel")||"shortcut icon"===e.getAttribute("rel"))return e.getAttribute("href");return null}();return t?t.startsWith(location.protocol)||t.startsWith("//")?t:t.startsWith("/")?`${location.protocol}//${location.hostname}${t}`:`${location.href}/${t}`:null}function e(e,o){const n=document.body.querySelector(e),c=n?n.textContent:null;if(c){const n=c.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);if(n){const[,c]=n;o({status:1,selection:e,price:c,faviconURL:t(),faviconAlt:document.title})}else o({status:-2})}else o({status:-1})}function o(){chrome.runtime.onMessage.addListener(({type:o,payload:n={}},c,r)=>{let s,l,u,i,{originalBackgroundColor:a}=n;const{selection:d,elementId:m}=n;switch(o){case"RECORD.START":return document.body.style.cursor="pointer",window.focus(),document.body.onclick=function(e){e.preventDefault(),e.stopPropagation();const{target:o,path:c}=e,{url:l}=n,{textContent:u}=o,i=function(t,e){const o=[];let n=1;for(let c of t){let{localName:t,className:r,id:s}=c;if(!(e>=n))break;{const e=r?`${t.trim()}.${r.trim().replace(/\s/g,".")}`:s?`${t.trim()}#${s}`:t.trim();o.push(e)}n++}return o.reverse().join(" ")}(c,3);let a=null;if(l){if(u){const e=u.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);e?([,a]=e,r({status:1,url:l,selection:i,price:a,faviconURL:t(),faviconAlt:document.title})):r({status:-3})}else r({status:-2});o.style.backgroundColor=s,document.body.style.cursor="",document.body.onclick=null,document.body.onmouseover=null}else r({status:-1})},document.body.onmouseover=(({target:t})=>{t.addEventListener("mouseout",({target:t})=>{t.style.backgroundColor=s,t.removeEventListener("mouseout",t)}),s=t.style.backgroundColor,t.style.backgroundColor="#c9ecfc"}),!0;case"RECORD.CANCEL":document.body.style.cursor="",document.body.onclick=null,document.body.onmouseover=null,r({});break;case"AUTO_SAVE.CHECK_STATUS":case"PRICE_UPDATE.CHECK_STATUS":return"complete"!==document.readyState?(window.onload=(()=>{e(d,r),window.onload=null}),!0):(e(d,r),!1);case"PRICE_TAG.HIGHLIGHT.START":if(l=document.body.querySelector(d)){const t=l.style.backgroundColor;l.style.backgroundColor="#c9ecfc",r({status:1,isHighlighted:!0,originalBackgroundColor:t})}else r({status:-1});break;case"PRICE_TAG.HIGHLIGHT.STOP":a=a||"",(u=document.body.querySelector(d))?(u.style.backgroundColor=a,r({status:1,isHighlighted:!1})):r({status:-1});break;case"CONFIRMATION_DISPLAY.CREATE":return function(t,e){const o=`chrome-extension://${chrome.runtime.id}`;if(!location.ancestorOrigins.contains(o)){const o=document.createElement("iframe");return t&&o.setAttribute("id",t),o.src=chrome.runtime.getURL("views/modal.html"),o.onload=(()=>{e({status:1})}),o.style.cssText="position:fixed;top:0;right:0;display:block;width:700px;height:100%;z-index:1000;border:0;margin-top: 200px;",document.body.appendChild(o),!0}return e({status:-1}),!1}(m,r);case"CONFIRMATION_DISPLAY.REMOVE":(i=document.getElementById(m))&&i.remove()}})}o()}();
+(function () {
+    'use strict';
+
+    function getFaviconPath() {
+      const nodeList = document.getElementsByTagName("link");
+
+      for (let node of nodeList) {
+        if (node.getAttribute("rel") === "icon" || node.getAttribute("rel") === "shortcut icon") {
+          return node.getAttribute("href");
+        }
+      }
+
+      return null;
+    }
+
+    function getFaviconURL() {
+      const faviconPath = getFaviconPath();
+
+      if (faviconPath) {
+        if (faviconPath.startsWith(location.protocol) || faviconPath.startsWith("//")) {
+          return faviconPath;
+        } else if (faviconPath.startsWith("/")) {
+          return `${location.protocol}//${location.hostname}${faviconPath}`;
+        } else {
+          return `${location.href}/${faviconPath}`;
+        }
+      }
+
+      return null;
+    }
+
+    function buildElementSelection(path, maxElements) {
+      const pathSelection = [];
+      let elemCount = 1;
+
+      for (let _ref of path) {
+        let {
+          localName,
+          className,
+          id
+        } = _ref;
+
+        if (maxElements >= elemCount) {
+          const pathElementSelection = className ? `${localName.trim()}.${className.trim().replace(/\s/g, ".")}` : id ? `${localName.trim()}#${id}` : localName.trim();
+          pathSelection.push(pathElementSelection);
+        } else {
+          break;
+        }
+
+        elemCount++;
+      }
+
+      return pathSelection.reverse().join(" ");
+    }
+
+    function evaluatePriceTag(selection, sendResponse) {
+      const target = document.body.querySelector(selection);
+      const textContent = target ? target.textContent : null;
+
+      if (textContent) {
+        const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+
+        if (textContentMatch) {
+          const [, price] = textContentMatch;
+          sendResponse({
+            status: 1,
+            selection,
+            price,
+            faviconURL: getFaviconURL(),
+            faviconAlt: document.title
+          });
+        } else {
+          sendResponse({
+            status: -2
+          });
+        }
+      } else {
+        sendResponse({
+          status: -1
+        });
+      }
+    }
+
+    function displaySaveConfirmation(elementId, sendResponse) {
+      const extensionOrigin = `chrome-extension://${chrome.runtime.id}`;
+
+      if (!location.ancestorOrigins.contains(extensionOrigin)) {
+        const modalElement = document.createElement("iframe");
+
+        if (elementId) {
+          modalElement.setAttribute("id", elementId);
+        } // Must be declared at web_accessible_resources in manifest.json
+
+
+        modalElement.src = chrome.runtime.getURL("views/modal.html");
+
+        modalElement.onload = () => {
+          sendResponse({
+            status: 1
+          });
+        };
+
+        modalElement.style.cssText = "position:fixed;top:0;right:0;display:block;" + "width:700px;height:100%;z-index:1000;border:0;margin-top: 200px;";
+        document.body.appendChild(modalElement);
+        return true;
+      }
+
+      sendResponse({
+        status: -1
+      });
+      return false;
+    }
+
+    function attachEvents() {
+      chrome.runtime.onMessage.addListener(({
+        type,
+        payload = {}
+      }, sender, sendResponse) => {
+        let originalBGColor;
+        let elementToHighlight;
+        let elementToStopHighlight;
+        let confirmationModal;
+        let {
+          originalBackgroundColor
+        } = payload;
+        const {
+          selection,
+          elementId
+        } = payload;
+
+        switch (type) {
+          case "RECORD.START":
+            document.body.style.cursor = "pointer";
+            window.focus();
+
+            document.body.onclick = function (event) {
+              event.preventDefault();
+              event.stopPropagation();
+              const {
+                target,
+                path
+              } = event;
+              const {
+                url
+              } = payload;
+              const {
+                textContent
+              } = target;
+              const selection = buildElementSelection(path, 3);
+              let price = null;
+
+              if (!url) {
+                sendResponse({
+                  status: -1
+                });
+                return;
+              }
+
+              if (textContent) {
+                const textContentMatch = textContent.match(/((?:\d+[.,])?\d+(?:[.,]\d+)?)/);
+
+                if (textContentMatch) {
+                  [, price] = textContentMatch;
+                  sendResponse({
+                    status: 1,
+                    url,
+                    selection,
+                    price,
+                    faviconURL: getFaviconURL(),
+                    faviconAlt: document.title
+                  });
+                } else {
+                  sendResponse({
+                    status: -3
+                  });
+                }
+              } else {
+                sendResponse({
+                  status: -2
+                });
+              }
+
+              target.style.backgroundColor = originalBGColor;
+              document.body.style.cursor = "";
+              document.body.onclick = null;
+              document.body.onmouseover = null;
+            };
+
+            document.body.onmouseover = ({
+              target
+            }) => {
+              target.addEventListener("mouseout", ({
+                target
+              }) => {
+                target.style.backgroundColor = originalBGColor;
+                target.removeEventListener("mouseout", target);
+              });
+              originalBGColor = target.style.backgroundColor;
+              target.style.backgroundColor = "#c9ecfc";
+            };
+
+            return true;
+
+          case "RECORD.CANCEL":
+            document.body.style.cursor = "";
+            document.body.onclick = null;
+            document.body.onmouseover = null;
+            sendResponse({});
+            break;
+
+          case "AUTO_SAVE.CHECK_STATUS":
+            if (document.readyState !== "complete") {
+              window.onload = () => {
+                evaluatePriceTag(selection, sendResponse);
+                window.onload = null;
+              };
+
+              return true;
+            } else {
+              evaluatePriceTag(selection, sendResponse);
+              return false;
+            }
+
+          case "PRICE_UPDATE.CHECK_STATUS":
+            if (document.readyState !== "complete") {
+              window.onload = () => {
+                evaluatePriceTag(selection, sendResponse);
+                window.onload = null;
+              };
+
+              return true;
+            } else {
+              evaluatePriceTag(selection, sendResponse);
+              return false;
+            }
+
+          case "PRICE_TAG.HIGHLIGHT.START":
+            elementToHighlight = document.body.querySelector(selection);
+
+            if (elementToHighlight) {
+              const originalBackgroundColor = elementToHighlight.style.backgroundColor;
+              elementToHighlight.style.backgroundColor = "#c9ecfc";
+              sendResponse({
+                status: 1,
+                isHighlighted: true,
+                originalBackgroundColor
+              });
+            } else {
+              sendResponse({
+                status: -1
+              });
+            }
+
+            break;
+
+          case "PRICE_TAG.HIGHLIGHT.STOP":
+            originalBackgroundColor = originalBackgroundColor || "";
+            elementToStopHighlight = document.body.querySelector(selection);
+
+            if (elementToStopHighlight) {
+              elementToStopHighlight.style.backgroundColor = originalBackgroundColor;
+              sendResponse({
+                status: 1,
+                isHighlighted: false
+              });
+            } else {
+              sendResponse({
+                status: -1
+              });
+            }
+
+            break;
+
+          case "CONFIRMATION_DISPLAY.CREATE":
+            return displaySaveConfirmation(elementId, sendResponse);
+
+          case "CONFIRMATION_DISPLAY.REMOVE":
+            confirmationModal = document.getElementById(elementId);
+
+            if (confirmationModal) {
+              confirmationModal.remove();
+            }
+
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
+
+    function bootstrap() {
+      attachEvents();
+    }
+
+    bootstrap();
+
+}());
+//# sourceMappingURL=page-agent.js.map

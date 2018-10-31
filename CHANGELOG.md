@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.21.4
+* Add Rx to installed event
+
 #0.21.3
 * Remove item-related functions from background.js
 
