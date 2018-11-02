@@ -1,3 +1,4 @@
+import {of} from "rxjs";
 import {switchMap, map, filter} from "rxjs/operators";
 import get from "lodash/get";
 import isFunction from "lodash/isFunction";
@@ -70,12 +71,14 @@ function listenNotificationsButtonClicked() {
             );
         }),
         // update item in its storage domain state according to click type
-        map(({domainState, domain, url, type, buttonIndex}) => {
+        switchMap(({domainState, domain, url, type, buttonIndex}) => {
             const item = ItemFactory.createItemFromObject(domainState[url]);
             const updateItemFn = get(onUpdateItemMapping, [buttonIndex, type]);
             if (isFunction(updateItemFn)) {
                 domainState[url] = updateItemFn(item);
                 return setStorageDomain(domain, domainState);
+            } else {
+                return of();
             }
         })
     );

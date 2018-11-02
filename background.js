@@ -820,9 +820,11 @@ function attachEvents() {
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    StateManager.toggleRecord();
+                    /* eslint-disable no-case-declarations */
+                    const {recordActive: isRecordActive} = StateManager.toggleRecord();
+                    /* eslint-enable no-case-declarations */
 
-                    if (recordActive) {
+                    if (isRecordActive) {
                         const {url} = payload;
                         chrome.tabs.sendMessage(id, {
                             type: "RECORD.START",
@@ -831,7 +833,7 @@ function attachEvents() {
                     } else {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
                     }
-                    sendResponse({status: 1, state: {recordActive}});
+                    sendResponse({status: 1, state: {recordActive: isRecordActive}});
                     break;
                 case "AUTO_SAVE.STATUS":
                     chrome.storage.local.get([domain], result => {
@@ -841,42 +843,43 @@ function attachEvents() {
                                 // since it's true we can say that that domain items' path is enough to track items in this domain
                                 searchForEqualPathWatchedItem(domainState, url, similarURL => {
                                     if (!similarURL) {
-                                        const State = StateManager.getState();
+                                        const {selection} = StateManager.getState();
                                         chrome.tabs.sendMessage(id, {
                                             type: "AUTO_SAVE.CHECK_STATUS",
-                                            payload: {url, selection: State.selection}
+                                            payload: {url, selection}
                                         }, onAutoSaveCheckStatus.bind(null, sendResponse));
                                     } else {
                                         sendResponse({status: -1});
                                     }
                                 });
                             } else {
-                                const State = StateManager.getState();
+                                const {selection} = StateManager.getState();
                                 chrome.tabs.sendMessage(id, {
                                     type: "AUTO_SAVE.CHECK_STATUS",
-                                    payload: {url, selection: State.selection}
+                                    payload: {url, selection}
                                 }, onAutoSaveCheckStatus.bind(null, sendResponse));
                             }
                         } else {
                             // domain doesn't exist
-                            const State = StateManager.getState();
+                            const {selection} = StateManager.getState();
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.CHECK_STATUS",
-                                payload: {url, selection: State.selection}
+                                payload: {url, selection}
                             }, onAutoSaveCheckStatus.bind(null, sendResponse));
                         }
                     });
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
                     if (autoSaveEnabled) {
-                        const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
+                        const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor}
+                            = StateManager.getState();
 
                         canDisplayURLConfirmation(StateManager.getState(), domain, canDisplay => {
                             if (canDisplay) {
                                 onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
                                     if (canSave) {
-                                        const State = StateManager.getState();
-                                        const url = useCaninocal ? State.canonicalURL : State.browserURL;
+                                        const {canonicalURL, browserURL} = StateManager.getState();
+                                        const url = useCaninocal ? canonicalURL : browserURL;
 
                                         checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
                                             if (isToSave) {
@@ -944,14 +947,14 @@ function attachEvents() {
                     break;
                 case "PRICE_UPDATE.STATUS":
                     chrome.storage.local.get([domain], result => {
-                        const State = StateManager.getState();
-                        const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
-                        const item = (domainItems[State.currentURL] && ItemFactory.createItemFromObject(domainItems[State.currentURL])) ||
-                            (domainItems[State.browserURL] && ItemFactory.createItemFromObject(domainItems[State.browserURL]));
+                        const {domain, currentURL, browserURL, selection} = StateManager.getState();
+                        const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+                        const item = (domainItems[currentURL] && ItemFactory.createItemFromObject(domainItems[currentURL])) ||
+                            (domainItems[browserURL] && ItemFactory.createItemFromObject(domainItems[browserURL]));
                         if (item) {
                             chrome.tabs.sendMessage(id, {
                                 type: "PRICE_UPDATE.CHECK_STATUS",
-                                payload: {selection: State.selection}
+                                payload: {selection}
                             }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
                         } else {
                             sendResponse(false);
@@ -1052,57 +1055,7 @@ function attachEvents() {
         clearNotification(notifId);
     });
 
-    // TODO: test this
     listenNotificationsButtonClicked().subscribe();
-
-    // TODO: update and keep tracking
-    /*chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
-        const {domain, url, type} = State.notifications[notifId];
-        switch (buttonIndex) {
-            case 0:
-                switch (type) {
-                    case ITEM_STATUS.DECREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                const newPrice = item.price;
-                                item.updateTrackStatus(newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                    case ITEM_STATUS.INCREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                item.updateTrackStatus(item.previousPrice, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                }
-                break;
-            case 1:
-                switch (type) {
-                    case ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                item.updateTrackStatus(null, null, ITEM_STATUS.ALL_STATUSES); // stop watching
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                }
-                break;
-        }
-    });*/
 
     chrome.notifications.onClosed.addListener(clearNotification);
 }

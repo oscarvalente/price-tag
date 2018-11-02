@@ -7956,6 +7956,22 @@
   //# sourceMappingURL=filter.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_noop,_util_isFunction PURE_IMPORTS_END */
+  function tap(nextOrObserver, error, complete) {
+      return function tapOperatorFunction(source) {
+          return source.lift(new DoOperator(nextOrObserver, error, complete));
+      };
+  }
+  var DoOperator = /*@__PURE__*/ (function () {
+      function DoOperator(nextOrObserver, error, complete) {
+          this.nextOrObserver = nextOrObserver;
+          this.error = error;
+          this.complete = complete;
+      }
+      DoOperator.prototype.call = function (subscriber, source) {
+          return source.subscribe(new TapSubscriber(subscriber, this.nextOrObserver, this.error, this.complete));
+      };
+      return DoOperator;
+  }());
   var TapSubscriber = /*@__PURE__*/ (function (_super) {
       __extends(TapSubscriber, _super);
       function TapSubscriber(destination, observerOrNext, error, complete) {
@@ -10008,7 +10024,7 @@
   }
 
   function queryActiveTab() {
-    return fromEventPattern(addQueryActiveTabHandler);
+    return fromEventPattern(addQueryActiveTabHandler).pipe(take(1));
   }
 
   function addActivatedHandler(handler) {
@@ -10080,29 +10096,21 @@
   }
 
   function onNotificationsButtonClicked() {
-    return fromEventPattern(addNotificationsButtonClickedHandler).pipe(map(([notificationId], buttonIndex) => ({
+    return fromEventPattern(addNotificationsButtonClickedHandler).pipe(tap(x => console.log('button clicked', x)), map(([notificationId, buttonIndex]) => ({
       notificationId,
       buttonIndex
-    })));
-  }
-
-  function getStorageLocal(key, handler) {
-    chrome.storage.local.get(key, handler);
+    })), tap(x => console.log('button clicked', x)));
   }
 
   function getStorageDomain(domain) {
     return fromEventPattern(handler => {
-      getStorageLocal([domain], handler);
+      chrome.storage.local.get([domain], handler);
     }).pipe(take(1), map(result => result && result[domain] ? JSON.parse(result[domain]) : {}));
-  }
-
-  function setStorageLocal(payload, handler) {
-    chrome.storage.local.set(payload, handler);
   }
 
   function setStorageDomain(domain, domainState) {
     return fromEventPattern(handler => {
-      setStorageLocal({
+      chrome.storage.local.set({
         [domain]: JSON.stringify(domainState)
       }, handler);
     }).pipe(take(1));
@@ -10162,7 +10170,7 @@
         buttonIndex
       })));
     }), // update item in its storage domain state according to click type
-    map(({
+    switchMap(({
       domainState,
       domain,
       url,
@@ -10175,6 +10183,8 @@
       if (isFunction_1(updateItemFn)) {
         domainState[url] = updateItemFn(item);
         return setStorageDomain(domain, domainState);
+      } else {
+        return of();
       }
     }));
   }
@@ -11088,9 +11098,13 @@
           break;
 
         case "RECORD.ATTEMPT":
-          StateManager.toggleRecord();
+          /* eslint-disable no-case-declarations */
+          const {
+            recordActive: isRecordActive
+          } = StateManager.toggleRecord();
+          /* eslint-enable no-case-declarations */
 
-          if (recordActive) {
+          if (isRecordActive) {
             const {
               url
             } = payload;
@@ -11109,7 +11123,7 @@
           sendResponse({
             status: 1,
             state: {
-              recordActive
+              recordActive: isRecordActive
             }
           });
           break;
@@ -11123,12 +11137,14 @@
                 // since it's true we can say that that domain items' path is enough to track items in this domain
                 searchForEqualPathWatchedItem(domainState, url, similarURL => {
                   if (!similarURL) {
-                    const State = StateManager.getState();
+                    const {
+                      selection
+                    } = StateManager.getState();
                     chrome.tabs.sendMessage(id, {
                       type: "AUTO_SAVE.CHECK_STATUS",
                       payload: {
                         url,
-                        selection: State.selection
+                        selection
                       }
                     }, onAutoSaveCheckStatus.bind(null, sendResponse));
                   } else {
@@ -11138,23 +11154,27 @@
                   }
                 });
               } else {
-                const State = StateManager.getState();
+                const {
+                  selection
+                } = StateManager.getState();
                 chrome.tabs.sendMessage(id, {
                   type: "AUTO_SAVE.CHECK_STATUS",
                   payload: {
                     url,
-                    selection: State.selection
+                    selection
                   }
                 }, onAutoSaveCheckStatus.bind(null, sendResponse));
               }
             } else {
               // domain doesn't exist
-              const State = StateManager.getState();
+              const {
+                selection
+              } = StateManager.getState();
               chrome.tabs.sendMessage(id, {
                 type: "AUTO_SAVE.CHECK_STATUS",
                 payload: {
                   url,
-                  selection: State.selection
+                  selection
                 }
               }, onAutoSaveCheckStatus.bind(null, sendResponse));
             }
@@ -11171,13 +11191,16 @@
               faviconURL,
               faviconAlt,
               originalBackgroundColor
-            } = State;
+            } = StateManager.getState();
             canDisplayURLConfirmation(StateManager.getState(), domain, canDisplay => {
               if (canDisplay) {
                 onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
                   if (canSave) {
-                    const State = StateManager.getState();
-                    const url = useCaninocal ? State.canonicalURL : State.browserURL;
+                    const {
+                      canonicalURL,
+                      browserURL
+                    } = StateManager.getState();
+                    const url = useCaninocal ? canonicalURL : browserURL;
                     checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
                       if (isToSave) {
                         createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
@@ -11261,15 +11284,20 @@
 
         case "PRICE_UPDATE.STATUS":
           chrome.storage.local.get([domain], result => {
-            const State = StateManager.getState();
-            const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
-            const item = domainItems[State.currentURL] && ItemFactory.createItemFromObject(domainItems[State.currentURL]) || domainItems[State.browserURL] && ItemFactory.createItemFromObject(domainItems[State.browserURL]);
+            const {
+              domain,
+              currentURL,
+              browserURL,
+              selection
+            } = StateManager.getState();
+            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
+            const item = domainItems[currentURL] && ItemFactory.createItemFromObject(domainItems[currentURL]) || domainItems[browserURL] && ItemFactory.createItemFromObject(domainItems[browserURL]);
 
             if (item) {
               chrome.tabs.sendMessage(id, {
                 type: "PRICE_UPDATE.CHECK_STATUS",
                 payload: {
-                  selection: State.selection
+                  selection
                 }
               }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
             } else {
@@ -11397,58 +11425,8 @@
         url: notifications[notifId].url
       });
       clearNotification(notifId);
-    }); // TODO: test this
-
-    listenNotificationsButtonClicked().subscribe(); // TODO: update and keep tracking
-
-    /*chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
-        const {domain, url, type} = State.notifications[notifId];
-        switch (buttonIndex) {
-            case 0:
-                switch (type) {
-                    case ITEM_STATUS.DECREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                const newPrice = item.price;
-                                item.updateTrackStatus(newPrice, null, [ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE], true);
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                    case ITEM_STATUS.INCREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                item.updateTrackStatus(item.previousPrice, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE], true);
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                }
-                break;
-            case 1:
-                switch (type) {
-                    case ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED:
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            if (domainItems[url]) {
-                                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                                item.updateTrackStatus(null, null, ITEM_STATUS.ALL_STATUSES); // stop watching
-                                domainItems[url] = item;
-                                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-                            }
-                        });
-                        break;
-                }
-                break;
-        }
-    });*/
-
+    });
+    listenNotificationsButtonClicked().subscribe();
     chrome.notifications.onClosed.addListener(clearNotification);
   }
 

@@ -1,10 +1,9 @@
 import {fromEventPattern} from 'rxjs';
 import {take, map} from "rxjs/operators";
-import getStorageLocal from "./get-storage-local";
 
 function getStorageDomain(domain) {
     return fromEventPattern(handler => {
-        getStorageLocal([domain], handler);
+        chrome.storage.local.get([domain], handler);
     }).pipe(
         take(1),
         map(result =>
