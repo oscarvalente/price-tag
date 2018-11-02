@@ -807,10 +807,7 @@ function attachEvents() {
     });
 
     onCompletedTab$().subscribe(({id, url}) => {
-        const State = StateManager.getState();
-        if (url !== State.browserURL) {
-            onTabContextChange(id, url);
-        }
+        onTabContextChange(id, url);
     });
 
     chrome.runtime.onMessage.addListener(

@@ -6,7 +6,7 @@ function addQueryActiveTabHandler(handler) {
 }
 
 function queryActiveTab() {
-    return fromEventPattern(addQueryActiveTabHandler).pipe(take(1));
+    return fromEventPattern(addQueryActiveTabHandler);
 }
 
 export default queryActiveTab;

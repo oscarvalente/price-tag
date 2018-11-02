@@ -5506,6 +5506,9 @@
   //# sourceMappingURL=VirtualTimeScheduler.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  function identity$1(x) {
+      return x;
+  }
   //# sourceMappingURL=identity.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
@@ -5755,33 +5758,6 @@
 
   /** PURE_IMPORTS_START tslib,_util_isScheduler,_util_isArray,_OuterSubscriber,_util_subscribeToResult,_fromArray PURE_IMPORTS_END */
   var NONE = {};
-  function combineLatest() {
-      var observables = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-          observables[_i] = arguments[_i];
-      }
-      var resultSelector = null;
-      var scheduler = null;
-      if (isScheduler(observables[observables.length - 1])) {
-          scheduler = observables.pop();
-      }
-      if (typeof observables[observables.length - 1] === 'function') {
-          resultSelector = observables.pop();
-      }
-      if (observables.length === 1 && isArray$1(observables[0])) {
-          observables = observables[0];
-      }
-      return fromArray(observables, scheduler).lift(new CombineLatestOperator(resultSelector));
-  }
-  var CombineLatestOperator = /*@__PURE__*/ (function () {
-      function CombineLatestOperator(resultSelector) {
-          this.resultSelector = resultSelector;
-      }
-      CombineLatestOperator.prototype.call = function (subscriber, source) {
-          return source.subscribe(new CombineLatestSubscriber(subscriber, this.resultSelector));
-      };
-      return CombineLatestOperator;
-  }());
   var CombineLatestSubscriber = /*@__PURE__*/ (function (_super) {
       __extends(CombineLatestSubscriber, _super);
       function CombineLatestSubscriber(destination, resultSelector) {
@@ -5981,6 +5957,31 @@
   //# sourceMappingURL=from.js.map
 
   /** PURE_IMPORTS_START tslib,_util_subscribeToResult,_OuterSubscriber,_InnerSubscriber,_map,_observable_from PURE_IMPORTS_END */
+  function mergeMap(project, resultSelector, concurrent) {
+      if (concurrent === void 0) {
+          concurrent = Number.POSITIVE_INFINITY;
+      }
+      if (typeof resultSelector === 'function') {
+          return function (source) { return source.pipe(mergeMap(function (a, i) { return from(project(a, i)).pipe(map(function (b, ii) { return resultSelector(a, b, i, ii); })); }, concurrent)); };
+      }
+      else if (typeof resultSelector === 'number') {
+          concurrent = resultSelector;
+      }
+      return function (source) { return source.lift(new MergeMapOperator(project, concurrent)); };
+  }
+  var MergeMapOperator = /*@__PURE__*/ (function () {
+      function MergeMapOperator(project, concurrent) {
+          if (concurrent === void 0) {
+              concurrent = Number.POSITIVE_INFINITY;
+          }
+          this.project = project;
+          this.concurrent = concurrent;
+      }
+      MergeMapOperator.prototype.call = function (observer, source) {
+          return source.subscribe(new MergeMapSubscriber(observer, this.project, this.concurrent));
+      };
+      return MergeMapOperator;
+  }());
   var MergeMapSubscriber = /*@__PURE__*/ (function (_super) {
       __extends(MergeMapSubscriber, _super);
       function MergeMapSubscriber(destination, project, concurrent) {
@@ -6049,6 +6050,12 @@
   //# sourceMappingURL=mergeMap.js.map
 
   /** PURE_IMPORTS_START _mergeMap,_util_identity PURE_IMPORTS_END */
+  function mergeAll(concurrent) {
+      if (concurrent === void 0) {
+          concurrent = Number.POSITIVE_INFINITY;
+      }
+      return mergeMap(identity$1, concurrent);
+  }
   //# sourceMappingURL=mergeAll.js.map
 
   /** PURE_IMPORTS_START _mergeAll PURE_IMPORTS_END */
@@ -6154,6 +6161,28 @@
   //# sourceMappingURL=interval.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_isScheduler,_operators_mergeAll,_fromArray PURE_IMPORTS_END */
+  function merge() {
+      var observables = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+          observables[_i] = arguments[_i];
+      }
+      var concurrent = Number.POSITIVE_INFINITY;
+      var scheduler = null;
+      var last = observables[observables.length - 1];
+      if (isScheduler(last)) {
+          scheduler = observables.pop();
+          if (observables.length > 1 && typeof observables[observables.length - 1] === 'number') {
+              concurrent = observables.pop();
+          }
+      }
+      else if (typeof last === 'number') {
+          concurrent = observables.pop();
+      }
+      if (scheduler === null && observables.length === 1 && observables[0] instanceof Observable) {
+          return observables[0];
+      }
+      return mergeAll(concurrent)(fromArray(observables, scheduler));
+  }
   //# sourceMappingURL=merge.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_noop PURE_IMPORTS_END */
@@ -9979,7 +10008,7 @@
   }
 
   function queryActiveTab() {
-    return fromEventPattern(addQueryActiveTabHandler).pipe(take(1));
+    return fromEventPattern(addQueryActiveTabHandler);
   }
 
   function addActivatedHandler(handler) {
@@ -10043,7 +10072,7 @@
       id,
       url
     })), switchMap(navigation => filterNavigation(StateManager.getState$, navigation)));
-    return combineLatest(onNavigationCompleted$, onNavigationHistoryStateUpdated$);
+    return merge(onNavigationCompleted$, onNavigationHistoryStateUpdated$);
   }
 
   function addNotificationsButtonClickedHandler(handler) {
@@ -11024,11 +11053,7 @@
       id,
       url
     }) => {
-      const State = StateManager.getState();
-
-      if (url !== State.browserURL) {
-        onTabContextChange(id, url);
-      }
+      onTabContextChange(id, url);
     });
     chrome.runtime.onMessage.addListener(({
       type,

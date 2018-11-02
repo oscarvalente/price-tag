@@ -1,4 +1,4 @@
-import {combineLatest} from "rxjs";
+import {merge} from "rxjs";
 import {filter, map, switchMap} from "rxjs/operators";
 import queryActiveTab$ from "./internal/query-active-tab";
 import onCompleted$ from "./internal/completed";
@@ -7,7 +7,7 @@ import StateManager from "../state-manager";
 
 function filterNavigation(getState$, navigation) {
     const {url} = navigation;
-    
+
     return getState$().pipe(
         map(({browserURL}) => browserURL),
         filter(browserURL => url !== undefined && url !== browserURL),
@@ -25,13 +25,14 @@ function onCompletedTab() {
             switchMap(() => getActiveTab$),
             map(([{id, url}]) => ({id, url}))
         );
+
     const onNavigationHistoryStateUpdated$ = onHistoryStateUpdated$().pipe(
         switchMap(() => getActiveTab$),
         map(([{id, url}]) => ({id, url})),
         switchMap(navigation => filterNavigation(StateManager.getState$, navigation))
     );
 
-    return combineLatest(onNavigationCompleted$, onNavigationHistoryStateUpdated$);
+    return merge(onNavigationCompleted$, onNavigationHistoryStateUpdated$);
 }
 
 export default onCompletedTab;
