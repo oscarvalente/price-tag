@@ -20,7 +20,7 @@ import {
 import {
     syncStorageState
 } from "./src/core/events/storage";
-import StateFactory from "./src/core/factories/state";
+import StateManager from "./src/core/state-manager";
 import ItemFactory from "./src/core/factories/item";
 import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
 import {getCanonicalPathFromSource} from "./src/utils/dom";
@@ -44,8 +44,9 @@ import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
 import onActivatedTab$ from "./src/core/events/activated-tab";
 import onCompletedTab$ from "./src/core/events/completed-tab";
+import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-click";
 
-let State = StateFactory.createState(SORT_ITEMS_BY_TIME);
+StateManager.initState(SORT_ITEMS_BY_TIME);
 
 function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
     const modalElementId = "price-tag--url-confirmation";
@@ -54,7 +55,8 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
         payload: {elementId: modalElementId}
     }, ({status}) => {
         if (status === 1) {
-            const payload = buildURLConfirmationPayload(State.canonicalURL, State.browserURL, domain);
+            const {canonicalURL, browserURL} = StateManager.getState();
+            const payload = buildURLConfirmationPayload(canonicalURL, browserURL, domain);
             chrome.tabs.sendMessage(tabId, {
                 type: "CONFIRMATION_DISPLAY.LOAD",
                 payload
@@ -63,6 +65,8 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                     type: "CONFIRMATION_DISPLAY.REMOVE",
                     payload: {elementId: modalElementId}
                 });
+
+                const {canonicalURL, browserURL} = StateManager.getState();
 
                 switch (status) {
                     case 1:
@@ -73,13 +77,14 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                                     const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                     domainState._canUseCanonical = true;
                                     chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    State = StateFactory.updateCurrentURL(State, State.canonicalURL);
+                                    const {canonicalURL} = StateManager.getState();
+                                    StateManager.updateCurrentURL(canonicalURL);
                                     callback(true, true);
                                 });
                                 break;
                             case 1:
                                 // said Yes, but use canonical just this time
-                                State = StateFactory.updateCurrentURL(State, State.canonicalURL);
+                                StateManager.updateCurrentURL(canonicalURL);
                                 callback(true, true);
                                 break;
                             case 2:
@@ -88,13 +93,14 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
                                     const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
                                     domainState._canUseCanonical = false;
                                     chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    State = StateFactory.updateCurrentURL(State, State.browserURL);
+                                    const {browserURL} = StateManager.getState();
+                                    StateManager.updateCurrentURL(browserURL);
                                     callback(true, false);
                                 });
                                 break;
                             case 3:
                                 // said No, use browser URL but ask again
-                                State = StateFactory.updateCurrentURL(State, State.browserURL);
+                                StateManager.updateCurrentURL(browserURL);
                                 callback(true, false);
                                 break;
                             default:
@@ -118,16 +124,19 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
 
 function onRecordDone(tabId, payload) {
     const {status, selection, price, faviconURL, faviconAlt} = payload;
-    const {currentURL, domain} = State;
+    const {currentURL, domain} = StateManager.getState();
     if (status > 0) {
-        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
+        const State = StateManager.getState();
+        StateManager.updateFaviconURL(State, State.faviconURL || faviconURL);
         canDisplayURLConfirmation(State, domain, canDisplay => {
             if (canDisplay) {
                 onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
                     if (canSave) {
+                        const State = StateManager.getState();
                         const url = useCaninocal ? State.canonicalURL : State.browserURL;
                         checkForURLSimilarity(tabId, domain, url, isToSave => {
                             if (isToSave) {
+                                const State = StateManager.getState();
                                 createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
                                 updateExtensionAppearance(domain, url, true);
                             }
@@ -137,6 +146,7 @@ function onRecordDone(tabId, payload) {
             } else {
                 checkForURLSimilarity(tabId, domain, currentURL, isToSave => {
                     if (isToSave) {
+                        const State = StateManager.getState();
                         createItem(domain, currentURL, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
                         updateExtensionAppearance(domain, currentURL, true);
                     }
@@ -144,18 +154,19 @@ function onRecordDone(tabId, payload) {
             }
         });
 
-        State = StateFactory.disableRecord(State);
+        StateManager.disableRecord();
     }
 }
 
 function onRecordCancel() {
-    State = StateFactory.disableRecord(State);
+    StateManager.disableRecord();
 }
 
 function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
-        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
-        State = StateFactory.setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+        const State = StateManager.getState();
+        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
+        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
         sendResponse(true);
     } else {
         sendResponse(false);
@@ -164,8 +175,9 @@ function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconU
 
 function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
-        State = StateFactory.updateFaviconURL(State, State.faviconURL || faviconURL);
-        State = StateFactory.setSelectionInfo(State, selection, price, State.faviconURL, faviconAlt);
+        const State = StateManager.getState();
+        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
+        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
         if (toPrice(price) !== trackedPrice) {
             sendResponse(true);
             return;
@@ -177,7 +189,7 @@ function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection
 
 function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
     if (status >= 0) {
-        State = StateFactory.setSimilarElementHighlight(State, isSimilarElementHighlighted, originalBackgroundColor);
+        StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
     }
 }
 
@@ -187,7 +199,7 @@ function createItem(domain, url, selection, price, faviconURL, faviconAlt, statu
         items[url] = ItemFactory.createItem(selection, toPrice(price), null, faviconURL, faviconAlt, statuses);
 
         chrome.storage.local.set({[domain]: JSON.stringify(items)}, () => {
-            State = StateFactory.disableAutoSave(State);
+            StateManager.disableAutoSave();
             if (callback) {
                 callback();
             }
@@ -232,7 +244,8 @@ function checkForPriceChanges() {
                                                     [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
                                                 domainItems[url] = item;
                                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                                    const notificationId = `TRACK.PRICE_FIXED-${State.notificationsCounter}`;
+                                                    const {notificationsCounter} = StateManager.getState();
+                                                    const notificationId = `TRACK.PRICE_FIXED-${notificationsCounter}`;
                                                     createNotification(notificationId, PRICE_FIX_ICON, "Fixed price",
                                                         `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
                                                 });
@@ -246,7 +259,8 @@ function checkForPriceChanges() {
                                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
                                                     if (newPrice < targetPrice && !item.hasAcknowledgeDecrease()) {
-                                                        const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                                                        const {notificationsCounter} = StateManager.getState();
+                                                        const notificationId = `TRACK.PRICE_UPDATE-${notificationsCounter}`;
                                                         createNotification(notificationId, PRICE_UPDATE_ICON, "Lower price!!",
                                                             `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED,
                                                             {
@@ -272,7 +286,8 @@ function checkForPriceChanges() {
                                                     // TODO: sendResponse("done"); // foi actualizado ou não
 
                                                     if (!item.hasAcknowledgeIncrease()) {
-                                                        const notificationId = `TRACK.PRICE_UPDATE-${State.notificationsCounter}`;
+                                                        const {notificationsCounter} = StateManager.getState();
+                                                        const notificationId = `TRACK.PRICE_UPDATE-${notificationsCounter}`;
                                                         const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ?
                                                             {
                                                                 buttons: [
@@ -318,7 +333,8 @@ function checkForPriceChanges() {
                                             domainItems[url] = item;
                                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                                                 // TODO: sendResponse("done"); // foi actualizado ou não
-                                                const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                                                const {notificationsCounter} = StateManager.getState();
+                                                const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
                                                 const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
                                                 createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
                                                     `Price tag no longer found${previousPrice}`, url, url, domain);
@@ -334,7 +350,8 @@ function checkForPriceChanges() {
                                         domainItems[url] = item;
 
                                         chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                                            const notificationId = `TRACK.PRICE_NOT_FOUND-${State.notificationsCounter}`;
+                                            const {notificationsCounter} = StateManager.getState();
+                                            const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
                                             const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
                                             createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
                                                 `Price tag no longer found${previousPrice}`, url, url, domain);
@@ -391,27 +408,28 @@ function removeTrackedItem(url, currentURL, callback) {
                 if (item) {
                     found = true;
 
-                    if (State._undoRemovedItemsResetTask) {
-                        clearTimeout(State._undoRemovedItemsResetTask);
-                        State = StateFactory.setUndoRemovedItemsResetTask(State, null);
+                    const {_undoRemovedItemsResetTask} = StateManager.getState();
+                    if (_undoRemovedItemsResetTask) {
+                        clearTimeout(_undoRemovedItemsResetTask);
+                        StateManager.setUndoRemovedItemsResetTask(null);
                     }
 
                     const removedItem = {...item};
-                    State = StateFactory.addUndoRemovedItem(State, url, removedItem, MAX_UNDO_REMOVED_ITEMS);
+                    StateManager.addUndoRemovedItem(url, removedItem, MAX_UNDO_REMOVED_ITEMS);
                     chrome.runtime.sendMessage({
                         type: "TRACKED_ITEMS.UNDO_STATUS",
                         payload: {isUndoStatusActive: true}
                     });
 
                     const undoRemovedItemsTask = setTimeout(() => {
-                        State = StateFactory.resetUndoRemovedItems(State);
+                        StateManager.resetUndoRemovedItems();
                         chrome.runtime.sendMessage({
                             type: "TRACKED_ITEMS.UNDO_STATUS",
                             payload: {isUndoStatusActive: false}
                         });
                     }, UNDO_REMOVED_ITEMS_TIMEOUT);
 
-                    State = StateFactory.setUndoRemovedItemsResetTask(State, undoRemovedItemsTask);
+                    StateManager.setUndoRemovedItemsResetTask(undoRemovedItemsTask);
 
                     item.updateTrackStatus(null, null, [ITEM_STATUS.WATCHED]); // stop watching
                     domainItems[url] = item;
@@ -466,7 +484,8 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
 function clearNotification(notifId, wasClosedByUser) {
     chrome.notifications.clear(notifId, wasClickedByUser => {
         if (wasClickedByUser || wasClosedByUser) {
-            const {domain, url, type} = State.notifications[notifId];
+            const {notifications} = StateManager.getState();
+            const {domain, url, type} = notifications[notifId];
             chrome.storage.local.get([domain], result => {
                 const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
                 const item = ItemFactory.createItemFromObject(domainItems[url]);
@@ -485,7 +504,7 @@ function clearNotification(notifId, wasClosedByUser) {
             });
         }
 
-        State = StateFactory.deleteNotificationsItem(State, notifId);
+        StateManager.deleteNotificationsItem(notifId);
     });
 }
 
@@ -501,14 +520,14 @@ function createNotification(notifId, iconUrl, title, message, contextMessage = "
     };
 
     chrome.notifications.create(notifId, options, id => {
-        State = StateFactory.updateNotificationsItem(State, id, {
+        StateManager.updateNotificationsItem(id, {
             url,
             domain,
             type
         });
     });
 
-    State = StateFactory.incrementNotificationsCounter(State);
+    StateManager.incrementNotificationsCounter();
 }
 
 function setupTrackingPolling() {
@@ -528,10 +547,10 @@ function updateAutoSaveStatus(url, domain, fullURL) {
             const urlFromDomain = findURLKey(items);
             const exampleFromDomain = items[urlFromDomain] && ItemFactory.createItemFromObject(items[urlFromDomain]);
             if (exampleFromDomain && exampleFromDomain.selection) {
-                State = StateFactory.enableAutoSave(State, exampleFromDomain.selection);
+                StateManager.enableAutoSave(exampleFromDomain.selection);
             }
         } else {
-            State = StateFactory.disableAutoSave(State);
+            StateManager.disableAutoSave();
         }
     });
 }
@@ -543,9 +562,9 @@ function updatePriceUpdateStatus(url, domain, fullURL) {
             (items[fullURL] && ItemFactory.createItemFromObject(items[fullURL]));
         const hasItemPriceIncOrDec = item && item.price !== item.currentPrice;
         if (hasItemPriceIncOrDec) {
-            State = StateFactory.enablePriceUpdate(State, item.selection);
+            StateManager.enablePriceUpdate(item.selection);
         } else {
-            State = StateFactory.disablePriceUpdate(State);
+            StateManager.disablePriceUpdate();
         }
     });
 }
@@ -553,10 +572,10 @@ function updatePriceUpdateStatus(url, domain, fullURL) {
 function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
     if (forcePageTrackingTo === true) {
         setTrackedItemAppearance();
-        State = StateFactory.enableCurrentPageTracked(State);
+        StateManager.enableCurrentPageTracked();
     } else if (forcePageTrackingTo === false) {
         setDefaultAppearance();
-        State = StateFactory.disableCurrentPageTracked(State);
+        StateManager.disableCurrentPageTracked();
     } else if (!forcePageTrackingTo) {
         chrome.storage.local.get([currentDomain], result => {
             const domainState = parseDomainState(result, currentDomain);
@@ -567,14 +586,14 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
                 const item = itemObject && ItemFactory.createItemFromObject(itemObject);
                 if (item && item.isWatched()) {
                     setTrackedItemAppearance();
-                    State = StateFactory.enableCurrentPageTracked(State);
+                    StateManager.enableCurrentPageTracked();
                 } else {
                     setDefaultAppearance();
-                    State = StateFactory.disableCurrentPageTracked(State);
+                    StateManager.disableCurrentPageTracked();
                 }
             } else {
                 setDefaultAppearance();
-                State = StateFactory.disableCurrentPageTracked(State);
+                StateManager.disableCurrentPageTracked();
             }
         });
     }
@@ -704,51 +723,53 @@ function onTabContextChange(tabId, url) {
     const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
     if (captureDomain) {
         const [, domain] = captureDomain;
-        State = StateFactory.updateCurrentDomain(State, domain);
+        StateManager.updateCurrentDomain(domain);
         chrome.storage.local.get([domain], result => {
             const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
             // check if user has already a preference to use the canonical URL if available
             if (domainState && domainState._canUseCanonical === false) {
-                State = StateFactory.updateCanonicalURL(State, null);
-                State = StateFactory.updateCurrentURL(State, url);
-                State = StateFactory.updateBrowserURL(State, url);
+                StateManager.updateCanonicalURL(null);
+                StateManager.updateCurrentURL(url);
+                StateManager.updateBrowserURL(url);
 
                 if (domainState._isPathEnoughToTrack === true) {
                     const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
                     if (protocolHostAndPathFromURL) {
-                        State = StateFactory.updateCurrentURL(State, protocolHostAndPathFromURL);
-                        State = StateFactory.updateBrowserURL(State, protocolHostAndPathFromURL);
+                        StateManager.updateCurrentURL(protocolHostAndPathFromURL);
+                        StateManager.updateBrowserURL(protocolHostAndPathFromURL);
                     }
                 }
 
+                const State = StateManager.getState();
                 updateAutoSaveStatus(State.currentURL, State.domain, url);
                 updatePriceUpdateStatus(State.currentURL, State.domain, url);
                 updateExtensionAppearance(State.domain, State.currentURL, null, url);
             } else {
                 // First thing to do, check:
                 // If canonical was updated (compared to the previously) + if it's relevant
-                State = StateFactory.updateBrowserURL(State, url);
+                StateManager.updateBrowserURL(url);
 
                 onXHR(url, template => {
                     const canonicalURL = getCanonicalPathFromSource(template);
                     const canUseCanonical = isCanonicalURLRelevant(canonicalURL);
 
                     if (canUseCanonical) {
-                        State = StateFactory.updateCurrentURL(State, canonicalURL);
-                        State = StateFactory.updateCanonicalURL(State, canonicalURL);
+                        StateManager.updateCurrentURL(canonicalURL);
+                        StateManager.updateCanonicalURL(canonicalURL);
                     } else {
-                        State = StateFactory.updateCanonicalURL(State, null);
-                        State = StateFactory.updateCurrentURL(State, url);
+                        StateManager.updateCanonicalURL(null);
+                        StateManager.updateCurrentURL(url);
 
                         if (domainState && domainState._isPathEnoughToTrack === true) {
                             const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
                             if (protocolHostAndPathFromURL) {
-                                State = StateFactory.updateCurrentURL(State, protocolHostAndPathFromURL);
-                                State = StateFactory.updateBrowserURL(State, protocolHostAndPathFromURL);
+                                StateManager.updateCurrentURL(protocolHostAndPathFromURL);
+                                StateManager.updateBrowserURL(protocolHostAndPathFromURL);
                             }
                         }
                     }
 
+                    const State = StateManager.getState();
                     updateAutoSaveStatus(State.currentURL, State.domain, url);
                     updatePriceUpdateStatus(State.currentURL, State.domain, url);
                     updateExtensionAppearance(State.domain, State.currentURL, null, url);
@@ -767,7 +788,8 @@ function attachEvents() {
     onActivatedTab$().subscribe(({id, url}) => {
         if (url.startsWith("http")) {
             onTabContextChange(id, url);
-            State = StateFactory.updateFaviconURL(State, State._faviconURLMap[id] || null);
+            const State = StateManager.getState();
+            StateManager.updateFaviconURL(State._faviconURLMap[id] || null);
         } else {
             setDefaultAppearance();
         }
@@ -776,8 +798,8 @@ function attachEvents() {
     onUpdated$().subscribe(({tabId, favIconUrl, active, url}) => {
         if (url.startsWith("http")) {
             if (active && favIconUrl) {
-                State = StateFactory.updateFaviconURLMapItem(State, tabId, favIconUrl);
-                State = StateFactory.updateFaviconURL(State, favIconUrl);
+                StateManager.updateFaviconURLMapItem(tabId, favIconUrl);
+                StateManager.updateFaviconURL(favIconUrl);
             }
         } else {
             setDefaultAppearance();
@@ -785,6 +807,7 @@ function attachEvents() {
     });
 
     onCompletedTab$().subscribe(({id, url}) => {
+        const State = StateManager.getState();
         if (url !== State.browserURL) {
             onTabContextChange(id, url);
         }
@@ -794,15 +817,15 @@ function attachEvents() {
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
-            const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain} = State;
+            const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
                 case "POPUP.STATUS":
                     sendResponse({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
                     break;
                 case "RECORD.ATTEMPT":
-                    State = StateFactory.toggleRecord(State);
+                    StateManager.toggleRecord();
 
-                    if (State.recordActive) {
+                    if (recordActive) {
                         const {url} = payload;
                         chrome.tabs.sendMessage(id, {
                             type: "RECORD.START",
@@ -811,7 +834,7 @@ function attachEvents() {
                     } else {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
                     }
-                    sendResponse({status: 1, state: {recordActive: State.recordActive}});
+                    sendResponse({status: 1, state: {recordActive}});
                     break;
                 case "AUTO_SAVE.STATUS":
                     chrome.storage.local.get([domain], result => {
@@ -821,6 +844,7 @@ function attachEvents() {
                                 // since it's true we can say that that domain items' path is enough to track items in this domain
                                 searchForEqualPathWatchedItem(domainState, url, similarURL => {
                                     if (!similarURL) {
+                                        const State = StateManager.getState();
                                         chrome.tabs.sendMessage(id, {
                                             type: "AUTO_SAVE.CHECK_STATUS",
                                             payload: {url, selection: State.selection}
@@ -830,6 +854,7 @@ function attachEvents() {
                                     }
                                 });
                             } else {
+                                const State = StateManager.getState();
                                 chrome.tabs.sendMessage(id, {
                                     type: "AUTO_SAVE.CHECK_STATUS",
                                     payload: {url, selection: State.selection}
@@ -837,6 +862,7 @@ function attachEvents() {
                             }
                         } else {
                             // domain doesn't exist
+                            const State = StateManager.getState();
                             chrome.tabs.sendMessage(id, {
                                 type: "AUTO_SAVE.CHECK_STATUS",
                                 payload: {url, selection: State.selection}
@@ -845,13 +871,14 @@ function attachEvents() {
                     });
                     return true;
                 case "AUTO_SAVE.ATTEMPT":
-                    if (State.autoSaveEnabled) {
+                    if (autoSaveEnabled) {
                         const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor} = State;
 
-                        canDisplayURLConfirmation(State, domain, canDisplay => {
+                        canDisplayURLConfirmation(StateManager.getState(), domain, canDisplay => {
                             if (canDisplay) {
                                 onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
                                     if (canSave) {
+                                        const State = StateManager.getState();
                                         const url = useCaninocal ? State.canonicalURL : State.browserURL;
 
                                         checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
@@ -863,14 +890,14 @@ function attachEvents() {
                                                     }, onSimilarElementHighlight);
 
                                                     updateExtensionAppearance(domain, url, true);
-                                                    State = StateFactory.disableAutoSave(State);
+                                                    StateManager.disableAutoSave();
 
                                                     sendResponse(false);
                                                 });
                                             } else {
                                                 // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
                                                 if (!autoSaveStatus) {
-                                                    State = StateFactory.disableAutoSave(State);
+                                                    StateManager.disableAutoSave();
                                                 }
                                             }
                                         });
@@ -886,7 +913,7 @@ function attachEvents() {
                                             }, onSimilarElementHighlight);
 
                                             updateExtensionAppearance(domain, stateUrl, true);
-                                            State = StateFactory.disableAutoSave(State);
+                                            StateManager.disableAutoSave();
 
                                             sendResponse(false);
                                         });
@@ -901,8 +928,8 @@ function attachEvents() {
                     }
                     break;
                 case "AUTO_SAVE.HIGHLIGHT.PRE_START":
-                    if (State.autoSaveEnabled) {
-                        const {selection} = State;
+                    if (autoSaveEnabled) {
+                        const {selection} = StateManager.getState();
                         chrome.tabs.sendMessage(id, {
                             type: "PRICE_TAG.HIGHLIGHT.START",
                             payload: {selection}
@@ -910,8 +937,8 @@ function attachEvents() {
                     }
                     break;
                 case "AUTO_SAVE.HIGHLIGHT.PRE_STOP":
-                    if (State.autoSaveEnabled) {
-                        const {selection, originalBackgroundColor} = State;
+                    if (autoSaveEnabled) {
+                        const {selection, originalBackgroundColor} = StateManager.getState();
                         chrome.tabs.sendMessage(id, {
                             type: "PRICE_TAG.HIGHLIGHT.STOP",
                             payload: {selection, originalBackgroundColor}
@@ -919,7 +946,8 @@ function attachEvents() {
                     }
                     break;
                 case "PRICE_UPDATE.STATUS":
-                    chrome.storage.local.get([State.domain], result => {
+                    chrome.storage.local.get([domain], result => {
+                        const State = StateManager.getState();
                         const domainItems = result && result[State.domain] ? JSON.parse(result[State.domain]) : {};
                         const item = (domainItems[State.currentURL] && ItemFactory.createItemFromObject(domainItems[State.currentURL])) ||
                             (domainItems[State.browserURL] && ItemFactory.createItemFromObject(domainItems[State.browserURL]));
@@ -934,13 +962,14 @@ function attachEvents() {
                     });
                     return true;
                 case "PRICE_UPDATE.ATTEMPT":
-                    if (State.isPriceUpdateEnabled) {
-                        const {domain, currentURL: stateUrl, selection, price: updatedPrice, originalBackgroundColor} = State;
+                    if (isPriceUpdateEnabled) {
+                        const {selection, price: updatedPrice, originalBackgroundColor} =
+                            StateManager.getState();
                         const price = updatedPrice && toPrice(updatedPrice);
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
 
-                            const item = ItemFactory.createItemFromObject(domainItems[stateUrl]);
+                            const item = ItemFactory.createItemFromObject(domainItems[url]);
 
                             item.updateTrackStatus(price,
                                 null,
@@ -953,7 +982,7 @@ function attachEvents() {
                                 ]);
                             item.updateDiffPercentage();
 
-                            domainItems[stateUrl] = item;
+                            domainItems[url] = item;
                             chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
 
                             chrome.tabs.sendMessage(id, {
@@ -961,14 +990,14 @@ function attachEvents() {
                                 payload: {selection, originalBackgroundColor}
                             }, onSimilarElementHighlight);
 
-                            State = StateFactory.disablePriceUpdate(State);
+                            StateManager.disablePriceUpdate();
                             sendResponse(false);
                         });
                     }
                     return true;
                 case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
-                    if (State.isPriceUpdateEnabled) {
-                        const {selection} = State;
+                    if (isPriceUpdateEnabled) {
+                        const {selection} = StateManager.getState();
                         chrome.tabs.sendMessage(id, {
                             type: "PRICE_TAG.HIGHLIGHT.START",
                             payload: {selection}
@@ -976,8 +1005,8 @@ function attachEvents() {
                     }
                     break;
                 case "PRICE_UPDATE.HIGHLIGHT.PRE_STOP":
-                    if (State.isPriceUpdateEnabled) {
-                        const {selection, originalBackgroundColor} = State;
+                    if (isPriceUpdateEnabled) {
+                        const {selection, originalBackgroundColor} = StateManager.getState();
                         chrome.tabs.sendMessage(id, {
                             type: "PRICE_TAG.HIGHLIGHT.STOP",
                             payload: {selection, originalBackgroundColor}
@@ -985,27 +1014,29 @@ function attachEvents() {
                     }
                     break;
                 case "TRACKED_ITEMS.OPEN":
-                    State = StateFactory.updateSortItemsBy(State, SORT_ITEMS_BY_TIME);
+                    /* eslint-disable no-case-declarations */
+                    const State = StateManager.updateSortItemsBy(SORT_ITEMS_BY_TIME);
+                    /* eslint-enable no-case-declarations */
                     isUndoStatusActive = State._undoRemovedItems.length > 0;
                     sendResponse({isUndoStatusActive});
                     break;
                 case "TRACKED_ITEMS.GET":
-                    getTrackedItemsSortedBy(State._sortItemsBy, sendResponse);
+                    getTrackedItemsSortedBy(_sortItemsBy, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.UNFOLLOW":
-                    removeTrackedItem(itemUrl, State.currentURL, sendResponse);
+                    removeTrackedItem(itemUrl, url, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.CHANGE_SORT":
-                    State = StateFactory.updateSortItemsBy(State, SORT_BY_TYPES[sortByType]);
+                    StateManager.updateSortItemsBy(SORT_BY_TYPES[sortByType]);
                     break;
                 case "TRACKED_ITEMS.UNDO_ATTEMPT":
-                    if (State._undoRemovedItems.length > 0) {
-                        const undoRemovedItem = StateFactory.getUndoRemovedItemsHead(State);
+                    if (_undoRemovedItems.length > 0) {
+                        const undoRemovedItem = StateManager.getUndoRemovedItemsHead();
 
                         undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
                             if (response) {
-                                State = StateFactory.removeUndoRemovedItem(State);
-                                State._undoRemovedItems.length === 0 ?
+                                const {_undoRemovedItems} = StateManager.removeUndoRemovedItem(State);
+                                _undoRemovedItems.length === 0 ?
                                     sendResponse({isUndoStatusActive: false}) :
                                     sendResponse({isUndoStatusActive: true});
                             }
@@ -1019,13 +1050,16 @@ function attachEvents() {
         });
 
     chrome.notifications.onClicked.addListener(notifId => {
-        chrome.tabs.create({url: State.notifications[notifId].url});
+        const {notifications} = StateManager.getState();
+        chrome.tabs.create({url: notifications[notifId].url});
         clearNotification(notifId);
     });
 
+    // TODO: test this
+    listenNotificationsButtonClicked().subscribe();
 
     // TODO: update and keep tracking
-    chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
+    /*chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
         const {domain, url, type} = State.notifications[notifId];
         switch (buttonIndex) {
             case 0:
@@ -1060,8 +1094,8 @@ function attachEvents() {
                     case ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED:
                         chrome.storage.local.get([domain], result => {
                             const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                            const item = domainItems[url] && ItemFactory.createItemFromObject(domainItems[url]);
-                            if (item) {
+                            if (domainItems[url]) {
+                                const item = ItemFactory.createItemFromObject(domainItems[url]);
                                 item.updateTrackStatus(null, null, ITEM_STATUS.ALL_STATUSES); // stop watching
                                 domainItems[url] = item;
                                 chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
@@ -1071,7 +1105,7 @@ function attachEvents() {
                 }
                 break;
         }
-    });
+    });*/
 
     chrome.notifications.onClosed.addListener(clearNotification);
 }
