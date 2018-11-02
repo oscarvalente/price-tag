@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+#0.21.5
+* Fix tab context change update (caused by my Rx implementation)
+* Listen to notifications buttons click through Rx
+
 #0.21.4
 * Add Rx to installed and basic tab change-related events
 
