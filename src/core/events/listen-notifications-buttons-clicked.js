@@ -36,8 +36,8 @@ function onStopTrackClick(item) {
     return item;
 }
 
-function isWatchingByButtonType(buttonIndex) {
-    return buttonIndex !== 0;
+function hasStoppedWatch(buttonIndex) {
+    return buttonIndex === 0;
 }
 
 function listenNotificationsButtonClicked() {
@@ -76,7 +76,7 @@ function listenNotificationsButtonClicked() {
                 domainState[url] = updateItemFn(item);
                 return setStorageDomain(domain, domainState)
                     .pipe(
-                        map(() => isWatchingByButtonType(buttonIndex))
+                        map(() => hasStoppedWatch(buttonIndex))
                     );
             } else {
                 return of();

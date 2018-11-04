@@ -1,5 +1,5 @@
 import {of} from "rxjs";
-import {map} from "rxjs/operators";
+import {map, take} from "rxjs/operators";
 
 import StateFactory from "./factories/state";
 
@@ -149,11 +149,17 @@ class StateManager {
         return State;
     }
 
+    static getNotifications$() {
+        return StateManager.getState$().pipe(
+            map(state => state.notifications),
+            take(1)
+        );
+    }
+
     static getNotification$(notificationId) {
         return StateManager.getState$().pipe(
-            map(state => {
-                return state.notifications[notificationId]
-            })
+            map(state => state.notifications[notificationId]),
+            take(1)
         );
     }
 }

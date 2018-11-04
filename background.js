@@ -44,8 +44,9 @@ import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
 import onActivatedTab$ from "./src/core/events/activated-tab";
 import onCompletedTab$ from "./src/core/events/completed-tab";
-import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-click";
+import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-clicked";
 import listenNotificationsClosed from "./src/core/events/listen-notifications-closed";
+import listenNotificationsClicked from "./src/core/events/listen-notifications-clicked";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
 
@@ -478,33 +479,6 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
             // No special treatment if item is not found; we can't undo nothing
             callback(true);
         }
-    });
-}
-
-function clearNotification(notifId, wasClosedByUser) {
-    chrome.notifications.clear(notifId, wasClickedByUser => {
-        if (wasClickedByUser || wasClosedByUser) {
-            const {notifications} = StateManager.getState();
-            const {domain, url, type} = notifications[notifId];
-            chrome.storage.local.get([domain], result => {
-                const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
-                const item = ItemFactory.createItemFromObject(domainItems[url]);
-                switch (type) {
-                    case ITEM_STATUS.DECREASED:
-                        item.updateTrackStatus(null, [ITEM_STATUS.ACK_DECREASE]);
-                        break;
-                    case ITEM_STATUS.INCREASED:
-                        item.updateTrackStatus(null, [ITEM_STATUS.ACK_INCREASE]);
-                        break;
-                }
-
-                domainItems[url] = item;
-
-                chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-            });
-        }
-
-        StateManager.deleteNotificationsItem(notifId);
     });
 }
 
@@ -1049,14 +1023,11 @@ function attachEvents() {
             }
         });
 
-    chrome.notifications.onClicked.addListener(notifId => {
-        const {notifications} = StateManager.getState();
-        chrome.tabs.create({url: notifications[notifId].url});
-        clearNotification(notifId);
-    });
 
-    listenNotificationsButtonClicked().subscribe(isWatched => {
-        if (!isWatched) {
+    listenNotificationsClicked().subscribe();
+
+    listenNotificationsButtonClicked().subscribe(hasStoppedWatch => {
+        if (hasStoppedWatch) {
             // is case click was "Stop watch"
             const {domain, currentURL} = StateManager.getState();
             updateExtensionAppearance(domain, currentURL, false);
@@ -1064,7 +1035,6 @@ function attachEvents() {
     });
 
     listenNotificationsClosed().subscribe();
-    // chrome.notifications.onClosed.addListener(clearNotification);
 }
 
 function setupSyncStorageState() {

@@ -9582,10 +9582,12 @@
       return State;
     }
 
+    static getNotifications$() {
+      return StateManager.getState$().pipe(map(state => state.notifications), take(1));
+    }
+
     static getNotification$(notificationId) {
-      return StateManager.getState$().pipe(map(state => {
-        return state.notifications[notificationId];
-      }));
+      return StateManager.getState$().pipe(map(state => state.notifications[notificationId]), take(1));
     }
 
   }
@@ -10146,8 +10148,8 @@
     return item;
   }
 
-  function isWatchingByButtonType(buttonIndex) {
-    return buttonIndex !== 0;
+  function hasStoppedWatch(buttonIndex) {
+    return buttonIndex === 0;
   }
 
   function listenNotificationsButtonClicked() {
@@ -10188,11 +10190,22 @@
 
       if (isFunction_1(updateItemFn)) {
         domainState[url] = updateItemFn(item);
-        return setStorageDomain(domain, domainState).pipe(map(() => isWatchingByButtonType(buttonIndex)));
+        return setStorageDomain(domain, domainState).pipe(map(() => hasStoppedWatch(buttonIndex)));
       } else {
         return of();
       }
     }));
+  }
+
+  function addNotificationsClosed(handler) {
+    chrome.notifications.onClosed.addListener(handler);
+  }
+
+  function onNotificationsClosed() {
+    return fromEventPattern(addNotificationsClosed).pipe(map(([notificationId, wasClosedByUser]) => ({
+      notificationId,
+      wasClosedByUser
+    })));
   }
 
   /** `Object#toString` result references. */
@@ -10264,17 +10277,6 @@
 
   var isEmpty_1 = isEmpty$1;
 
-  function addNotificationsClosed(handler) {
-    chrome.notifications.onClosed.addListener(handler);
-  }
-
-  function onNotificationsClosed() {
-    return fromEventPattern(addNotificationsClosed).pipe(map(([notificationId, wasClosedByUser]) => ({
-      notificationId,
-      wasClosedByUser
-    })));
-  }
-
   function clearNotification(notificationId) {
     return fromEventPattern(handler => {
       chrome.notifications.clear(notificationId, handler);
@@ -10296,11 +10298,8 @@
     return item;
   }
 
-  function listenNotificationsClosed() {
-    return onNotificationsClosed().pipe(switchMap(({
-      notificationId,
-      wasClosedByUser
-    }) => clearNotification(notificationId).pipe(map(wasClickedByUser => ({
+  function onClearedNotification(notificationId, wasClosedByUser) {
+    return clearNotification(notificationId).pipe(map(wasClickedByUser => ({
       notificationId,
       wasClosedByUser,
       wasClickedByUser
@@ -10308,7 +10307,7 @@
       notificationId,
       wasClosedByUser,
       wasClickedByUser
-    }) => wasClickedByUser || wasClosedByUser ? StateManager.getNotification$(notificationId).pipe(tap(x => console.log(x))) : of()), tap(() => {
+    }) => wasClickedByUser || wasClosedByUser ? StateManager.getNotification$(notificationId) : of()), tap(() => {
       StateManager.deleteNotificationsItem(notificationId);
     }), filter(notifcation => !isEmpty_1(notifcation)), switchMap(notification => {
       const {
@@ -10329,7 +10328,37 @@
           return of();
         }
       }));
-    }))));
+    }));
+  }
+
+  function listenNotificationsClosed() {
+    return onNotificationsClosed().pipe(switchMap(({
+      notificationId,
+      wasClosedByUser
+    }) => onClearedNotification(notificationId, wasClosedByUser)));
+  }
+
+  function addNotificationsClickedHandler(handler) {
+    chrome.notifications.onClicked.addListener(handler);
+  }
+
+  function onNotificationsClicked() {
+    return fromEventPattern(addNotificationsClickedHandler);
+  }
+
+  function createTab(url) {
+    return fromEventPattern(handler => {
+      chrome.tabs.create({
+        url
+      }, handler);
+    }).pipe(take(1));
+  }
+
+  function listenNotificationsClicked() {
+    return onNotificationsClicked().pipe(switchMap(notificationId => StateManager.getNotifications$().pipe(tap(notifications => {
+      createTab(notifications[notificationId].url);
+    }), // on cleared notification function needs explicitly to receive JUST ONE PARAMETER
+    switchMap(() => onClearedNotification(notificationId)))));
   }
 
   StateManager.initState(TIME);
@@ -10839,42 +10868,6 @@
         // No special treatment if item is not found; we can't undo nothing
         callback(true);
       }
-    });
-  }
-
-  function clearNotification$1(notifId, wasClosedByUser) {
-    chrome.notifications.clear(notifId, wasClickedByUser => {
-      if (wasClickedByUser || wasClosedByUser) {
-        const {
-          notifications
-        } = StateManager.getState();
-        const {
-          domain,
-          url,
-          type
-        } = notifications[notifId];
-        chrome.storage.local.get([domain], result => {
-          const domainItems = result && result[domain] ? JSON.parse(result[domain]) : null;
-          const item = ItemFactory.createItemFromObject(domainItems[url]);
-
-          switch (type) {
-            case ITEM_STATUS.DECREASED:
-              item.updateTrackStatus(null, [ITEM_STATUS.ACK_DECREASE]);
-              break;
-
-            case ITEM_STATUS.INCREASED:
-              item.updateTrackStatus(null, [ITEM_STATUS.ACK_INCREASE]);
-              break;
-          }
-
-          domainItems[url] = item;
-          chrome.storage.local.set({
-            [domain]: JSON.stringify(domainItems)
-          });
-        });
-      }
-
-      StateManager.deleteNotificationsItem(notifId);
     });
   }
 
@@ -11562,17 +11555,9 @@
           break;
       }
     });
-    chrome.notifications.onClicked.addListener(notifId => {
-      const {
-        notifications
-      } = StateManager.getState();
-      chrome.tabs.create({
-        url: notifications[notifId].url
-      });
-      clearNotification$1(notifId);
-    });
-    listenNotificationsButtonClicked().subscribe(isWatched => {
-      if (!isWatched) {
+    listenNotificationsClicked().subscribe();
+    listenNotificationsButtonClicked().subscribe(hasStoppedWatch => {
+      if (hasStoppedWatch) {
         // is case click was "Stop watch"
         const {
           domain,
@@ -11581,7 +11566,7 @@
         updateExtensionAppearance(domain, currentURL, false);
       }
     });
-    listenNotificationsClosed().subscribe(); // chrome.notifications.onClosed.addListener(clearNotification);
+    listenNotificationsClosed().subscribe();
   }
 
   function setupSyncStorageState() {
