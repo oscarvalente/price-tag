@@ -45,6 +45,7 @@ import onUpdated$ from "./src/core/events/internal/updated";
 import onActivatedTab$ from "./src/core/events/activated-tab";
 import onCompletedTab$ from "./src/core/events/completed-tab";
 import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-click";
+import listenNotificationsClosed from "./src/core/events/listen-notifications-closed";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
 
@@ -266,10 +267,10 @@ function checkForPriceChanges() {
                                                             {
                                                                 buttons: [
                                                                     {
-                                                                        title: `Keep tracking but w/ new price (${newPrice})`
+                                                                        title: "Stop watching"
                                                                     },
                                                                     {
-                                                                        title: "Stop watching"
+                                                                        title: `Keep tracking but w/ new price (${newPrice})`
                                                                     }
                                                                 ]
                                                             });
@@ -288,22 +289,21 @@ function checkForPriceChanges() {
                                                     if (!item.hasAcknowledgeIncrease()) {
                                                         const {notificationsCounter} = StateManager.getState();
                                                         const notificationId = `TRACK.PRICE_UPDATE-${notificationsCounter}`;
-                                                        const notificationOptions = domainItems[url].price !== domainItems[url].previousPrice ?
-                                                            {
-                                                                buttons: [
-                                                                    {
-                                                                        title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
-                                                                    }
-                                                                ]
-                                                            } :
-                                                            {
-                                                                buttons: []
-                                                            };
-                                                        notificationOptions.buttons.push(
-                                                            {
-                                                                title: "Stop watching"
-                                                            }
-                                                        );
+                                                        const notificationOptions = {
+                                                            buttons: [
+                                                                {
+                                                                    title: "Stop watching"
+                                                                }
+                                                            ]
+                                                        };
+                                                        if (domainItems[url].price !== domainItems[url].previousPrice) {
+                                                            notificationOptions.buttons.push(
+                                                                {
+                                                                    title: `Increase interest price to the previous (${domainItems[url].previousPrice})`
+                                                                }
+                                                            );
+                                                        }
+
                                                         createNotification(notificationId, PRICE_UPDATE_ICON, "Price increase",
                                                             `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED,
                                                             notificationOptions);
@@ -1055,9 +1055,16 @@ function attachEvents() {
         clearNotification(notifId);
     });
 
-    listenNotificationsButtonClicked().subscribe();
+    listenNotificationsButtonClicked().subscribe(isWatched => {
+        if (!isWatched) {
+            // is case click was "Stop watch"
+            const {domain, currentURL} = StateManager.getState();
+            updateExtensionAppearance(domain, currentURL, false);
+        }
+    });
 
-    chrome.notifications.onClosed.addListener(clearNotification);
+    listenNotificationsClosed().subscribe();
+    // chrome.notifications.onClosed.addListener(clearNotification);
 }
 
 function setupSyncStorageState() {

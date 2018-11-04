@@ -1,4 +1,5 @@
 import {of} from "rxjs";
+import {map} from "rxjs/operators";
 
 import StateFactory from "./factories/state";
 
@@ -146,6 +147,14 @@ class StateManager {
     static toStorageStateFormat() {
         State = StateFactory.toStorageStateFormat(State);
         return State;
+    }
+
+    static getNotification$(notificationId) {
+        return StateManager.getState$().pipe(
+            map(state => {
+                return state.notifications[notificationId]
+            })
+        );
     }
 }
 

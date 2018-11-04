@@ -12,12 +12,12 @@ import setStorageDomain from "./internal/set-storage-domain";
 
 const onUpdateItemMapping = [
     {
-        [ITEM_STATUS.DECREASED]: onTrackWithDecreasedPriceClick,
-        [ITEM_STATUS.INCREASED]: onTrackWithIncreasedPriceClick
-    },
-    {
         [ITEM_STATUS.DECREASED]: onStopTrackClick,
         [ITEM_STATUS.INCREASED]: onStopTrackClick
+    },
+    {
+        [ITEM_STATUS.DECREASED]: onTrackWithDecreasedPriceClick,
+        [ITEM_STATUS.INCREASED]: onTrackWithIncreasedPriceClick
     }
 ];
 
@@ -36,17 +36,15 @@ function onStopTrackClick(item) {
     return item;
 }
 
-function getNotification$(getState$, notificationId) {
-    return getState$().pipe(
-        map(state => state.notifications[notificationId])
-    );
+function isWatchingByButtonType(buttonIndex) {
+    return buttonIndex !== 0;
 }
 
 function listenNotificationsButtonClicked() {
     return onNotificationsButtonClicked().pipe(
         // get notification object
         switchMap(({notificationId, buttonIndex}) =>
-            getNotification$(StateManager.getState$, notificationId)
+            StateManager.getNotification$(notificationId)
                 .pipe(
                     map(notification => ({
                             notification,
@@ -58,7 +56,7 @@ function listenNotificationsButtonClicked() {
         // get domain state for the item if exists
         switchMap(({notification, buttonIndex}) => {
             const {domain, url, type} = notification;
-            return getStorageDomain(domain, url).pipe(
+            return getStorageDomain(domain).pipe(
                 filter(domainState => domainState[url]),
                 map(domainState => ({
                         domainState,
@@ -76,7 +74,10 @@ function listenNotificationsButtonClicked() {
             const updateItemFn = get(onUpdateItemMapping, [buttonIndex, type]);
             if (isFunction(updateItemFn)) {
                 domainState[url] = updateItemFn(item);
-                return setStorageDomain(domain, domainState);
+                return setStorageDomain(domain, domainState)
+                    .pipe(
+                        map(() => isWatchingByButtonType(buttonIndex))
+                    );
             } else {
                 return of();
             }
