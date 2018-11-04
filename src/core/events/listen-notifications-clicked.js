@@ -1,4 +1,5 @@
-import {switchMap, tap} from "rxjs/operators";
+import {merge} from "rxjs";
+import {switchMap} from "rxjs/operators";
 import StateManager from "../state-manager";
 import onNotificationsClicked from "./internal/notifications-clicked";
 import createTab from "./internal/tabs-create";
@@ -8,11 +9,14 @@ function listenNotificationsClicked() {
     return onNotificationsClicked().pipe(
         switchMap(notificationId => StateManager.getNotifications$()
             .pipe(
-                tap(notifications => {
-                    createTab(notifications[notificationId].url);
-                }),
                 // on cleared notification function needs explicitly to receive JUST ONE PARAMETER
-                switchMap(() => onClearedNotification(notificationId))
+                switchMap(notifications =>
+                    // merge so that both streams are subscribed (to create tab and clear notification)
+                    merge(
+                        createTab(notifications[notificationId].url),
+                        onClearedNotification(notificationId)
+                    )
+                )
             )
         )
     );

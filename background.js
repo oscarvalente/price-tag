@@ -43,10 +43,11 @@ import {findURLKey} from "./src/utils/storage";
 import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
 import onActivatedTab$ from "./src/core/events/activated-tab";
-import onCompletedTab$ from "./src/core/events/completed-tab";
+import onCompletedTab$ from "./src/core/events/listen-completed-tab";
 import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-clicked";
 import listenNotificationsClosed from "./src/core/events/listen-notifications-closed";
 import listenNotificationsClicked from "./src/core/events/listen-notifications-clicked";
+import createNotification from "./src/core/events/create-custom-notification";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
 
@@ -482,28 +483,6 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
     });
 }
 
-function createNotification(notifId, iconUrl, title, message, contextMessage = "", url, domain, type, extraOptions = {}) {
-    const options = {
-        type: "basic",
-        title,
-        message,
-        iconUrl,
-        contextMessage,
-        requireInteraction: true,
-        ...extraOptions
-    };
-
-    chrome.notifications.create(notifId, options, id => {
-        StateManager.updateNotificationsItem(id, {
-            url,
-            domain,
-            type
-        });
-    });
-
-    StateManager.incrementNotificationsCounter();
-}
-
 function setupTrackingPolling() {
     checkForPriceChanges();
     setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
@@ -755,9 +734,7 @@ function onTabContextChange(tabId, url) {
 
 // TODO: break this down into smaller functions
 function attachEvents() {
-    onInstalled$().subscribe(() => {
-        console.log("Price tag installed.");
-    });
+    onInstalled$().subscribe(() => console.log("Price tag installed."));
 
     onActivatedTab$().subscribe(({id, url}) => {
         if (url.startsWith("http")) {

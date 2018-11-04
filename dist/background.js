@@ -10080,7 +10080,7 @@
     }) => browserURL), filter(browserURL => url !== undefined && url !== browserURL), map(() => navigation));
   }
 
-  function onCompletedTab() {
+  function listenCompletedTab() {
     const getActiveTab$ = queryActiveTab().pipe(filter(tabs => tabs.length > 0));
     const onNavigationCompleted$ = onCompleted().pipe(filter(frameId => frameId === 0), switchMap(() => getActiveTab$), map(([{
       id,
@@ -10355,10 +10355,35 @@
   }
 
   function listenNotificationsClicked() {
-    return onNotificationsClicked().pipe(switchMap(notificationId => StateManager.getNotifications$().pipe(tap(notifications => {
-      createTab(notifications[notificationId].url);
-    }), // on cleared notification function needs explicitly to receive JUST ONE PARAMETER
-    switchMap(() => onClearedNotification(notificationId)))));
+    return onNotificationsClicked().pipe(switchMap(notificationId => StateManager.getNotifications$().pipe( // on cleared notification function needs explicitly to receive JUST ONE PARAMETER
+    switchMap(notifications => // merge so that both streams are subscribed (to create tab and clear notification)
+    merge(createTab(notifications[notificationId].url), onClearedNotification(notificationId))))));
+  }
+
+  function createNotification(notificationId, options) {
+    return fromEventPattern(handler => {
+      chrome.notifications.create(notificationId, options, handler);
+    }).pipe(take(1));
+  }
+
+  function createCustomNotification(notificationId, iconUrl, title, message, contextMessage = "", url, domain, type, extraOptions = {}) {
+    const options = _objectSpread({
+      type: "basic",
+      title,
+      message,
+      iconUrl,
+      contextMessage,
+      requireInteraction: true
+    }, extraOptions);
+
+    return createNotification(notificationId, options).pipe(tap(id => {
+      StateManager.incrementNotificationsCounter();
+      StateManager.updateNotificationsItem(id, {
+        url,
+        domain,
+        type
+      });
+    })).subscribe();
   }
 
   StateManager.initState(TIME);
@@ -10627,7 +10652,7 @@
                               notificationsCounter
                             } = StateManager.getState();
                             const notificationId = `TRACK.PRICE_FIXED-${notificationsCounter}`;
-                            createNotification(notificationId, PRICE_FIX_ICON, "Fixed price", `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
+                            createCustomNotification(notificationId, PRICE_FIX_ICON, "Fixed price", `Ermm.. We've just fixed a wrongly set price to ${newPrice}`, url, url, domain);
                           });
                         } else if (newPrice < currentPrice) {
                           item.updateCurrentPrice(newPrice);
@@ -10642,7 +10667,7 @@
                                 notificationsCounter
                               } = StateManager.getState();
                               const notificationId = `TRACK.PRICE_UPDATE-${notificationsCounter}`;
-                              createNotification(notificationId, PRICE_UPDATE_ICON, "Lower price!!", `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED, {
+                              createCustomNotification(notificationId, PRICE_UPDATE_ICON, "Lower price!!", `${newPrice} (previous ${targetPrice})`, url, url, domain, ITEM_STATUS.DECREASED, {
                                 buttons: [{
                                   title: "Stop watching"
                                 }, {
@@ -10677,7 +10702,7 @@
                                 });
                               }
 
-                              createNotification(notificationId, PRICE_UPDATE_ICON, "Price increase", `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED, notificationOptions);
+                              createCustomNotification(notificationId, PRICE_UPDATE_ICON, "Price increase", `${newPrice} (previous ${domainItems[url].previousPrice})`, url, url, domain, ITEM_STATUS.INCREASED, notificationOptions);
                             }
                           });
                         } else if (!item.isNotFound()) {
@@ -10711,7 +10736,7 @@
                           } = StateManager.getState();
                           const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
                           const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
-                          createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
+                          createCustomNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
                         });
                       }
                     }
@@ -10728,7 +10753,7 @@
                         } = StateManager.getState();
                         const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
                         const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
-                        createNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
+                        createCustomNotification(notificationId, PRICE_NOT_FOUND_ICON, "Price gone", `Price tag no longer found${previousPrice}`, url, url, domain);
                       });
                     }
                   }
@@ -10869,26 +10894,6 @@
         callback(true);
       }
     });
-  }
-
-  function createNotification(notifId, iconUrl, title, message, contextMessage = "", url, domain, type, extraOptions = {}) {
-    const options = _objectSpread({
-      type: "basic",
-      title,
-      message,
-      iconUrl,
-      contextMessage,
-      requireInteraction: true
-    }, extraOptions);
-
-    chrome.notifications.create(notifId, options, id => {
-      StateManager.updateNotificationsItem(id, {
-        url,
-        domain,
-        type
-      });
-    });
-    StateManager.incrementNotificationsCounter();
   }
 
   function setupTrackingPolling() {
@@ -11167,9 +11172,7 @@
 
 
   function attachEvents() {
-    onInstalled().subscribe(() => {
-      console.log("Price tag installed.");
-    });
+    onInstalled().subscribe(() => console.log("Price tag installed."));
     onActivatedTab().subscribe(({
       id,
       url
@@ -11197,7 +11200,7 @@
         setDefaultAppearance();
       }
     });
-    onCompletedTab().subscribe(({
+    listenCompletedTab().subscribe(({
       id,
       url
     }) => {

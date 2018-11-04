@@ -15,7 +15,7 @@ function filterNavigation(getState$, navigation) {
     );
 }
 
-function onCompletedTab() {
+function listenCompletedTab() {
     const getActiveTab$ = queryActiveTab$()
         .pipe(filter(tabs => tabs.length > 0));
 
@@ -35,4 +35,4 @@ function onCompletedTab() {
     return merge(onNavigationCompleted$, onNavigationHistoryStateUpdated$);
 }
 
-export default onCompletedTab;
+export default listenCompletedTab;
