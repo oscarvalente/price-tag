@@ -130,7 +130,7 @@ function onRecordDone(tabId, payload) {
     const {currentURL, domain} = StateManager.getState();
     if (status > 0) {
         const State = StateManager.getState();
-        StateManager.updateFaviconURL(State, State.faviconURL || faviconURL);
+        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
         canDisplayURLConfirmation(State, domain, canDisplay => {
             if (canDisplay) {
                 onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
