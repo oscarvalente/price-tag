@@ -27,7 +27,7 @@ function matchesURL(string) {
 }
 
 function parseDomainState(result, domain) {
-    return result && result[domain] && JSON.parse(result[domain]) || null;
+    return result && result[domain] ? JSON.parse(result[domain]) : {};
 }
 
 function captureHostAndPathFromURL(url) {
@@ -48,6 +48,16 @@ function captureProtocolHostAndPathFromURL(url) {
     return protocolHostAndPath;
 }
 
+function captureDomainFromURL(url) {
+    const domainCapture = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
+    if (domainCapture) {
+        const [, domain] = domainCapture;
+        return domain;
+    } else {
+        return null;
+    }
+}
+
 export {
     matchesHostnameAndPath,
     isCanonicalURLRelevant,
@@ -57,5 +67,6 @@ export {
     toPrice,
     parseDomainState,
     captureHostAndPathFromURL,
-    captureProtocolHostAndPathFromURL
+    captureProtocolHostAndPathFromURL,
+    captureDomainFromURL
 };

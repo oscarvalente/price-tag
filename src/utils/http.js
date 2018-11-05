@@ -1,3 +1,5 @@
+import {fromEventPattern} from "rxjs";
+import {take} from "rxjs/operators";
 import {createHTMLTemplate} from "./dom";
 
 function onXHR(url, callback) {
@@ -10,6 +12,15 @@ function onXHR(url, callback) {
     request.send();
 }
 
+function onXHR$(url) {
+    return fromEventPattern(handler => {
+        onXHR(url, handler);
+    }).pipe(
+        take(1)
+    );
+}
+
 export {
-    onXHR
+    onXHR,
+    onXHR$
 };

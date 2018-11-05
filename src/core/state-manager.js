@@ -60,7 +60,7 @@ class StateManager {
     }
 
     static updateFaviconURL(faviconURL) {
-        State = StateFactory.updateFaviconURL(State, faviconURL);
+        State = StateFactory.updateFaviconURL(State, faviconURL || null);
         return State;
     }
 

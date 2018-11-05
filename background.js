@@ -1,3 +1,6 @@
+import {of} from "rxjs";
+import {switchMap} from "rxjs/operators";
+import isEmpty from "lodash/isEmpty";
 import * as SORT_BY_TYPES from "./src/config/sort-tracked-items";
 import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
 import {
@@ -23,17 +26,13 @@ import {
 import StateManager from "./src/core/state-manager";
 import ItemFactory from "./src/core/factories/item";
 import sortTrackedItemsBy from "./src/utils/sort-tracked-items";
-import {getCanonicalPathFromSource} from "./src/utils/dom";
 import {onXHR} from "./src/utils/http";
 import {
     toPrice,
-    isCanonicalURLRelevant,
     matchesDomain,
     matchesHostname,
     matchesURL,
-    parseDomainState,
-    captureHostAndPathFromURL,
-    captureProtocolHostAndPathFromURL
+    captureHostAndPathFromURL
 } from "./src/utils/lang";
 import {
     buildSaveConfirmationPayload,
@@ -48,6 +47,7 @@ import listenNotificationsButtonClicked from "./src/core/events/listen-notificat
 import listenNotificationsClosed from "./src/core/events/listen-notifications-closed";
 import listenNotificationsClicked from "./src/core/events/listen-notifications-clicked";
 import createNotification from "./src/core/events/create-custom-notification";
+import onTabContextChange$ from "./src/core/events/on-tab-context-change";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
 
@@ -531,7 +531,7 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
         StateManager.disableCurrentPageTracked();
     } else if (!forcePageTrackingTo) {
         chrome.storage.local.get([currentDomain], result => {
-            const domainState = parseDomainState(result, currentDomain);
+            const domainState = result && result[currentDomain] && JSON.parse(result[currentDomain]) || null;
             if (domainState) {
                 // NOTE: Making sure that full URL is also checked because item may have been saved with full URL
                 // in the past
@@ -672,63 +672,33 @@ function checkForURLSimilarity(tabId, domain, currentURL, callback) {
     });
 }
 
-function onTabContextChange(tabId, url) {
-    const captureDomain = url.match(MATCHES.CAPTURE.DOMAIN_IN_URL);
-    if (captureDomain) {
-        const [, domain] = captureDomain;
-        StateManager.updateCurrentDomain(domain);
-        chrome.storage.local.get([domain], result => {
-            const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-            // check if user has already a preference to use the canonical URL if available
-            if (domainState && domainState._canUseCanonical === false) {
-                StateManager.updateCanonicalURL(null);
-                StateManager.updateCurrentURL(url);
-                StateManager.updateBrowserURL(url);
+function onStatusAndAppearanceUpdate(statusUpdate = []) {
+    if (isEmpty(statusUpdate)) {
+        setDefaultAppearance();
+    } else {
+        const [autoSaveUpdateStatus, priceUpdateStatus, enableTrackedItemAppearance] = statusUpdate;
 
-                if (domainState._isPathEnoughToTrack === true) {
-                    const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
-                    if (protocolHostAndPathFromURL) {
-                        StateManager.updateCurrentURL(protocolHostAndPathFromURL);
-                        StateManager.updateBrowserURL(protocolHostAndPathFromURL);
-                    }
-                }
+        if (autoSaveUpdateStatus) {
+            const {enable: enableAutoSave, selection} = autoSaveUpdateStatus;
+            enableAutoSave ?
+                StateManager.enableAutoSave(selection) :
+                StateManager.disableAutoSave();
+        }
 
-                const State = StateManager.getState();
-                updateAutoSaveStatus(State.currentURL, State.domain, url);
-                updatePriceUpdateStatus(State.currentURL, State.domain, url);
-                updateExtensionAppearance(State.domain, State.currentURL, null, url);
-            } else {
-                // First thing to do, check:
-                // If canonical was updated (compared to the previously) + if it's relevant
-                StateManager.updateBrowserURL(url);
+        if (priceUpdateStatus) {
+            const {enable: enablePriceUpdate, selection} = priceUpdateStatus;
+            enablePriceUpdate ?
+                StateManager.enablePriceUpdate(selection) :
+                StateManager.disablePriceUpdate();
+        }
 
-                onXHR(url, template => {
-                    const canonicalURL = getCanonicalPathFromSource(template);
-                    const canUseCanonical = isCanonicalURLRelevant(canonicalURL);
-
-                    if (canUseCanonical) {
-                        StateManager.updateCurrentURL(canonicalURL);
-                        StateManager.updateCanonicalURL(canonicalURL);
-                    } else {
-                        StateManager.updateCanonicalURL(null);
-                        StateManager.updateCurrentURL(url);
-
-                        if (domainState && domainState._isPathEnoughToTrack === true) {
-                            const protocolHostAndPathFromURL = captureProtocolHostAndPathFromURL(url);
-                            if (protocolHostAndPathFromURL) {
-                                StateManager.updateCurrentURL(protocolHostAndPathFromURL);
-                                StateManager.updateBrowserURL(protocolHostAndPathFromURL);
-                            }
-                        }
-                    }
-
-                    const State = StateManager.getState();
-                    updateAutoSaveStatus(State.currentURL, State.domain, url);
-                    updatePriceUpdateStatus(State.currentURL, State.domain, url);
-                    updateExtensionAppearance(State.domain, State.currentURL, null, url);
-                });
-            }
-        });
+        if (enableTrackedItemAppearance) {
+            setTrackedItemAppearance();
+            StateManager.enableCurrentPageTracked();
+        } else {
+            setDefaultAppearance();
+            StateManager.disableCurrentPageTracked();
+        }
     }
 }
 
@@ -736,15 +706,17 @@ function onTabContextChange(tabId, url) {
 function attachEvents() {
     onInstalled$().subscribe(() => console.log("Price tag installed."));
 
-    onActivatedTab$().subscribe(({id, url}) => {
-        if (url.startsWith("http")) {
-            onTabContextChange(id, url);
-            const State = StateManager.getState();
-            StateManager.updateFaviconURL(State._faviconURLMap[id] || null);
-        } else {
-            setDefaultAppearance();
-        }
-    });
+    onActivatedTab$().pipe(
+        switchMap(({id, url}) => {
+            if (url.startsWith("http")) {
+                const {_faviconURLMap} = StateManager.getState();
+                StateManager.updateFaviconURL(_faviconURLMap[id]);
+                return onTabContextChange$(id, url);
+            } else {
+                return of(undefined);
+            }
+        })
+    ).subscribe(onStatusAndAppearanceUpdate);
 
     onUpdated$().subscribe(({tabId, favIconUrl, active, url}) => {
         if (url.startsWith("http")) {
@@ -757,9 +729,9 @@ function attachEvents() {
         }
     });
 
-    onCompletedTab$().subscribe(({id, url}) => {
-        onTabContextChange(id, url);
-    });
+    onCompletedTab$().pipe(
+        switchMap(({id, url}) => onTabContextChange$(id, url))
+    ).subscribe(onStatusAndAppearanceUpdate);
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
