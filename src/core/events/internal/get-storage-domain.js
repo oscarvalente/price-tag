@@ -1,4 +1,4 @@
-import {fromEventPattern} from 'rxjs';
+import {fromEventPattern} from "rxjs";
 import {take, map} from "rxjs/operators";
 import {parseDomainState} from "../../../utils/lang";
 

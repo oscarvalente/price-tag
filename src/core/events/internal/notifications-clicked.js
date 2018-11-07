@@ -1,4 +1,4 @@
-import {fromEventPattern} from 'rxjs';
+import {fromEventPattern} from "rxjs";
 
 function addNotificationsClickedHandler(handler) {
     chrome.notifications.onClicked.addListener(handler);

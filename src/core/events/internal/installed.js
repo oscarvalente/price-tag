@@ -1,5 +1,5 @@
-import {fromEventPattern} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {fromEventPattern} from "rxjs";
+import {take} from "rxjs/operators";
 
 function addInstalledHandler(handler) {
     chrome.runtime.onInstalled.addListener(handler);

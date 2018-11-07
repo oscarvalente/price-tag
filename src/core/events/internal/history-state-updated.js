@@ -1,4 +1,4 @@
-import {fromEventPattern} from 'rxjs';
+import {fromEventPattern} from "rxjs";
 
 function addHistoryStateUpdatedHandler(handler) {
     chrome.webNavigation.onHistoryStateUpdated.addListener(handler);

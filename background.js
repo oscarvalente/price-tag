@@ -43,11 +43,12 @@ import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
 import onActivatedTab$ from "./src/core/events/activated-tab";
 import onCompletedTab$ from "./src/core/events/listen-completed-tab";
-import listenNotificationsButtonClicked from "./src/core/events/listen-notifications-buttons-clicked";
-import listenNotificationsClosed from "./src/core/events/listen-notifications-closed";
-import listenNotificationsClicked from "./src/core/events/listen-notifications-clicked";
+import listenNotificationsButtonClicked$ from "./src/core/events/listen-notifications-buttons-clicked";
+import listenNotificationsClosed$ from "./src/core/events/listen-notifications-closed";
+import listenNotificationsClicked$ from "./src/core/events/listen-notifications-clicked";
 import createNotification from "./src/core/events/create-custom-notification";
 import onTabContextChange$ from "./src/core/events/on-tab-context-change";
+import listenRuntimeMessages$ from "./src/core/events/listen-runtime-messages";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
 
@@ -159,10 +160,6 @@ function onRecordDone(tabId, payload) {
 
         StateManager.disableRecord();
     }
-}
-
-function onRecordCancel() {
-    StateManager.disableRecord();
 }
 
 function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
@@ -733,19 +730,18 @@ function attachEvents() {
         switchMap(({id, url}) => onTabContextChange$(id, url))
     ).subscribe(onStatusAndAppearanceUpdate);
 
+    listenRuntimeMessages$().subscribe();
+
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
             const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                case "POPUP.STATUS":
-                    sendResponse({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
-                    break;
-                case "RECORD.ATTEMPT":
-                    /* eslint-disable no-case-declarations */
+                /*case "RECORD.ATTEMPT":
+                    /!* eslint-disable no-case-declarations *!/
                     const {recordActive: isRecordActive} = StateManager.toggleRecord();
-                    /* eslint-enable no-case-declarations */
+                    /!* eslint-enable no-case-declarations *!/
 
                     if (isRecordActive) {
                         const {url} = payload;
@@ -757,7 +753,7 @@ function attachEvents() {
                         chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
                     }
                     sendResponse({status: 1, state: {recordActive: isRecordActive}});
-                    break;
+                    break;*/
                 case "AUTO_SAVE.STATUS":
                     chrome.storage.local.get([domain], result => {
                         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
@@ -973,9 +969,9 @@ function attachEvents() {
         });
 
 
-    listenNotificationsClicked().subscribe();
+    listenNotificationsClicked$().subscribe();
 
-    listenNotificationsButtonClicked().subscribe(hasStoppedWatch => {
+    listenNotificationsButtonClicked$().subscribe(hasStoppedWatch => {
         if (hasStoppedWatch) {
             // is case click was "Stop watch"
             const {domain, currentURL} = StateManager.getState();
@@ -983,7 +979,7 @@ function attachEvents() {
         }
     });
 
-    listenNotificationsClosed().subscribe();
+    listenNotificationsClosed$().subscribe();
 }
 
 function setupSyncStorageState() {

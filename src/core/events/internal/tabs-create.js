@@ -1,4 +1,4 @@
-import {fromEventPattern} from 'rxjs';
+import {fromEventPattern} from "rxjs";
 import {take} from "rxjs/operators";
 
 function createTab(url) {

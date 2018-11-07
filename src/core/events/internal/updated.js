@@ -1,4 +1,4 @@
-import {fromEventPattern} from 'rxjs';
+import {fromEventPattern} from "rxjs";
 import {map} from "rxjs/operators";
 
 function addUpdatedHandler(handler) {

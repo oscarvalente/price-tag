@@ -6979,6 +6979,10 @@
   const UNDO_REMOVED_ITEMS_TIMEOUT = 120000;
   const DEFAULT_TITLE = "Price Tag";
   const TRACKED_ITEM_TITLE = "Price Tag - This item is being tracked";
+  const EXTENSION_MESSAGES = {
+    POPUP_STATUS: "POPUP.STATUS",
+    RECORD_ATTEMPT: "RECORD.ATTEMPT"
+  };
 
   const ITEM_STATUSES = {
     WATCHED: "WATCHED",
@@ -10563,6 +10567,93 @@
     }
   }
 
+  function transformCallbackToObservable(callback) {
+    return returnValue => of(callback(returnValue)).pipe(take(1));
+  }
+
+  function addOnMessage(handler) {
+    chrome.runtime.onMessage.addListener(handler);
+  }
+
+  function onMessage() {
+    return fromEventPattern(addOnMessage).pipe(map(([payload, sender, sendResponse]) => ({
+      payload,
+      sender,
+      sendResponse$: transformCallbackToObservable(sendResponse)
+    })));
+  }
+
+  const {
+    POPUP_STATUS,
+    RECORD_ATTEMPT
+  } = EXTENSION_MESSAGES;
+
+  function listenRuntimeMessages() {
+    return onMessage().pipe(
+    /* eslint-disable no-unused-vars */
+    switchMap(({
+      payload: data,
+      sender,
+      sendResponse$
+    }) => {
+      /* eslint-enable no-unused-vars */
+      const {
+        type
+      } = data; // const {type, payload = {}} = data;
+
+      const {
+        recordActive,
+        autoSaveEnabled,
+        isPriceUpdateEnabled
+      } = StateManager.getState();
+
+      switch (type) {
+        case POPUP_STATUS:
+          return sendResponse$({
+            status: 1,
+            state: {
+              recordActive,
+              autoSaveEnabled,
+              isPriceUpdateEnabled
+            }
+          });
+
+        case RECORD_ATTEMPT:
+          /* eslint-disable no-case-declarations */
+          const {
+            recordActive: isRecordActive
+          } = StateManager.toggleRecord();
+          /* eslint-enable no-case-declarations */
+
+          if (isRecordActive) {
+            const {
+              url
+            } = payload;
+            chrome.tabs.sendMessage(id, {
+              type: "RECORD.START",
+              payload: {
+                url
+              }
+            }, onRecordDone.bind(null, id));
+          } else {
+            chrome.tabs.sendMessage(id, {
+              type: "RECORD.CANCEL"
+            }, onRecordCancel);
+          }
+
+          return sendResponse$({
+            status: 1,
+            state: {
+              recordActive: isRecordActive
+            }
+          });
+
+        default:
+          return EMPTY;
+      }
+    }));
+  }
+
   StateManager.initState(TIME);
 
   function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
@@ -10666,55 +10757,6 @@
         });
       }
     });
-  }
-
-  function onRecordDone(tabId, payload) {
-    const {
-      status,
-      selection,
-      price,
-      faviconURL,
-      faviconAlt
-    } = payload;
-    const {
-      currentURL,
-      domain
-    } = StateManager.getState();
-
-    if (status > 0) {
-      const State = StateManager.getState();
-      StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-      canDisplayURLConfirmation(State, domain, canDisplay => {
-        if (canDisplay) {
-          onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
-            if (canSave) {
-              const State = StateManager.getState();
-              const url = useCaninocal ? State.canonicalURL : State.browserURL;
-              checkForURLSimilarity(tabId, domain, url, isToSave => {
-                if (isToSave) {
-                  const State = StateManager.getState();
-                  createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-                  updateExtensionAppearance$1(domain, url, true);
-                }
-              });
-            }
-          });
-        } else {
-          checkForURLSimilarity(tabId, domain, currentURL, isToSave => {
-            if (isToSave) {
-              const State = StateManager.getState();
-              createItem(domain, currentURL, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-              updateExtensionAppearance$1(domain, currentURL, true);
-            }
-          });
-        }
-      });
-      StateManager.disableRecord();
-    }
-  }
-
-  function onRecordCancel() {
-    StateManager.disableRecord();
   }
 
   function onAutoSaveCheckStatus(sendResponse, {
@@ -11353,6 +11395,7 @@
       id,
       url
     }) => onTabContextChange(id, url))).subscribe(onStatusAndAppearanceUpdate);
+    listenRuntimeMessages().subscribe();
     chrome.runtime.onMessage.addListener(({
       type,
       payload = {}
@@ -11374,48 +11417,21 @@
       } = StateManager.getState();
 
       switch (type) {
-        case "POPUP.STATUS":
-          sendResponse({
-            status: 1,
-            state: {
-              recordActive,
-              autoSaveEnabled,
-              isPriceUpdateEnabled
+        /*case "RECORD.ATTEMPT":
+            /!* eslint-disable no-case-declarations *!/
+            const {recordActive: isRecordActive} = StateManager.toggleRecord();
+            /!* eslint-enable no-case-declarations *!/
+             if (isRecordActive) {
+                const {url} = payload;
+                chrome.tabs.sendMessage(id, {
+                    type: "RECORD.START",
+                    payload: {url}
+                }, onRecordDone.bind(null, id));
+            } else {
+                chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
             }
-          });
-          break;
-
-        case "RECORD.ATTEMPT":
-          /* eslint-disable no-case-declarations */
-          const {
-            recordActive: isRecordActive
-          } = StateManager.toggleRecord();
-          /* eslint-enable no-case-declarations */
-
-          if (isRecordActive) {
-            const {
-              url
-            } = payload;
-            chrome.tabs.sendMessage(id, {
-              type: "RECORD.START",
-              payload: {
-                url
-              }
-            }, onRecordDone.bind(null, id));
-          } else {
-            chrome.tabs.sendMessage(id, {
-              type: "RECORD.CANCEL"
-            }, onRecordCancel);
-          }
-
-          sendResponse({
-            status: 1,
-            state: {
-              recordActive: isRecordActive
-            }
-          });
-          break;
-
+            sendResponse({status: 1, state: {recordActive: isRecordActive}});
+            break;*/
         case "AUTO_SAVE.STATUS":
           chrome.storage.local.get([domain], result => {
             const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
