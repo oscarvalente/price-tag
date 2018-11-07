@@ -1,5 +1,5 @@
-import {EMPTY, concat} from "rxjs";
-import {switchMap, tap, filter, concatMap} from "rxjs/operators";
+import {EMPTY, forkJoin} from "rxjs";
+import {switchMap, tap, filter, map} from "rxjs/operators";
 import onMessage$ from "./internal/runtime-on-message";
 import StateManager from "../state-manager";
 import {EXTENSION_MESSAGES} from "../../config/background";
@@ -10,6 +10,7 @@ import onCreateItemConfirm$ from "./helpers/on-create-item-attempt-confirm";
 import checkURLSimilarity$ from "./helpers/check-url-similarity";
 import createItem$ from "./helpers/create-item";
 import updateExtensionAppearance$ from "./update-extension-appearance";
+import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
 
 const {POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL} = EXTENSION_MESSAGES;
 
@@ -22,29 +23,26 @@ function onRecordDone$(tabId, payload) {
         StateManager.disableRecord();
 
         return canDisplayURLConfirmation$(State, domain).pipe(
-            switchMap(canDisplay => {
-                if (canDisplay) {
-                    return onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, faviconAlt).pipe(
-                        filter(([canSave]) => canSave),
-                        switchMap(([canSave, useCanonical]) => {
-                            const State = StateManager.getState();
-                            const url = useCanonical ? State.canonicalURL : State.browserURL;
-                            return checkURLSimilarity$(tabId, domain, url);
-                        }),
-                        filter(([isToSave]) => isToSave)
-                    );
-                } else {
-                    return checkURLSimilarity$(tabId, domain, url).pipe(
-                        filter(([isToSave]) => isToSave)
-                    );
-                }
-            }),
-            switchMap(() => {
-                return createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED])
-                    .pipe(
-                        concatMap(() => updateExtensionAppearance$(domain, url, true))
-                    );
-            })
+            switchMap(canDisplay =>
+                canDisplay ?
+                    onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, faviconAlt)
+                        .pipe(
+                            filter(([canSave]) => canSave),
+                            switchMap(([, useCanonical]) => {
+                                const State = StateManager.getState();
+                                const url = useCanonical ? State.canonicalURL : State.browserURL;
+                                return checkURLSimilarity$(tabId, domain, url);
+                            })
+                        ) :
+                    checkURLSimilarity$(tabId, domain, url)
+            ),
+            filter(([isToSave]) => isToSave),
+            switchMap(() =>
+                forkJoin(
+                    createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]),
+                    updateExtensionAppearance$(domain, url, true)
+                )
+            )
         );
     }
 
@@ -61,6 +59,7 @@ function listenRuntimeMessages() {
         switchMap(({payload: data, sender, sendResponse$}) => {
             /* eslint-enable no-unused-vars */
             const {type, payload = {}} = data;
+            const {id} = payload;
             const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = StateManager.getState();
             switch (type) {
                 case POPUP_STATUS:
@@ -68,9 +67,8 @@ function listenRuntimeMessages() {
                 case RECORD_ATTEMPT:
                     /* eslint-disable no-case-declarations */
                     const {recordActive: isRecordActive} = StateManager.toggleRecord();
-                    /* eslint-enable no-case-declarations */
-
                     let message$;
+                    /* eslint-enable no-case-declarations */
 
                     if (isRecordActive) {
                         const {url} = payload;
@@ -78,7 +76,16 @@ function listenRuntimeMessages() {
                             type: RECORD_START,
                             payload: {url}
                         }).pipe(
-                            switchMap(onRecordDone$.bind(null, id))
+                            switchMap(onRecordDone$.bind(null, id)),
+                            tap(([, forcePageTrackingTo]) => {
+                                if (forcePageTrackingTo) {
+                                    setTrackedItemAppearance();
+                                    StateManager.enableCurrentPageTracked();
+                                } else {
+                                    setDefaultAppearance();
+                                    StateManager.disableCurrentPageTracked();
+                                }
+                            })
                         );
                     } else {
                         message$ = sendTabMessage$(id, {
@@ -88,10 +95,11 @@ function listenRuntimeMessages() {
                         );
                     }
 
-                    return message$.pipe(
-                        concat(() =>
-                            sendResponse$({status: 1, state: {recordActive: isRecordActive}})
-                        )
+                    return forkJoin(
+                        message$,
+                        sendResponse$({status: 1, state: {recordActive: isRecordActive}})
+                    ).pipe(
+                        map(([, response]) => response)
                     );
                 default:
                     return EMPTY;

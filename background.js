@@ -126,42 +126,6 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
     });
 }
 
-function onRecordDone(tabId, payload) {
-    const {status, selection, price, faviconURL, faviconAlt} = payload;
-    const {currentURL, domain} = StateManager.getState();
-    if (status > 0) {
-        const State = StateManager.getState();
-        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        canDisplayURLConfirmation(State, domain, canDisplay => {
-            if (canDisplay) {
-                onConfirmURLForCreateItemAttempt(tabId, domain, currentURL, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
-                    if (canSave) {
-                        const State = StateManager.getState();
-                        const url = useCaninocal ? State.canonicalURL : State.browserURL;
-                        checkForURLSimilarity(tabId, domain, url, isToSave => {
-                            if (isToSave) {
-                                const State = StateManager.getState();
-                                createItem(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-                                updateExtensionAppearance(domain, url, true);
-                            }
-                        });
-                    }
-                });
-            } else {
-                checkForURLSimilarity(tabId, domain, currentURL, isToSave => {
-                    if (isToSave) {
-                        const State = StateManager.getState();
-                        createItem(domain, currentURL, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]);
-                        updateExtensionAppearance(domain, currentURL, true);
-                    }
-                });
-            }
-        });
-
-        StateManager.disableRecord();
-    }
-}
-
 function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
         const State = StateManager.getState();
@@ -736,24 +700,8 @@ function attachEvents() {
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
-            const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
+            const {autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                /*case "RECORD.ATTEMPT":
-                    /!* eslint-disable no-case-declarations *!/
-                    const {recordActive: isRecordActive} = StateManager.toggleRecord();
-                    /!* eslint-enable no-case-declarations *!/
-
-                    if (isRecordActive) {
-                        const {url} = payload;
-                        chrome.tabs.sendMessage(id, {
-                            type: "RECORD.START",
-                            payload: {url}
-                        }, onRecordDone.bind(null, id));
-                    } else {
-                        chrome.tabs.sendMessage(id, {type: "RECORD.CANCEL"}, onRecordCancel);
-                    }
-                    sendResponse({status: 1, state: {recordActive: isRecordActive}});
-                    break;*/
                 case "AUTO_SAVE.STATUS":
                     chrome.storage.local.get([domain], result => {
                         const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
@@ -951,9 +899,10 @@ function attachEvents() {
                 case "TRACKED_ITEMS.UNDO_ATTEMPT":
                     if (_undoRemovedItems.length > 0) {
                         const undoRemovedItem = StateManager.getUndoRemovedItemsHead();
-
+                        const State = StateManager.getState();
                         undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
                             if (response) {
+
                                 const {_undoRemovedItems} = StateManager.removeUndoRemovedItem(State);
                                 _undoRemovedItems.length === 0 ?
                                     sendResponse({isUndoStatusActive: false}) :

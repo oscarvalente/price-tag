@@ -1,5 +1,6 @@
 // TODO
-import {filter, concatMap, switchMap, mapTo} from "rxjs/operators";
+import {forkJoin} from "rxjs";
+import {filter, switchMap, mapTo} from "rxjs/operators";
 import StateManager from "../../state-manager";
 import {buildURLConfirmationPayload} from "../../../utils/view";
 import sendTabMessage$ from "../internal/tabs-send-message";
@@ -38,8 +39,9 @@ function onCreateItemConfirm(tabId, domain) {
                                             domainState._canUseCanonical = true;
                                             const {canonicalURL} = StateManager.getState();
                                             StateManager.updateCurrentURL(canonicalURL);
-                                            return message$.pipe(
-                                                concatMap(() => setStorageDomain(domain, domainState))
+                                            return forkJoin(
+                                                message$,
+                                                setStorageDomain(domain, domainState)
                                             );
                                         }),
                                         mapTo([true, true])
@@ -57,8 +59,9 @@ function onCreateItemConfirm(tabId, domain) {
                                             domainState._canUseCanonical = false;
                                             const {browserURL} = StateManager.getState();
                                             StateManager.updateCurrentURL(browserURL);
-                                            return message$.pipe(
-                                                concatMap(() => setStorageDomain(domain, domainState))
+                                            return forkJoin(
+                                                message$,
+                                                setStorageDomain(domain, domainState)
                                             );
                                         }),
                                         mapTo([true, false])
