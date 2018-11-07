@@ -15,38 +15,34 @@ import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
 const {POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL} = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, payload) {
-    const {status, selection, price, faviconURL, faviconAlt} = payload;
+    const {selection, price, faviconURL, faviconAlt} = payload;
     const {currentURL: url, domain} = StateManager.getState();
-    if (status > 0) {
-        const State = StateManager.getState();
-        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        StateManager.disableRecord();
+    const State = StateManager.getState();
+    StateManager.updateFaviconURL(State.faviconURL || faviconURL);
+    StateManager.disableRecord();
 
-        return canDisplayURLConfirmation$(State, domain).pipe(
-            switchMap(canDisplay =>
-                canDisplay ?
-                    onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, faviconAlt)
-                        .pipe(
-                            filter(([canSave]) => canSave),
-                            switchMap(([, useCanonical]) => {
-                                const State = StateManager.getState();
-                                const url = useCanonical ? State.canonicalURL : State.browserURL;
-                                return checkURLSimilarity$(tabId, domain, url);
-                            })
-                        ) :
-                    checkURLSimilarity$(tabId, domain, url)
-            ),
-            filter(([isToSave]) => isToSave),
-            switchMap(() =>
-                forkJoin(
-                    createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]),
-                    updateExtensionAppearance$(domain, url, true)
-                )
+    return canDisplayURLConfirmation$(State, domain).pipe(
+        switchMap(canDisplay =>
+            canDisplay ?
+                onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, faviconAlt)
+                    .pipe(
+                        filter(([canSave]) => canSave),
+                        switchMap(([, useCanonical]) => {
+                            const {canonicalURL, browserURL} = StateManager.getState();
+                            const url = useCanonical ? canonicalURL : browserURL;
+                            return checkURLSimilarity$(tabId, domain, url);
+                        })
+                    ) :
+                checkURLSimilarity$(tabId, domain, url)
+        ),
+        filter(([, isToSave]) => isToSave),
+        switchMap(([url]) =>
+            forkJoin(
+                createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]),
+                updateExtensionAppearance$(domain, url, true)
             )
-        );
-    }
-
-    return EMPTY;
+        )
+    );
 }
 
 function onRecordCancel() {
@@ -76,6 +72,7 @@ function listenRuntimeMessages() {
                             type: RECORD_START,
                             payload: {url}
                         }).pipe(
+                            filter(({status}) => status > 0),
                             switchMap(onRecordDone$.bind(null, id)),
                             tap(([, forcePageTrackingTo]) => {
                                 if (forcePageTrackingTo) {

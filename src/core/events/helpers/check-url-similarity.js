@@ -15,12 +15,12 @@ function checkURLSimilarity(tabId, domain, currentURL) {
                     // since it's true we can say that that domain items' path is enough to track items in this domain
                     const similarURL = searchEqualPathWatchedItem(domainState, currentURL);
                     if (similarURL) {
-                        return of([false, false]);
+                        return of([currentURL, false, false]);
                     } else {
-                        return of([true]);
+                        return of([currentURL, true]);
                     }
                 } else if (domainState._isPathEnoughToTrack === false) {
-                    return of([true]);
+                    return of([currentURL, true]);
                 } else {
                     // it's the first time user is being inquired about items similarity in this domain
                     const similarURL = searchEqualPathWatchedItem(domainState, currentURL);
@@ -53,11 +53,11 @@ function checkURLSimilarity(tabId, domain, currentURL) {
                                                             domainState._isPathEnoughToTrack = false;
                                                             chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
                                                             return message$.pipe(
-                                                                mapTo(true)
+                                                                mapTo([currentURL, true])
                                                             );
                                                         case 1:
                                                             return message$.pipe(
-                                                                mapTo([false, true])
+                                                                mapTo([currentURL, false, true])
                                                             );
                                                         case 2:
                                                             // said No: same item (path is enough for this site items)
@@ -66,46 +66,46 @@ function checkURLSimilarity(tabId, domain, currentURL) {
                                                                 message$,
                                                                 setStorageDomain(domain, domainState)
                                                             ).pipe(
-                                                                mapTo([false, false])
+                                                                mapTo([currentURL, false, false])
                                                             );
                                                         case 3:
                                                             // said Save this but for others Ask me later
                                                             return message$.pipe(
-                                                                mapTo(true)
+                                                                mapTo([currentURL, true])
                                                             );
                                                         default:
                                                             // cannot recognize this modal button click
                                                             return message$.pipe(
-                                                                mapTo([false, true])
+                                                                mapTo([currentURL, false, true])
                                                             );
                                                     }
                                                 case 2:
                                                     // close modal
                                                     return message$.pipe(
-                                                        mapTo([false, true])
+                                                        mapTo([currentURL, false, true])
                                                     );
                                                 default:
                                                     // something wrong with modal interaction
                                                     return message$.pipe(
-                                                        mapTo([false, true])
+                                                        mapTo([currentURL, false, true])
                                                     );
                                             }
                                         })
                                     );
                                 } else {
                                     // something went wrong creating the modal
-                                    return of([false, true]);
+                                    return of([currentURL, false, true]);
                                 }
                             })
                         );
                     } else {
                         // no URL has host and path equals to the currentURL (can save the item)
-                        return of([true]);
+                        return of([currentURL, true]);
                     }
                 }
             } else {
                 // this means it's the first item being saved belonging to this domain (can save the item)
-                return of([true]);
+                return of([currentURL, true]);
             }
         })
     );
