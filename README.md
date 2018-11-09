@@ -92,6 +92,7 @@ but there's a lot more, and more to come.
      * BUG: change link "target" inside modal to blank ✅
      * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
      * add cancel button to warning modals ✅
+     * BUG: if item is removed then saved, item is removed from undo items (undo must be disabled) ❗❗
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
      * tech debt: record action doesn't deal with domain and url; state manages them ✅

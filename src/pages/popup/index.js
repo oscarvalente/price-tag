@@ -1,9 +1,14 @@
 import React, {Component, Fragment} from "react";
+import {map, filter, tap, switchMap} from "rxjs/operators";
 
 import Toolbar from "../../components/toolbar/index";
 import IconLink from "../../components/icon-link/index";
+import queryActiveTab$ from "../../core/events/internal/query-active-tab";
+import sendRuntimeMessage$ from "../../core/events/internal/runtime-send-message";
+import {EXTENSION_MESSAGES} from "../../config/background";
 
 
+const {POPUP_STATUS, AUTO_SAVE_STATUS} = EXTENSION_MESSAGES;
 const BUTTON_STATUS = {
     active: "active",
     inactive: "inactive",
@@ -62,6 +67,7 @@ class Popup extends Component {
     constructor(props) {
         super(props);
         this.onPopupStatus = this.onPopupStatus.bind(this);
+        this.triggerPopupStatus$ = this.triggerPopupStatus$.bind(this);
         this.updateRecordButton = updateRecordButton.bind(this);
         this.updateAutosaveButton = updateAutosaveButton.bind(this);
         this.setPendingAutosave = setPendingAutosave.bind(this);
@@ -74,7 +80,7 @@ class Popup extends Component {
             priceUpdateButtonStatus: BUTTON_STATUS.inactive
         };
 
-        chrome.runtime.sendMessage({type: "POPUP.STATUS"}, this.onPopupStatus);
+        this.triggerPopupStatus$().subscribe(this.updateAutosaveButton);
     }
 
     render() {
@@ -97,13 +103,7 @@ class Popup extends Component {
 
         this.updateRecordButton(recordActive);
 
-        if (autoSaveEnabled) {
-            this.setPendingAutosave();
-            chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-                chrome.runtime.sendMessage({type: "AUTO_SAVE.STATUS", payload: {id}},
-                    this.updateAutosaveButton);
-            });
-        } else {
+        if (!autoSaveEnabled) {
             this.updateAutosaveButton(autoSaveEnabled);
         }
 
@@ -112,6 +112,19 @@ class Popup extends Component {
             chrome.runtime.sendMessage({type: "PRICE_UPDATE.STATUS", payload: {id}},
                 this.updatePriceUpdateButton);
         });
+    }
+
+    triggerPopupStatus$() {
+        return sendRuntimeMessage$({type: POPUP_STATUS}).pipe(
+            tap(this.onPopupStatus),
+            map(({state}) => state.autoSaveEnabled),
+            filter(autoSaveEnabled => autoSaveEnabled),
+            tap(this.setPendingAutosave),
+            switchMap(() => queryActiveTab$()),
+            switchMap(([{id}]) =>
+                sendRuntimeMessage$({type: AUTO_SAVE_STATUS, payload: {id}})
+            )
+        );
     }
 }
 

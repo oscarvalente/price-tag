@@ -126,17 +126,6 @@ function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, 
     });
 }
 
-function onAutoSaveCheckStatus(sendResponse, {status, selection, price, faviconURL, faviconAlt} = {}) {
-    if (status >= 0) {
-        const State = StateManager.getState();
-        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
-        sendResponse(true);
-    } else {
-        sendResponse(false);
-    }
-}
-
 function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
         const State = StateManager.getState();
@@ -702,40 +691,6 @@ function attachEvents() {
             const {id, url: itemUrl, sortByType} = payload;
             const {autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                case "AUTO_SAVE.STATUS":
-                    chrome.storage.local.get([domain], result => {
-                        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-                        if (domainState) {
-                            if (domainState._isPathEnoughToTrack === true) {
-                                // since it's true we can say that that domain items' path is enough to track items in this domain
-                                searchForEqualPathWatchedItem(domainState, url, similarURL => {
-                                    if (!similarURL) {
-                                        const {selection} = StateManager.getState();
-                                        chrome.tabs.sendMessage(id, {
-                                            type: "AUTO_SAVE.CHECK_STATUS",
-                                            payload: {url, selection}
-                                        }, onAutoSaveCheckStatus.bind(null, sendResponse));
-                                    } else {
-                                        sendResponse({status: -1});
-                                    }
-                                });
-                            } else {
-                                const {selection} = StateManager.getState();
-                                chrome.tabs.sendMessage(id, {
-                                    type: "AUTO_SAVE.CHECK_STATUS",
-                                    payload: {url, selection}
-                                }, onAutoSaveCheckStatus.bind(null, sendResponse));
-                            }
-                        } else {
-                            // domain doesn't exist
-                            const {selection} = StateManager.getState();
-                            chrome.tabs.sendMessage(id, {
-                                type: "AUTO_SAVE.CHECK_STATUS",
-                                payload: {url, selection}
-                            }, onAutoSaveCheckStatus.bind(null, sendResponse));
-                        }
-                    });
-                    return true;
                 case "AUTO_SAVE.ATTEMPT":
                     if (autoSaveEnabled) {
                         const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor}
