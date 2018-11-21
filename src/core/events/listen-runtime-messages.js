@@ -7,7 +7,7 @@ import {EXTENSION_MESSAGES} from "../../config/background";
 import sendTabMessage$ from "./internal/tabs-send-message";
 import ITEM_STATUS from "../../config/item-statuses";
 import canDisplayURLConfirmation$ from "./helpers/can-display-url-confirmation";
-import onCreateItemConfirm$ from "./helpers/on-create-item-attempt-confirm";
+import onCreateItemConfirm$ from "./helpers/on-create-item-confirm";
 import checkURLSimilarity$ from "./helpers/check-url-similarity";
 import createItem$ from "./helpers/create-item";
 import updateExtensionAppearance$ from "./update-extension-appearance";
@@ -15,7 +15,10 @@ import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
 import getStorageDomain from "./internal/get-storage-domain";
 import searchEqualPathWatchedItem from "../../utils/search-equal-path-watched-item";
 
-const {POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS} = EXTENSION_MESSAGES;
+const {
+    POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
+    AUTO_SAVE_ATTEMPT, PRICE_TAG_HIGHLIGHT_STOP
+} = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
     const {selection, price, faviconURL, faviconAlt} = payload;
@@ -70,6 +73,12 @@ function triggerAutoSaveCheckStatus$(tabId, url, selection, sendResponse$) {
         map(onAutoSaveCheckStatus),
         switchMap(buttonEnabled => sendResponse$(buttonEnabled))
     );
+}
+
+function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
+    if (status >= 0) {
+        StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
+    }
 }
 
 function listenRuntimeMessages() {
@@ -145,6 +154,76 @@ function listenRuntimeMessages() {
                         }
                     )
                 );
+            case AUTO_SAVE_ATTEMPT:
+                if (autoSaveEnabled) {
+                    const state = StateManager.getState();
+                    const {selection, price, faviconURL, faviconAlt, originalBackgroundColor}
+                        = state;
+
+                    return canDisplayURLConfirmation$(state, domain).pipe(
+                        switchMap(canDisplay => {
+                                if (canDisplay) {
+                                    return onCreateItemConfirm$(id, domain, currentURL, selection, price, faviconURL, faviconAlt).pipe(
+                                        filter(([canSave]) => canSave),
+                                        switchMap(([, useCaninocal]) => {
+                                                const {canonicalURL, browserURL} = state;
+                                                const url = useCaninocal ? canonicalURL : browserURL;
+
+                                                return checkURLSimilarity$(id, domain, url).pipe(
+                                                    switchMap(([url, isToSave, autoSaveStatus]) => {
+                                                            if (isToSave) {
+                                                                return createItem$(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
+                                                                    tap(StateManager.disableAutoSave),
+                                                                    switchMap(() =>
+                                                                        forkJoin(
+                                                                            sendTabMessage$(id, {
+                                                                                type: PRICE_TAG_HIGHLIGHT_STOP,
+                                                                                payload: {selection, originalBackgroundColor}
+                                                                            }).pipe(tap(onSimilarElementHighlight)),
+                                                                            updateExtensionAppearance$(domain, url, true),
+                                                                            sendResponse$(false)
+                                                                        )
+                                                                    )
+                                                                );
+                                                            } else {
+                                                                // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                                                                if (!autoSaveStatus) {
+                                                                    StateManager.disableAutoSave();
+                                                                }
+                                                                return sendResponse$(false);
+                                                            }
+                                                        }
+                                                    )
+                                                );
+                                            }
+                                        )
+                                    );
+                                } else {
+                                    return checkURLSimilarity$(id, domain, currentURL).pipe(
+                                        filter(([, isToSave]) => isToSave),
+                                        switchMap(([currentURL]) =>
+                                            createItem$(domain, currentURL, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
+                                                tap(StateManager.disableAutoSave),
+                                                switchMap(() =>
+                                                    forkJoin(
+                                                        sendTabMessage$(id, {
+                                                            type: PRICE_TAG_HIGHLIGHT_STOP,
+                                                            payload: {selection, originalBackgroundColor}
+                                                        }).pipe(tap(onSimilarElementHighlight)),
+                                                        updateExtensionAppearance$(domain, currentURL, true),
+                                                        sendResponse$(false)
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    );
+                                }
+                            }
+                        )
+                    );
+                } else {
+                    return sendResponse$(false);
+                }
             default:
                 return EMPTY;
         }

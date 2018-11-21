@@ -68,6 +68,7 @@
   function isFunction(x) {
       return typeof x === 'function';
   }
+  //# sourceMappingURL=isFunction.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var _enable_super_gross_mode_that_will_cause_bad_things = false;
@@ -87,11 +88,13 @@
           return _enable_super_gross_mode_that_will_cause_bad_things;
       },
   };
+  //# sourceMappingURL=config.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function hostReportError(err) {
       setTimeout(function () { throw err; });
   }
+  //# sourceMappingURL=hostReportError.js.map
 
   /** PURE_IMPORTS_START _config,_util_hostReportError PURE_IMPORTS_END */
   var empty = {
@@ -107,17 +110,21 @@
       },
       complete: function () { }
   };
+  //# sourceMappingURL=Observer.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
+  //# sourceMappingURL=isArray.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function isObject(x) {
       return x != null && typeof x === 'object';
   }
+  //# sourceMappingURL=isObject.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var errorObject = { e: {} };
+  //# sourceMappingURL=errorObject.js.map
 
   /** PURE_IMPORTS_START _errorObject PURE_IMPORTS_END */
   var tryCatchTarget;
@@ -134,6 +141,7 @@
       tryCatchTarget = fn;
       return tryCatcher;
   }
+  //# sourceMappingURL=tryCatch.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function UnsubscriptionErrorImpl(errors) {
@@ -146,6 +154,7 @@
   }
   UnsubscriptionErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
   var UnsubscriptionError = UnsubscriptionErrorImpl;
+  //# sourceMappingURL=UnsubscriptionError.js.map
 
   /** PURE_IMPORTS_START _util_isArray,_util_isObject,_util_isFunction,_util_tryCatch,_util_errorObject,_util_UnsubscriptionError PURE_IMPORTS_END */
   var Subscription = /*@__PURE__*/ (function () {
@@ -271,11 +280,13 @@
   function flattenUnsubscriptionErrors(errors) {
       return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError) ? err.errors : err); }, []);
   }
+  //# sourceMappingURL=Subscription.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var rxSubscriber = typeof Symbol === 'function'
       ? /*@__PURE__*/ Symbol('rxSubscriber')
       : '@@rxSubscriber_' + /*@__PURE__*/ Math.random();
+  //# sourceMappingURL=rxSubscriber.js.map
 
   /** PURE_IMPORTS_START tslib,_util_isFunction,_Observer,_Subscription,_internal_symbol_rxSubscriber,_config,_util_hostReportError PURE_IMPORTS_END */
   var Subscriber = /*@__PURE__*/ (function (_super) {
@@ -504,6 +515,7 @@
       };
       return SafeSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=Subscriber.js.map
 
   /** PURE_IMPORTS_START _Subscriber PURE_IMPORTS_END */
   function canReportError(observer) {
@@ -521,6 +533,7 @@
       }
       return true;
   }
+  //# sourceMappingURL=canReportError.js.map
 
   /** PURE_IMPORTS_START _Subscriber,_symbol_rxSubscriber,_Observer PURE_IMPORTS_END */
   function toSubscriber(nextOrObserver, error, complete) {
@@ -537,12 +550,15 @@
       }
       return new Subscriber(nextOrObserver, error, complete);
   }
+  //# sourceMappingURL=toSubscriber.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var observable = typeof Symbol === 'function' && Symbol.observable || '@@observable';
+  //# sourceMappingURL=observable.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function noop() { }
+  //# sourceMappingURL=noop.js.map
 
   /** PURE_IMPORTS_START _noop PURE_IMPORTS_END */
   function pipeFromArray(fns) {
@@ -556,6 +572,7 @@
           return fns.reduce(function (prev, fn) { return fn(prev); }, input);
       };
   }
+  //# sourceMappingURL=pipe.js.map
 
   /** PURE_IMPORTS_START _util_canReportError,_util_toSubscriber,_internal_symbol_observable,_util_pipe,_config PURE_IMPORTS_END */
   var Observable = /*@__PURE__*/ (function () {
@@ -666,6 +683,7 @@
       }
       return promiseCtor;
   }
+  //# sourceMappingURL=Observable.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function ObjectUnsubscribedErrorImpl() {
@@ -676,6 +694,7 @@
   }
   ObjectUnsubscribedErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
   var ObjectUnsubscribedError = ObjectUnsubscribedErrorImpl;
+  //# sourceMappingURL=ObjectUnsubscribedError.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscription PURE_IMPORTS_END */
   var SubjectSubscription = /*@__PURE__*/ (function (_super) {
@@ -705,6 +724,7 @@
       };
       return SubjectSubscription;
   }(Subscription));
+  //# sourceMappingURL=SubjectSubscription.js.map
 
   /** PURE_IMPORTS_START tslib,_Observable,_Subscriber,_Subscription,_util_ObjectUnsubscribedError,_SubjectSubscription,_internal_symbol_rxSubscriber PURE_IMPORTS_END */
   var SubjectSubscriber = /*@__PURE__*/ (function (_super) {
@@ -853,6 +873,7 @@
       };
       return AnonymousSubject;
   }(Subject));
+  //# sourceMappingURL=Subject.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   function refCount() {
@@ -909,6 +930,7 @@
       };
       return RefCountSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=refCount.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_Observable,_Subscriber,_Subscription,_operators_refCount PURE_IMPORTS_END */
   var ConnectableObservable = /*@__PURE__*/ (function (_super) {
@@ -1029,6 +1051,7 @@
       };
       return RefCountSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=ConnectableObservable.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Subscription,_Observable,_Subject PURE_IMPORTS_END */
   var GroupBySubscriber = /*@__PURE__*/ (function (_super) {
@@ -1188,6 +1211,7 @@
       };
       return InnerRefCountSubscription;
   }(Subscription));
+  //# sourceMappingURL=groupBy.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_util_ObjectUnsubscribedError PURE_IMPORTS_END */
   var BehaviorSubject = /*@__PURE__*/ (function (_super) {
@@ -1227,6 +1251,7 @@
       };
       return BehaviorSubject;
   }(Subject));
+  //# sourceMappingURL=BehaviorSubject.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscription PURE_IMPORTS_END */
   var Action = /*@__PURE__*/ (function (_super) {
@@ -1242,6 +1267,7 @@
       };
       return Action;
   }(Subscription));
+  //# sourceMappingURL=Action.js.map
 
   /** PURE_IMPORTS_START tslib,_Action PURE_IMPORTS_END */
   var AsyncAction = /*@__PURE__*/ (function (_super) {
@@ -1333,6 +1359,7 @@
       };
       return AsyncAction;
   }(Action));
+  //# sourceMappingURL=AsyncAction.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncAction PURE_IMPORTS_END */
   var QueueAction = /*@__PURE__*/ (function (_super) {
@@ -1371,6 +1398,7 @@
       };
       return QueueAction;
   }(AsyncAction));
+  //# sourceMappingURL=QueueAction.js.map
 
   var Scheduler = /*@__PURE__*/ (function () {
       function Scheduler(SchedulerAction, now) {
@@ -1389,6 +1417,7 @@
       Scheduler.now = function () { return Date.now(); };
       return Scheduler;
   }());
+  //# sourceMappingURL=Scheduler.js.map
 
   /** PURE_IMPORTS_START tslib,_Scheduler PURE_IMPORTS_END */
   var AsyncScheduler = /*@__PURE__*/ (function (_super) {
@@ -1444,6 +1473,7 @@
       };
       return AsyncScheduler;
   }(Scheduler));
+  //# sourceMappingURL=AsyncScheduler.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
   var QueueScheduler = /*@__PURE__*/ (function (_super) {
@@ -1453,9 +1483,11 @@
       }
       return QueueScheduler;
   }(AsyncScheduler));
+  //# sourceMappingURL=QueueScheduler.js.map
 
   /** PURE_IMPORTS_START _QueueAction,_QueueScheduler PURE_IMPORTS_END */
   var queue = /*@__PURE__*/ new QueueScheduler(QueueAction);
+  //# sourceMappingURL=queue.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
   var EMPTY = /*@__PURE__*/ new Observable(function (subscriber) { return subscriber.complete(); });
@@ -1465,11 +1497,13 @@
   function emptyScheduled(scheduler) {
       return new Observable(function (subscriber) { return scheduler.schedule(function () { return subscriber.complete(); }); });
   }
+  //# sourceMappingURL=empty.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function isScheduler(value) {
       return value && typeof value.schedule === 'function';
   }
+  //# sourceMappingURL=isScheduler.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var subscribeToArray = function (array) {
@@ -1482,6 +1516,7 @@
           }
       };
   };
+  //# sourceMappingURL=subscribeToArray.js.map
 
   /** PURE_IMPORTS_START _Observable,_Subscription,_util_subscribeToArray PURE_IMPORTS_END */
   function fromArray(input, scheduler) {
@@ -1506,6 +1541,7 @@
           });
       }
   }
+  //# sourceMappingURL=fromArray.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
   function scalar(value) {
@@ -1517,6 +1553,7 @@
       result.value = value;
       return result;
   }
+  //# sourceMappingURL=scalar.js.map
 
   /** PURE_IMPORTS_START _util_isScheduler,_fromArray,_empty,_scalar PURE_IMPORTS_END */
   function of() {
@@ -1540,6 +1577,7 @@
               return fromArray(args, scheduler);
       }
   }
+  //# sourceMappingURL=of.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
   function throwError(error, scheduler) {
@@ -1554,6 +1592,7 @@
       var error = _a.error, subscriber = _a.subscriber;
       subscriber.error(error);
   }
+  //# sourceMappingURL=throwError.js.map
 
   /** PURE_IMPORTS_START _observable_empty,_observable_of,_observable_throwError PURE_IMPORTS_END */
   var Notification = /*@__PURE__*/ (function () {
@@ -1620,6 +1659,7 @@
       Notification.undefinedValueNotification = new Notification('N', undefined);
       return Notification;
   }());
+  //# sourceMappingURL=Notification.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Notification PURE_IMPORTS_END */
   var ObserveOnSubscriber = /*@__PURE__*/ (function (_super) {
@@ -1662,6 +1702,7 @@
       }
       return ObserveOnMessage;
   }());
+  //# sourceMappingURL=observeOn.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_scheduler_queue,_Subscription,_operators_observeOn,_util_ObjectUnsubscribedError,_SubjectSubscription PURE_IMPORTS_END */
   var ReplaySubject = /*@__PURE__*/ (function (_super) {
@@ -1771,6 +1812,7 @@
       }
       return ReplayEvent;
   }());
+  //# sourceMappingURL=ReplaySubject.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_Subscription PURE_IMPORTS_END */
   var AsyncSubject = /*@__PURE__*/ (function (_super) {
@@ -1814,6 +1856,7 @@
       };
       return AsyncSubject;
   }(Subject));
+  //# sourceMappingURL=AsyncSubject.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var nextHandle = 1;
@@ -1835,6 +1878,7 @@
           delete tasksByHandle[handle];
       },
   };
+  //# sourceMappingURL=Immediate.js.map
 
   /** PURE_IMPORTS_START tslib,_util_Immediate,_AsyncAction PURE_IMPORTS_END */
   var AsapAction = /*@__PURE__*/ (function (_super) {
@@ -1870,6 +1914,7 @@
       };
       return AsapAction;
   }(AsyncAction));
+  //# sourceMappingURL=AsapAction.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
   var AsapScheduler = /*@__PURE__*/ (function (_super) {
@@ -1900,12 +1945,15 @@
       };
       return AsapScheduler;
   }(AsyncScheduler));
+  //# sourceMappingURL=AsapScheduler.js.map
 
   /** PURE_IMPORTS_START _AsapAction,_AsapScheduler PURE_IMPORTS_END */
   var asap = /*@__PURE__*/ new AsapScheduler(AsapAction);
+  //# sourceMappingURL=asap.js.map
 
   /** PURE_IMPORTS_START _AsyncAction,_AsyncScheduler PURE_IMPORTS_END */
   var async = /*@__PURE__*/ new AsyncScheduler(AsyncAction);
+  //# sourceMappingURL=async.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncAction PURE_IMPORTS_END */
   var AnimationFrameAction = /*@__PURE__*/ (function (_super) {
@@ -1941,6 +1989,7 @@
       };
       return AnimationFrameAction;
   }(AsyncAction));
+  //# sourceMappingURL=AnimationFrameAction.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
   var AnimationFrameScheduler = /*@__PURE__*/ (function (_super) {
@@ -1971,9 +2020,11 @@
       };
       return AnimationFrameScheduler;
   }(AsyncScheduler));
+  //# sourceMappingURL=AnimationFrameScheduler.js.map
 
   /** PURE_IMPORTS_START _AnimationFrameAction,_AnimationFrameScheduler PURE_IMPORTS_END */
   var animationFrame = /*@__PURE__*/ new AnimationFrameScheduler(AnimationFrameAction);
+  //# sourceMappingURL=animationFrame.js.map
 
   /** PURE_IMPORTS_START tslib,_AsyncAction,_AsyncScheduler PURE_IMPORTS_END */
   var VirtualTimeScheduler = /*@__PURE__*/ (function (_super) {
@@ -2077,13 +2128,16 @@
       };
       return VirtualAction;
   }(AsyncAction));
+  //# sourceMappingURL=VirtualTimeScheduler.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function identity(x) {
       return x;
   }
+  //# sourceMappingURL=identity.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
+  //# sourceMappingURL=isObservable.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function ArgumentOutOfRangeErrorImpl() {
@@ -2094,6 +2148,7 @@
   }
   ArgumentOutOfRangeErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
   var ArgumentOutOfRangeError = ArgumentOutOfRangeErrorImpl;
+  //# sourceMappingURL=ArgumentOutOfRangeError.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function EmptyErrorImpl() {
@@ -2104,8 +2159,10 @@
   }
   EmptyErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
   var EmptyError = EmptyErrorImpl;
+  //# sourceMappingURL=EmptyError.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  //# sourceMappingURL=TimeoutError.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   function map(project, thisArg) {
@@ -2148,10 +2205,13 @@
       };
       return MapSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=map.js.map
 
   /** PURE_IMPORTS_START _Observable,_AsyncSubject,_operators_map,_util_canReportError,_util_isArray,_util_isScheduler PURE_IMPORTS_END */
+  //# sourceMappingURL=bindCallback.js.map
 
   /** PURE_IMPORTS_START _Observable,_AsyncSubject,_operators_map,_util_canReportError,_util_isScheduler,_util_isArray PURE_IMPORTS_END */
+  //# sourceMappingURL=bindNodeCallback.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var OuterSubscriber = /*@__PURE__*/ (function (_super) {
@@ -2170,6 +2230,7 @@
       };
       return OuterSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=OuterSubscriber.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var InnerSubscriber = /*@__PURE__*/ (function (_super) {
@@ -2195,6 +2256,7 @@
       };
       return InnerSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=InnerSubscriber.js.map
 
   /** PURE_IMPORTS_START _hostReportError PURE_IMPORTS_END */
   var subscribeToPromise = function (promise) {
@@ -2209,6 +2271,7 @@
           return subscriber;
       };
   };
+  //# sourceMappingURL=subscribeToPromise.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function getSymbolIterator() {
@@ -2218,6 +2281,7 @@
       return Symbol.iterator;
   }
   var iterator = /*@__PURE__*/ getSymbolIterator();
+  //# sourceMappingURL=iterator.js.map
 
   /** PURE_IMPORTS_START _symbol_iterator PURE_IMPORTS_END */
   var subscribeToIterable = function (iterable) {
@@ -2244,6 +2308,7 @@
           return subscriber;
       };
   };
+  //# sourceMappingURL=subscribeToIterable.js.map
 
   /** PURE_IMPORTS_START _symbol_observable PURE_IMPORTS_END */
   var subscribeToObservable = function (obj) {
@@ -2257,14 +2322,17 @@
           }
       };
   };
+  //# sourceMappingURL=subscribeToObservable.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   var isArrayLike = (function (x) { return x && typeof x.length === 'number' && typeof x !== 'function'; });
+  //# sourceMappingURL=isArrayLike.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
   function isPromise(value) {
       return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
   }
+  //# sourceMappingURL=isPromise.js.map
 
   /** PURE_IMPORTS_START _Observable,_subscribeToArray,_subscribeToPromise,_subscribeToIterable,_subscribeToObservable,_isArrayLike,_isPromise,_isObject,_symbol_iterator,_symbol_observable PURE_IMPORTS_END */
   var subscribeTo = function (result) {
@@ -2299,6 +2367,7 @@
           throw new TypeError(msg);
       }
   };
+  //# sourceMappingURL=subscribeTo.js.map
 
   /** PURE_IMPORTS_START _InnerSubscriber,_subscribeTo PURE_IMPORTS_END */
   function subscribeToResult(outerSubscriber, result, outerValue, outerIndex, destination) {
@@ -2310,36 +2379,10 @@
       }
       return subscribeTo(result)(destination);
   }
+  //# sourceMappingURL=subscribeToResult.js.map
 
   /** PURE_IMPORTS_START tslib,_util_isScheduler,_util_isArray,_OuterSubscriber,_util_subscribeToResult,_fromArray PURE_IMPORTS_END */
   var NONE = {};
-  function combineLatest() {
-      var observables = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-          observables[_i] = arguments[_i];
-      }
-      var resultSelector = null;
-      var scheduler = null;
-      if (isScheduler(observables[observables.length - 1])) {
-          scheduler = observables.pop();
-      }
-      if (typeof observables[observables.length - 1] === 'function') {
-          resultSelector = observables.pop();
-      }
-      if (observables.length === 1 && isArray(observables[0])) {
-          observables = observables[0];
-      }
-      return fromArray(observables, scheduler).lift(new CombineLatestOperator(resultSelector));
-  }
-  var CombineLatestOperator = /*@__PURE__*/ (function () {
-      function CombineLatestOperator(resultSelector) {
-          this.resultSelector = resultSelector;
-      }
-      CombineLatestOperator.prototype.call = function (subscriber, source) {
-          return source.subscribe(new CombineLatestSubscriber(subscriber, this.resultSelector));
-      };
-      return CombineLatestOperator;
-  }());
   var CombineLatestSubscriber = /*@__PURE__*/ (function (_super) {
       __extends(CombineLatestSubscriber, _super);
       function CombineLatestSubscriber(destination, resultSelector) {
@@ -2403,16 +2446,19 @@
       };
       return CombineLatestSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=combineLatest.js.map
 
   /** PURE_IMPORTS_START _symbol_observable PURE_IMPORTS_END */
   function isInteropObservable(input) {
       return input && typeof input[observable] === 'function';
   }
+  //# sourceMappingURL=isInteropObservable.js.map
 
   /** PURE_IMPORTS_START _symbol_iterator PURE_IMPORTS_END */
   function isIterable(input) {
       return input && typeof input[iterator] === 'function';
   }
+  //# sourceMappingURL=isIterable.js.map
 
   /** PURE_IMPORTS_START _Observable,_Subscription,_util_subscribeToPromise PURE_IMPORTS_END */
   function fromPromise(input, scheduler) {
@@ -2436,6 +2482,7 @@
           });
       }
   }
+  //# sourceMappingURL=fromPromise.js.map
 
   /** PURE_IMPORTS_START _Observable,_Subscription,_symbol_iterator,_util_subscribeToIterable PURE_IMPORTS_END */
   function fromIterable(input, scheduler) {
@@ -2484,6 +2531,7 @@
           });
       }
   }
+  //# sourceMappingURL=fromIterable.js.map
 
   /** PURE_IMPORTS_START _Observable,_Subscription,_symbol_observable,_util_subscribeToObservable PURE_IMPORTS_END */
   function fromObservable(input, scheduler) {
@@ -2505,6 +2553,7 @@
           });
       }
   }
+  //# sourceMappingURL=fromObservable.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_isPromise,_util_isArrayLike,_util_isInteropObservable,_util_isIterable,_fromArray,_fromPromise,_fromIterable,_fromObservable,_util_subscribeTo PURE_IMPORTS_END */
   function from(input, scheduler) {
@@ -2530,6 +2579,7 @@
       }
       throw new TypeError((input !== null && typeof input || input) + ' is not observable');
   }
+  //# sourceMappingURL=from.js.map
 
   /** PURE_IMPORTS_START tslib,_util_subscribeToResult,_OuterSubscriber,_InnerSubscriber,_map,_observable_from PURE_IMPORTS_END */
   function mergeMap(project, resultSelector, concurrent) {
@@ -2622,6 +2672,7 @@
       };
       return MergeMapSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=mergeMap.js.map
 
   /** PURE_IMPORTS_START _mergeMap,_util_identity PURE_IMPORTS_END */
   function mergeAll(concurrent) {
@@ -2630,12 +2681,16 @@
       }
       return mergeMap(identity, concurrent);
   }
+  //# sourceMappingURL=mergeAll.js.map
 
   /** PURE_IMPORTS_START _mergeAll PURE_IMPORTS_END */
+  //# sourceMappingURL=concatAll.js.map
 
   /** PURE_IMPORTS_START _util_isScheduler,_of,_from,_operators_concatAll PURE_IMPORTS_END */
+  //# sourceMappingURL=concat.js.map
 
   /** PURE_IMPORTS_START _Observable,_from,_empty PURE_IMPORTS_END */
+  //# sourceMappingURL=defer.js.map
 
   /** PURE_IMPORTS_START tslib,_Observable,_util_isArray,_empty,_util_subscribeToResult,_OuterSubscriber,_operators_map PURE_IMPORTS_END */
   function forkJoin() {
@@ -2703,8 +2758,10 @@
       };
       return ForkJoinSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=forkJoin.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_isArray,_util_isFunction,_operators_map PURE_IMPORTS_END */
+  //# sourceMappingURL=fromEvent.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_isArray,_util_isFunction,_operators_map PURE_IMPORTS_END */
   function fromEventPattern(addHandler, removeHandler, resultSelector) {
@@ -2733,17 +2790,22 @@
           return function () { return removeHandler(handler, retValue); };
       });
   }
+  //# sourceMappingURL=fromEventPattern.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_identity,_util_isScheduler PURE_IMPORTS_END */
+  //# sourceMappingURL=generate.js.map
 
   /** PURE_IMPORTS_START _defer,_empty PURE_IMPORTS_END */
+  //# sourceMappingURL=iif.js.map
 
   /** PURE_IMPORTS_START _isArray PURE_IMPORTS_END */
   function isNumeric(val) {
       return !isArray(val) && (val - parseFloat(val) + 1) >= 0;
   }
+  //# sourceMappingURL=isNumeric.js.map
 
   /** PURE_IMPORTS_START _Observable,_scheduler_async,_util_isNumeric PURE_IMPORTS_END */
+  //# sourceMappingURL=interval.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_isScheduler,_operators_mergeAll,_fromArray PURE_IMPORTS_END */
   function merge() {
@@ -2768,13 +2830,17 @@
       }
       return mergeAll(concurrent)(fromArray(observables, scheduler));
   }
+  //# sourceMappingURL=merge.js.map
 
   /** PURE_IMPORTS_START _Observable,_util_noop PURE_IMPORTS_END */
   var NEVER = /*@__PURE__*/ new Observable(noop);
+  //# sourceMappingURL=never.js.map
 
   /** PURE_IMPORTS_START _Observable,_from,_util_isArray,_empty PURE_IMPORTS_END */
+  //# sourceMappingURL=onErrorResumeNext.js.map
 
   /** PURE_IMPORTS_START _Observable,_Subscription PURE_IMPORTS_END */
+  //# sourceMappingURL=pairs.js.map
 
   /** PURE_IMPORTS_START tslib,_util_isArray,_fromArray,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var RaceSubscriber = /*@__PURE__*/ (function (_super) {
@@ -2823,12 +2889,16 @@
       };
       return RaceSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=race.js.map
 
   /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
+  //# sourceMappingURL=range.js.map
 
   /** PURE_IMPORTS_START _Observable,_scheduler_async,_util_isNumeric,_util_isScheduler PURE_IMPORTS_END */
+  //# sourceMappingURL=timer.js.map
 
   /** PURE_IMPORTS_START _Observable,_from,_empty PURE_IMPORTS_END */
+  //# sourceMappingURL=using.js.map
 
   /** PURE_IMPORTS_START tslib,_fromArray,_util_isArray,_Subscriber,_OuterSubscriber,_util_subscribeToResult,_.._internal_symbol_iterator PURE_IMPORTS_END */
   var ZipSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3018,8 +3088,10 @@
       };
       return ZipBufferIterator;
   }(OuterSubscriber));
+  //# sourceMappingURL=zip.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  //# sourceMappingURL=index.js.map
 
   /** PURE_IMPORTS_START tslib,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var AuditSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3070,8 +3142,10 @@
       };
       return AuditSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=audit.js.map
 
   /** PURE_IMPORTS_START _scheduler_async,_audit,_observable_timer PURE_IMPORTS_END */
+  //# sourceMappingURL=auditTime.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var BufferSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3092,6 +3166,7 @@
       };
       return BufferSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=buffer.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var BufferCountSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3156,6 +3231,7 @@
       };
       return BufferSkipCountSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=bufferCount.js.map
 
   /** PURE_IMPORTS_START tslib,_scheduler_async,_Subscriber,_util_isScheduler PURE_IMPORTS_END */
   var Context = /*@__PURE__*/ (function () {
@@ -3269,6 +3345,7 @@
       var subscriber = arg.subscriber, context = arg.context;
       subscriber.closeContext(context);
   }
+  //# sourceMappingURL=bufferTime.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscription,_util_subscribeToResult,_OuterSubscriber PURE_IMPORTS_END */
   var BufferToggleSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3357,6 +3434,7 @@
       };
       return BufferToggleSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=bufferToggle.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscription,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var BufferWhenSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3419,6 +3497,7 @@
       };
       return BufferWhenSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=bufferWhen.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var CatchSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3447,16 +3526,22 @@
       };
       return CatchSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=catchError.js.map
 
   /** PURE_IMPORTS_START _observable_combineLatest PURE_IMPORTS_END */
+  //# sourceMappingURL=combineAll.js.map
 
   /** PURE_IMPORTS_START _util_isArray,_observable_combineLatest,_observable_from PURE_IMPORTS_END */
+  //# sourceMappingURL=combineLatest.js.map
 
   /** PURE_IMPORTS_START _observable_concat PURE_IMPORTS_END */
+  //# sourceMappingURL=concat.js.map
 
   /** PURE_IMPORTS_START _mergeMap PURE_IMPORTS_END */
+  //# sourceMappingURL=concatMap.js.map
 
   /** PURE_IMPORTS_START _concatMap PURE_IMPORTS_END */
+  //# sourceMappingURL=concatMapTo.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var CountSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3496,6 +3581,7 @@
       };
       return CountSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=count.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var DebounceSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3557,6 +3643,7 @@
       };
       return DebounceSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=debounce.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async PURE_IMPORTS_END */
   var DebounceTimeSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3602,6 +3689,7 @@
   function dispatchNext$2(subscriber) {
       subscriber.debouncedNext();
   }
+  //# sourceMappingURL=debounceTime.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var DefaultIfEmptySubscriber = /*@__PURE__*/ (function (_super) {
@@ -3624,8 +3712,10 @@
       };
       return DefaultIfEmptySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=defaultIfEmpty.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  //# sourceMappingURL=isDate.js.map
 
   /** PURE_IMPORTS_START tslib,_scheduler_async,_util_isDate,_Subscriber,_Notification PURE_IMPORTS_END */
   var DelaySubscriber = /*@__PURE__*/ (function (_super) {
@@ -3696,6 +3786,7 @@
       }
       return DelayMessage;
   }());
+  //# sourceMappingURL=delay.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Observable,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var DelayWhenSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3805,6 +3896,7 @@
       };
       return SubscriptionDelaySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=delayWhen.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var DeMaterializeSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3817,6 +3909,7 @@
       };
       return DeMaterializeSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=dematerialize.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var DistinctSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3865,6 +3958,7 @@
       };
       return DistinctSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=distinct.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_tryCatch,_util_errorObject PURE_IMPORTS_END */
   var DistinctUntilChangedSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3907,8 +4001,10 @@
       };
       return DistinctUntilChangedSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=distinctUntilChanged.js.map
 
   /** PURE_IMPORTS_START _distinctUntilChanged PURE_IMPORTS_END */
+  //# sourceMappingURL=distinctUntilKeyChanged.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   function filter(predicate, thisArg) {
@@ -3950,6 +4046,7 @@
       };
       return FilterSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=filter.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_noop,_util_isFunction PURE_IMPORTS_END */
   function tap(nextOrObserver, error, complete) {
@@ -4021,8 +4118,10 @@
       };
       return TapSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=tap.js.map
 
   /** PURE_IMPORTS_START _tap,_util_EmptyError PURE_IMPORTS_END */
+  //# sourceMappingURL=throwIfEmpty.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError,_observable_empty PURE_IMPORTS_END */
   function take(count) {
@@ -4068,10 +4167,13 @@
       };
       return TakeSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=take.js.map
 
   /** PURE_IMPORTS_START _util_ArgumentOutOfRangeError,_filter,_throwIfEmpty,_defaultIfEmpty,_take PURE_IMPORTS_END */
+  //# sourceMappingURL=elementAt.js.map
 
   /** PURE_IMPORTS_START _observable_fromArray,_observable_scalar,_observable_empty,_observable_concat,_util_isScheduler PURE_IMPORTS_END */
+  //# sourceMappingURL=endWith.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var EverySubscriber = /*@__PURE__*/ (function (_super) {
@@ -4107,6 +4209,7 @@
       };
       return EverySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=every.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var SwitchFirstSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4138,6 +4241,7 @@
       };
       return SwitchFirstSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=exhaust.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult,_map,_observable_from PURE_IMPORTS_END */
   var ExhaustMapSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4197,6 +4301,7 @@
       };
       return ExhaustMapSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=exhaustMap.js.map
 
   /** PURE_IMPORTS_START tslib,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var ExpandSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4273,6 +4378,7 @@
       };
       return ExpandSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=expand.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Subscription PURE_IMPORTS_END */
   var FinallySubscriber = /*@__PURE__*/ (function (_super) {
@@ -4284,6 +4390,7 @@
       }
       return FinallySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=finalize.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var FindValueSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4321,10 +4428,13 @@
       };
       return FindValueSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=find.js.map
 
   /** PURE_IMPORTS_START _operators_find PURE_IMPORTS_END */
+  //# sourceMappingURL=findIndex.js.map
 
   /** PURE_IMPORTS_START _util_EmptyError,_filter,_take,_defaultIfEmpty,_throwIfEmpty,_util_identity PURE_IMPORTS_END */
+  //# sourceMappingURL=first.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var IgnoreElementsSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4336,6 +4446,7 @@
       };
       return IgnoreElementsSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=ignoreElements.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var IsEmptySubscriber = /*@__PURE__*/ (function (_super) {
@@ -4356,6 +4467,7 @@
       };
       return IsEmptySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=isEmpty.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError,_observable_empty PURE_IMPORTS_END */
   var TakeLastSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4394,8 +4506,10 @@
       };
       return TakeLastSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=takeLast.js.map
 
   /** PURE_IMPORTS_START _util_EmptyError,_filter,_takeLast,_throwIfEmpty,_defaultIfEmpty,_util_identity PURE_IMPORTS_END */
+  //# sourceMappingURL=last.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   function mapTo(value) {
@@ -4422,6 +4536,7 @@
       };
       return MapToSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=mapTo.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Notification PURE_IMPORTS_END */
   var MaterializeSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4444,6 +4559,7 @@
       };
       return MaterializeSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=materialize.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var ScanSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4490,14 +4606,19 @@
       };
       return ScanSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=scan.js.map
 
   /** PURE_IMPORTS_START _scan,_takeLast,_defaultIfEmpty,_util_pipe PURE_IMPORTS_END */
+  //# sourceMappingURL=reduce.js.map
 
   /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
+  //# sourceMappingURL=max.js.map
 
   /** PURE_IMPORTS_START _observable_merge PURE_IMPORTS_END */
+  //# sourceMappingURL=merge.js.map
 
   /** PURE_IMPORTS_START _mergeMap PURE_IMPORTS_END */
+  //# sourceMappingURL=mergeMapTo.js.map
 
   /** PURE_IMPORTS_START tslib,_util_tryCatch,_util_errorObject,_util_subscribeToResult,_OuterSubscriber,_InnerSubscriber PURE_IMPORTS_END */
   var MergeScanSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4570,10 +4691,13 @@
       };
       return MergeScanSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=mergeScan.js.map
 
   /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
+  //# sourceMappingURL=min.js.map
 
   /** PURE_IMPORTS_START _observable_ConnectableObservable PURE_IMPORTS_END */
+  //# sourceMappingURL=multicast.js.map
 
   /** PURE_IMPORTS_START tslib,_observable_from,_util_isArray,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var OnErrorResumeNextSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4612,6 +4736,7 @@
       };
       return OnErrorResumeNextSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=onErrorResumeNext.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var PairwiseSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4632,22 +4757,31 @@
       };
       return PairwiseSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=pairwise.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  //# sourceMappingURL=not.js.map
 
   /** PURE_IMPORTS_START _util_not,_filter PURE_IMPORTS_END */
+  //# sourceMappingURL=partition.js.map
 
   /** PURE_IMPORTS_START _map PURE_IMPORTS_END */
+  //# sourceMappingURL=pluck.js.map
 
   /** PURE_IMPORTS_START _Subject,_multicast PURE_IMPORTS_END */
+  //# sourceMappingURL=publish.js.map
 
   /** PURE_IMPORTS_START _BehaviorSubject,_multicast PURE_IMPORTS_END */
+  //# sourceMappingURL=publishBehavior.js.map
 
   /** PURE_IMPORTS_START _AsyncSubject,_multicast PURE_IMPORTS_END */
+  //# sourceMappingURL=publishLast.js.map
 
   /** PURE_IMPORTS_START _ReplaySubject,_multicast PURE_IMPORTS_END */
+  //# sourceMappingURL=publishReplay.js.map
 
   /** PURE_IMPORTS_START _util_isArray,_observable_race PURE_IMPORTS_END */
+  //# sourceMappingURL=race.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_observable_empty PURE_IMPORTS_END */
   var RepeatSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4672,6 +4806,7 @@
       };
       return RepeatSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=repeat.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var RepeatWhenSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4735,6 +4870,7 @@
       };
       return RepeatWhenSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=repeatWhen.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var RetrySubscriber = /*@__PURE__*/ (function (_super) {
@@ -4759,6 +4895,7 @@
       };
       return RetrySubscriber;
   }(Subscriber));
+  //# sourceMappingURL=retry.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var RetryWhenSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4814,6 +4951,7 @@
       };
       return RetryWhenSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=retryWhen.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var SampleSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4841,6 +4979,7 @@
       };
       return SampleSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=sample.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async PURE_IMPORTS_END */
   var SampleTimeSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4870,6 +5009,7 @@
       subscriber.notifyNext();
       this.schedule(state, period);
   }
+  //# sourceMappingURL=sampleTime.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_tryCatch,_util_errorObject PURE_IMPORTS_END */
   var SequenceEqualSubscriber = /*@__PURE__*/ (function (_super) {
@@ -4966,10 +5106,13 @@
       };
       return SequenceEqualCompareToSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=sequenceEqual.js.map
 
   /** PURE_IMPORTS_START _multicast,_refCount,_Subject PURE_IMPORTS_END */
+  //# sourceMappingURL=share.js.map
 
   /** PURE_IMPORTS_START _ReplaySubject PURE_IMPORTS_END */
+  //# sourceMappingURL=shareReplay.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_EmptyError PURE_IMPORTS_END */
   var SingleSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5022,6 +5165,7 @@
       };
       return SingleSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=single.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var SkipSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5039,6 +5183,7 @@
       };
       return SkipSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=skip.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError PURE_IMPORTS_END */
   var SkipLastSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5066,6 +5211,7 @@
       };
       return SkipLastSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=skipLast.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var SkipUntilSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5094,6 +5240,7 @@
       };
       return SkipUntilSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=skipUntil.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var SkipWhileSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5125,8 +5272,10 @@
       };
       return SkipWhileSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=skipWhile.js.map
 
   /** PURE_IMPORTS_START _observable_fromArray,_observable_scalar,_observable_empty,_observable_concat,_util_isScheduler PURE_IMPORTS_END */
+  //# sourceMappingURL=startWith.js.map
 
   /** PURE_IMPORTS_START tslib,_Observable,_scheduler_asap,_util_isNumeric PURE_IMPORTS_END */
   var SubscribeOnObservable = /*@__PURE__*/ (function (_super) {
@@ -5173,8 +5322,10 @@
       };
       return SubscribeOnObservable;
   }(Observable));
+  //# sourceMappingURL=SubscribeOnObservable.js.map
 
   /** PURE_IMPORTS_START _observable_SubscribeOnObservable PURE_IMPORTS_END */
+  //# sourceMappingURL=subscribeOn.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult,_map,_observable_from PURE_IMPORTS_END */
   function switchMap(project, resultSelector) {
@@ -5245,10 +5396,13 @@
       };
       return SwitchMapSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=switchMap.js.map
 
   /** PURE_IMPORTS_START _switchMap,_util_identity PURE_IMPORTS_END */
+  //# sourceMappingURL=switchAll.js.map
 
   /** PURE_IMPORTS_START _switchMap PURE_IMPORTS_END */
+  //# sourceMappingURL=switchMapTo.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var TakeUntilSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5266,6 +5420,7 @@
       };
       return TakeUntilSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=takeUntil.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
   var TakeWhileSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5299,6 +5454,7 @@
       };
       return TakeWhileSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=takeWhile.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var ThrottleSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5366,6 +5522,7 @@
       };
       return ThrottleSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=throttle.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async,_throttle PURE_IMPORTS_END */
   var ThrottleTimeSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5422,8 +5579,10 @@
       var subscriber = arg.subscriber;
       subscriber.clearThrottle();
   }
+  //# sourceMappingURL=throttleTime.js.map
 
   /** PURE_IMPORTS_START _scheduler_async,_scan,_observable_defer,_map PURE_IMPORTS_END */
+  //# sourceMappingURL=timeInterval.js.map
 
   /** PURE_IMPORTS_START tslib,_scheduler_async,_util_isDate,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var TimeoutWithSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5465,12 +5624,16 @@
       };
       return TimeoutWithSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=timeoutWith.js.map
 
   /** PURE_IMPORTS_START _scheduler_async,_util_TimeoutError,_timeoutWith,_observable_throwError PURE_IMPORTS_END */
+  //# sourceMappingURL=timeout.js.map
 
   /** PURE_IMPORTS_START _scheduler_async,_map PURE_IMPORTS_END */
+  //# sourceMappingURL=timestamp.js.map
 
   /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
+  //# sourceMappingURL=toArray.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var WindowSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5515,6 +5678,7 @@
       };
       return WindowSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=window.js.map
 
   /** PURE_IMPORTS_START tslib,_Subscriber,_Subject PURE_IMPORTS_END */
   var WindowCountSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5572,6 +5736,7 @@
       };
       return WindowCountSubscriber;
   }(Subscriber));
+  //# sourceMappingURL=windowCount.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_scheduler_async,_Subscriber,_util_isNumeric,_util_isScheduler PURE_IMPORTS_END */
   var CountedSubject = /*@__PURE__*/ (function (_super) {
@@ -5686,6 +5851,7 @@
       }
       subscriber.closeWindow(window);
   }
+  //# sourceMappingURL=windowTime.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_Subscription,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var WindowToggleSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5796,6 +5962,7 @@
       };
       return WindowToggleSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=windowToggle.js.map
 
   /** PURE_IMPORTS_START tslib,_Subject,_util_tryCatch,_util_errorObject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var WindowSubscriber$1 = /*@__PURE__*/ (function (_super) {
@@ -5860,6 +6027,7 @@
       };
       return WindowSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=windowWhen.js.map
 
   /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
   var WithLatestFromSubscriber = /*@__PURE__*/ (function (_super) {
@@ -5916,12 +6084,16 @@
       };
       return WithLatestFromSubscriber;
   }(OuterSubscriber));
+  //# sourceMappingURL=withLatestFrom.js.map
 
   /** PURE_IMPORTS_START _observable_zip PURE_IMPORTS_END */
+  //# sourceMappingURL=zip.js.map
 
   /** PURE_IMPORTS_START _observable_zip PURE_IMPORTS_END */
+  //# sourceMappingURL=zipAll.js.map
 
   /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+  //# sourceMappingURL=index.js.map
 
   /** Used for built-in method references. */
   var objectProto = Object.prototype;
@@ -6820,7 +6992,9 @@
     RECORD_START: "RECORD.START",
     RECORD_CANCEL: "RECORD.CANCEL",
     AUTO_SAVE_STATUS: "AUTO_SAVE.STATUS",
-    AUTO_SAVE_CHECK_STATUS: "AUTO_SAVE.CHECK_STATUS"
+    AUTO_SAVE_CHECK_STATUS: "AUTO_SAVE.CHECK_STATUS",
+    AUTO_SAVE_ATTEMPT: "AUTO_SAVE.ATTEMPT",
+    PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP"
   };
 
   const ITEM_STATUSES = {
@@ -10339,7 +10513,7 @@
   }
 
   function updateStatusAndAppearance$(currentURL, domain, url) {
-    return combineLatest(updateAutoSaveStatus(currentURL, domain, url), updatePriceUpdateStatus(currentURL, domain, url), updateExtensionAppearance(domain, currentURL, null, url)).pipe(take(1));
+    return forkJoin(updateAutoSaveStatus(currentURL, domain, url), updatePriceUpdateStatus(currentURL, domain, url), updateExtensionAppearance(domain, currentURL, null, url));
   }
 
   function onTabContextChange(tabId, url) {
@@ -10437,8 +10611,6 @@
       return isUseCanonicalPrefUnset && !!state.canonicalURL && state.canonicalURL !== state.browserURL;
     }));
   }
-
-  // TODO
 
   function onCreateItemConfirm(tabId, domain) {
     const modalElementId = "price-tag--url-confirmation";
@@ -10660,7 +10832,9 @@
     RECORD_START,
     RECORD_CANCEL,
     AUTO_SAVE_STATUS,
-    AUTO_SAVE_CHECK_STATUS
+    AUTO_SAVE_CHECK_STATUS,
+    AUTO_SAVE_ATTEMPT,
+    PRICE_TAG_HIGHLIGHT_STOP
   } = EXTENSION_MESSAGES;
 
   function onRecordDone$(tabId, url, domain, payload) {
@@ -10712,6 +10886,16 @@
         selection
       }
     }).pipe(map(onAutoSaveCheckStatus), switchMap(buttonEnabled => sendResponse$(buttonEnabled)));
+  }
+
+  function onSimilarElementHighlight({
+    status,
+    isHighlighted: isSimilarElementHighlighted,
+    originalBackgroundColor = null
+  }) {
+    if (status >= 0) {
+      StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
+    }
   }
 
   function listenRuntimeMessages() {
@@ -10818,6 +11002,57 @@
             }
           }));
 
+        case AUTO_SAVE_ATTEMPT:
+          if (autoSaveEnabled) {
+            const state = StateManager.getState();
+            const {
+              selection,
+              price,
+              faviconURL,
+              faviconAlt,
+              originalBackgroundColor
+            } = state;
+            return canDisplayURLConfirmation(state, domain).pipe(switchMap(canDisplay => {
+              if (canDisplay) {
+                return onCreateItemConfirm(id, domain, currentURL, selection, price, faviconURL, faviconAlt).pipe(filter(([canSave]) => canSave), switchMap(([, useCaninocal]) => {
+                  const {
+                    canonicalURL,
+                    browserURL
+                  } = state;
+                  const url = useCaninocal ? canonicalURL : browserURL;
+                  return checkURLSimilarity(id, domain, url).pipe(switchMap(([url, isToSave, autoSaveStatus]) => {
+                    if (isToSave) {
+                      return createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(tap(StateManager.disableAutoSave), switchMap(() => forkJoin(sendTabMessage(id, {
+                        type: PRICE_TAG_HIGHLIGHT_STOP,
+                        payload: {
+                          selection,
+                          originalBackgroundColor
+                        }
+                      }).pipe(tap(onSimilarElementHighlight)), updateExtensionAppearance(domain, url, true), sendResponse$(false))));
+                    } else {
+                      // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                      if (!autoSaveStatus) {
+                        StateManager.disableAutoSave();
+                      }
+
+                      return sendResponse$(false);
+                    }
+                  }));
+                }));
+              } else {
+                return checkURLSimilarity(id, domain, currentURL).pipe(filter(([, isToSave]) => isToSave), switchMap(([currentURL]) => createItem(domain, currentURL, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(tap(StateManager.disableAutoSave), switchMap(() => forkJoin(sendTabMessage(id, {
+                  type: PRICE_TAG_HIGHLIGHT_STOP,
+                  payload: {
+                    selection,
+                    originalBackgroundColor
+                  }
+                }).pipe(tap(onSimilarElementHighlight)), updateExtensionAppearance(domain, currentURL, true), sendResponse$(false))))));
+              }
+            }));
+          } else {
+            return sendResponse$(false);
+          }
+
         default:
           return EMPTY;
       }
@@ -10825,109 +11060,6 @@
   }
 
   StateManager.initState(TIME);
-
-  function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
-    const modalElementId = "price-tag--url-confirmation";
-    chrome.tabs.sendMessage(tabId, {
-      type: "CONFIRMATION_DISPLAY.CREATE",
-      payload: {
-        elementId: modalElementId
-      }
-    }, ({
-      status
-    }) => {
-      if (status === 1) {
-        const {
-          canonicalURL,
-          browserURL
-        } = StateManager.getState();
-        const payload = buildURLConfirmationPayload(canonicalURL, browserURL, domain);
-        chrome.tabs.sendMessage(tabId, {
-          type: "CONFIRMATION_DISPLAY.LOAD",
-          payload
-        }, ({
-          status,
-          index
-        }) => {
-          chrome.tabs.sendMessage(tabId, {
-            type: "CONFIRMATION_DISPLAY.REMOVE",
-            payload: {
-              elementId: modalElementId
-            }
-          });
-          const {
-            canonicalURL,
-            browserURL
-          } = StateManager.getState();
-
-          switch (status) {
-            case 1:
-              switch (index) {
-                case 0:
-                  // said Yes, can use canonical and remember this option
-                  chrome.storage.local.get([domain], result => {
-                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                    domainState._canUseCanonical = true;
-                    chrome.storage.local.set({
-                      [domain]: JSON.stringify(domainState)
-                    });
-                    const {
-                      canonicalURL
-                    } = StateManager.getState();
-                    StateManager.updateCurrentURL(canonicalURL);
-                    callback(true, true);
-                  });
-                  break;
-
-                case 1:
-                  // said Yes, but use canonical just this time
-                  StateManager.updateCurrentURL(canonicalURL);
-                  callback(true, true);
-                  break;
-
-                case 2:
-                  // said No, use browser URL and remember this option
-                  chrome.storage.local.get([domain], result => {
-                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                    domainState._canUseCanonical = false;
-                    chrome.storage.local.set({
-                      [domain]: JSON.stringify(domainState)
-                    });
-                    const {
-                      browserURL
-                    } = StateManager.getState();
-                    StateManager.updateCurrentURL(browserURL);
-                    callback(true, false);
-                  });
-                  break;
-
-                case 3:
-                  // said No, use browser URL but ask again
-                  StateManager.updateCurrentURL(browserURL);
-                  callback(true, false);
-                  break;
-
-                default:
-                  // cannot recognize this modal button click
-                  callback(false);
-                  break;
-              }
-
-              break;
-
-            case 2:
-              // close modal
-              callback(false);
-              break;
-
-            default:
-              callback(false);
-              break;
-          }
-        });
-      }
-    });
-  }
 
   function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {
     status,
@@ -10950,7 +11082,7 @@
     sendResponse(false);
   }
 
-  function onSimilarElementHighlight({
+  function onSimilarElementHighlight$1({
     status,
     isHighlighted: isSimilarElementHighlighted,
     originalBackgroundColor = null
@@ -10958,31 +11090,6 @@
     if (status >= 0) {
       StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
     }
-  }
-
-  function createItem$1(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
-    chrome.storage.local.get([domain], result => {
-      const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-      items[url] = ItemFactory.createItem(selection, toPrice(price), null, faviconURL, faviconAlt, statuses);
-      chrome.storage.local.set({
-        [domain]: JSON.stringify(items)
-      }, () => {
-        StateManager.disableAutoSave();
-
-        if (callback) {
-          callback();
-        } // TODO: sendResponse("done"); // foi gravado ou não
-
-      });
-    });
-  }
-
-  function canDisplayURLConfirmation$1(state, domain, callback) {
-    chrome.storage.local.get([domain], result => {
-      const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-      const isUseCanonicalPrefUnset = !domainState || domainState._canUseCanonical === undefined;
-      callback(isUseCanonicalPrefUnset && !!state.canonicalURL && state.canonicalURL !== state.browserURL);
-    });
   }
 
   function checkForPriceChanges() {
@@ -11169,7 +11276,7 @@
     });
   }
 
-  function removeTrackedItem(url, currentURL, callback) {
+  function removeTrackedItem(url, currentURL, fullURL, callback) {
     let found = false;
     chrome.storage.local.get(null, result => {
       Object.keys(result).forEach(domain => {
@@ -11214,10 +11321,10 @@
             chrome.storage.local.set({
               [domain]: JSON.stringify(domainItems)
             }, () => {
-              if (currentURL === url) {
-                updateAutoSaveStatus$1(url, domain);
-                updatePriceUpdateStatus$1(url, domain);
-                updateExtensionAppearance$1(domain, url, false);
+              if (currentURL === url || fullURL === url) {
+                updateAutoSaveStatus$1(url, domain, fullURL);
+                updatePriceUpdateStatus$1(url, domain, fullURL);
+                updateExtensionAppearance$1(domain, url, false, fullURL);
               }
 
               callback(true);
@@ -11232,7 +11339,7 @@
     });
   }
 
-  function undoRemoveTrackedItem(url, currentURL, callback) {
+  function undoRemoveTrackedItem(url, currentURL, fullURL, callback) {
     let found = false;
     chrome.storage.local.get(null, result => {
       Object.keys(result).forEach(domain => {
@@ -11249,7 +11356,7 @@
             chrome.storage.local.set({
               [domain]: JSON.stringify(domainItems)
             }, () => {
-              if (currentURL === url) {
+              if (currentURL === url || fullURL === url) {
                 updateAutoSaveStatus$1(url, domain);
                 updatePriceUpdateStatus$1(url, domain);
                 updateExtensionAppearance$1(domain, url, true);
@@ -11339,147 +11446,6 @@
     }
   }
 
-  function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
-    const currentHostAndPath = captureHostAndPathFromURL(currentURL);
-
-    for (let url in domainState) {
-      if (domainState.hasOwnProperty(url) && matchesURL(url)) {
-        const item = ItemFactory.createItemFromObject(domainState[url]);
-
-        if (item.isWatched()) {
-          if (currentURL === url) {
-            //    if they're exactly the same
-            callback(null);
-            return;
-          } else {
-            const hostAndPath = captureHostAndPathFromURL(url);
-
-            if (hostAndPath === currentHostAndPath) {
-              callback(url);
-              return;
-            }
-          }
-        }
-      }
-    }
-
-    callback(null);
-  }
-
-  function checkForURLSimilarity(tabId, domain, currentURL, callback) {
-    chrome.storage.local.get([domain], result => {
-      const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-
-      if (domainState) {
-        if (domainState._isPathEnoughToTrack === true) {
-          // since it's true we can say that that domain items' path is enough to track items in this domain
-          searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
-            if (similarURL) {
-              callback(false, false);
-            } else {
-              callback(true);
-            }
-          });
-        } else if (domainState._isPathEnoughToTrack === false) {
-          callback(true);
-        } else {
-          // it's the first time user is being inquired about items similarity in this domain
-          searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
-            if (similarURL) {
-              // found an URL whose host and path are equals to the currentURL trying to be saved
-              // prompt user to confirm if the item is the same
-              const modalElementId = "price-tag--save-confirmation";
-              chrome.tabs.sendMessage(tabId, {
-                type: "CONFIRMATION_DISPLAY.CREATE",
-                payload: {
-                  elementId: modalElementId
-                }
-              }, ({
-                status
-              }) => {
-                if (status === 1) {
-                  const payload = buildSaveConfirmationPayload(currentURL, similarURL);
-                  chrome.tabs.sendMessage(tabId, {
-                    type: "CONFIRMATION_DISPLAY.LOAD",
-                    payload
-                  }, ({
-                    status,
-                    index
-                  }) => {
-                    chrome.tabs.sendMessage(tabId, {
-                      type: "CONFIRMATION_DISPLAY.REMOVE",
-                      payload: {
-                        elementId: modalElementId
-                      }
-                    });
-
-                    switch (status) {
-                      case 1:
-                        switch (index) {
-                          case 0:
-                            // said Yes: not the same item
-                            domainState._isPathEnoughToTrack = false;
-                            chrome.storage.local.set({
-                              [domain]: JSON.stringify(domainState)
-                            });
-                            callback(true);
-                            break;
-
-                          case 1:
-                            callback(false, true);
-                            break;
-
-                          case 2:
-                            // said No: same item (path is enough for this site items)
-                            domainState._isPathEnoughToTrack = true;
-                            chrome.storage.local.set({
-                              [domain]: JSON.stringify(domainState)
-                            });
-                            callback(false, false);
-                            break;
-
-                          case 3:
-                            // said Save this but for others Ask me later
-                            callback(true);
-                            break;
-
-                          default:
-                            // cannot recognize this modal button click
-                            callback(false, true);
-                            break;
-                        }
-
-                        break;
-
-                      case 2:
-                        // close modal
-                        callback(false, true);
-                        break;
-
-                      default:
-                        // something wrong with modal interaction
-                        callback(false, true);
-                        break;
-                    }
-                  });
-                } else {
-                  // something went wrong creating the modal
-                  callback(false, true);
-                }
-              });
-            } else {
-              // no URL has host and path equals to the currentURL (can save the item)
-              callback(true);
-            }
-          });
-        }
-      } else {
-        // this means it's the first item being saved belonging to this domain (can save the item)
-        callback(true);
-      }
-    });
-  }
-
   function onStatusAndAppearanceUpdate(statusUpdate = []) {
     if (isEmpty_1(statusUpdate)) {
       setDefaultAppearance();
@@ -11563,81 +11529,64 @@
         autoSaveEnabled,
         isPriceUpdateEnabled,
         currentURL: url,
+        browserURL,
         domain,
         _sortItemsBy,
         _undoRemovedItems
       } = StateManager.getState();
 
       switch (type) {
-        case "AUTO_SAVE.ATTEMPT":
-          if (autoSaveEnabled) {
-            const {
-              domain,
-              currentURL: stateUrl,
-              selection,
-              price,
-              faviconURL,
-              faviconAlt,
-              originalBackgroundColor
-            } = StateManager.getState();
-            canDisplayURLConfirmation$1(StateManager.getState(), domain, canDisplay => {
-              if (canDisplay) {
-                onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
-                  if (canSave) {
-                    const {
-                      canonicalURL,
-                      browserURL
-                    } = StateManager.getState();
-                    const url = useCaninocal ? canonicalURL : browserURL;
-                    checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
-                      if (isToSave) {
-                        createItem$1(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                          chrome.tabs.sendMessage(id, {
-                            type: "PRICE_TAG.HIGHLIGHT.STOP",
-                            payload: {
-                              selection,
-                              originalBackgroundColor
+        /*case "AUTO_SAVE.ATTEMPT":
+            if (autoSaveEnabled) {
+                const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor}
+                    = StateManager.getState();
+                 canDisplayURLConfirmation(StateManager.getState(), domain, canDisplay => {
+                    if (canDisplay) {
+                        onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
+                            if (canSave) {
+                                const {canonicalURL, browserURL} = StateManager.getState();
+                                const url = useCaninocal ? canonicalURL : browserURL;
+                                 checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
+                                    if (isToSave) {
+                                        createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                                            chrome.tabs.sendMessage(id, {
+                                                type: "PRICE_TAG.HIGHLIGHT.STOP",
+                                                payload: {selection, originalBackgroundColor}
+                                            }, onSimilarElementHighlight);
+                                             updateExtensionAppearance(domain, url, true);
+                                            StateManager.disableAutoSave();
+                                             sendResponse(false);
+                                        });
+                                    } else {
+                                        // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
+                                        if (!autoSaveStatus) {
+                                            StateManager.disableAutoSave();
+                                        }
+                                    }
+                                });
                             }
-                          }, onSimilarElementHighlight);
-                          updateExtensionAppearance$1(domain, url, true);
-                          StateManager.disableAutoSave();
-                          sendResponse(false);
                         });
-                      } else {
-                        // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
-                        if (!autoSaveStatus) {
-                          StateManager.disableAutoSave();
-                        }
-                      }
-                    });
-                  }
+                    } else {
+                        checkForURLSimilarity(id, domain, stateUrl, isToSave => {
+                            if (isToSave) {
+                                createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
+                                    chrome.tabs.sendMessage(id, {
+                                        type: "PRICE_TAG.HIGHLIGHT.STOP",
+                                        payload: {selection, originalBackgroundColor}
+                                    }, onSimilarElementHighlight);
+                                     updateExtensionAppearance(domain, stateUrl, true);
+                                    StateManager.disableAutoSave();
+                                     sendResponse(false);
+                                });
+                            }
+                        });
+                    }
                 });
-              } else {
-                checkForURLSimilarity(id, domain, stateUrl, isToSave => {
-                  if (isToSave) {
-                    createItem$1(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                      chrome.tabs.sendMessage(id, {
-                        type: "PRICE_TAG.HIGHLIGHT.STOP",
-                        payload: {
-                          selection,
-                          originalBackgroundColor
-                        }
-                      }, onSimilarElementHighlight);
-                      updateExtensionAppearance$1(domain, stateUrl, true);
-                      StateManager.disableAutoSave();
-                      sendResponse(false);
-                    });
-                  }
-                });
-              }
-            });
-            return true;
-          } else {
-            sendResponse(false);
-          }
-
-          break;
-
+                 return true;
+            } else {
+                sendResponse(false);
+            }
+            break;*/
         case "AUTO_SAVE.HIGHLIGHT.PRE_START":
           if (autoSaveEnabled) {
             const {
@@ -11648,7 +11597,7 @@
               payload: {
                 selection
               }
-            }, onSimilarElementHighlight);
+            }, onSimilarElementHighlight$1);
           }
 
           break;
@@ -11665,7 +11614,7 @@
                 selection,
                 originalBackgroundColor
               }
-            }, onSimilarElementHighlight);
+            }, onSimilarElementHighlight$1);
           }
 
           break;
@@ -11717,7 +11666,7 @@
                   selection,
                   originalBackgroundColor
                 }
-              }, onSimilarElementHighlight);
+              }, onSimilarElementHighlight$1);
               StateManager.disablePriceUpdate();
               sendResponse(false);
             });
@@ -11735,7 +11684,7 @@
               payload: {
                 selection
               }
-            }, onSimilarElementHighlight);
+            }, onSimilarElementHighlight$1);
           }
 
           break;
@@ -11752,7 +11701,7 @@
                 selection,
                 originalBackgroundColor
               }
-            }, onSimilarElementHighlight);
+            }, onSimilarElementHighlight$1);
           }
 
           break;
@@ -11773,7 +11722,7 @@
           return true;
 
         case "TRACKED_ITEMS.UNFOLLOW":
-          removeTrackedItem(itemUrl, url, sendResponse);
+          removeTrackedItem(itemUrl, url, browserURL, sendResponse);
           return true;
 
         case "TRACKED_ITEMS.CHANGE_SORT":
@@ -11784,7 +11733,11 @@
           if (_undoRemovedItems.length > 0) {
             const undoRemovedItem = StateManager.getUndoRemovedItemsHead();
             const State = StateManager.getState();
-            undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
+            const {
+              currentURL,
+              browserURL
+            } = State;
+            undoRemoveTrackedItem(undoRemovedItem.url, currentURL, browserURL, response => {
               if (response) {
                 const {
                   _undoRemovedItems

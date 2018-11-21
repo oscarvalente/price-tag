@@ -3,7 +3,7 @@ import {of, forkJoin} from "rxjs";
 import {switchMap, mapTo} from "rxjs/operators";
 import {buildSaveConfirmationPayload} from "../../../utils/view";
 import getStorageDomain from "../internal/get-storage-domain";
-import sendTabMessage from "../internal/tabs-send-message";
+import sendTabMessage$ from "../internal/tabs-send-message";
 import searchEqualPathWatchedItem from "../../../utils/search-equal-path-watched-item";
 import setStorageDomain from "../internal/set-storage-domain";
 
@@ -29,19 +29,19 @@ function checkURLSimilarity(tabId, domain, currentURL) {
                         // prompt user to confirm if the item is the same
 
                         const modalElementId = "price-tag--save-confirmation";
-                        return sendTabMessage(tabId, {
+                        return sendTabMessage$(tabId, {
                             type: "CONFIRMATION_DISPLAY.CREATE",
                             payload: {elementId: modalElementId}
                         }).pipe(
                             switchMap(({status}) => {
                                 if (status === 1) {
                                     const payload = buildSaveConfirmationPayload(currentURL, similarURL);
-                                    return sendTabMessage(tabId, {
+                                    return sendTabMessage$(tabId, {
                                         type: "CONFIRMATION_DISPLAY.LOAD",
                                         payload
                                     }).pipe(
                                         switchMap(({status, index}) => {
-                                            const message$ = sendTabMessage(tabId, {
+                                            const message$ = sendTabMessage$(tabId, {
                                                 type: "CONFIRMATION_DISPLAY.REMOVE",
                                                 payload: {elementId: modalElementId}
                                             });

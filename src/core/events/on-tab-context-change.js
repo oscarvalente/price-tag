@@ -1,4 +1,4 @@
-import {of, combineLatest} from "rxjs";
+import {of, forkJoin} from "rxjs";
 import {switchMap, take} from "rxjs/operators";
 
 import StateManager from "../state-manager";
@@ -11,12 +11,10 @@ import updatePriceUpdateStatus$ from "./status/update-price-update";
 import updateExtensionAppearance$ from "./update-extension-appearance";
 
 function updateStatusAndAppearance$(currentURL, domain, url) {
-    return combineLatest(
+    return forkJoin(
         updateAutoSaveStatus$(currentURL, domain, url),
         updatePriceUpdateStatus$(currentURL, domain, url),
         updateExtensionAppearance$(domain, currentURL, null, url)
-    ).pipe(
-        take(1)
     );
 }
 

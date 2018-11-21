@@ -1,4 +1,3 @@
-// TODO
 import {forkJoin} from "rxjs";
 import {filter, switchMap, mapTo} from "rxjs/operators";
 import StateManager from "../../state-manager";

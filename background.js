@@ -349,7 +349,7 @@ function getTrackedItemsSortedBy(sortType, callback) {
     });
 }
 
-function removeTrackedItem(url, currentURL, callback) {
+function removeTrackedItem(url, currentURL, fullURL, callback) {
     let found = false;
     chrome.storage.local.get(null, result => {
         Object.keys(result).forEach(domain => {
@@ -386,10 +386,10 @@ function removeTrackedItem(url, currentURL, callback) {
                     item.updateTrackStatus(null, null, [ITEM_STATUS.WATCHED]); // stop watching
                     domainItems[url] = item;
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                        if (currentURL === url) {
-                            updateAutoSaveStatus(url, domain);
-                            updatePriceUpdateStatus(url, domain);
-                            updateExtensionAppearance(domain, url, false);
+                        if (currentURL === url || fullURL === url) {
+                            updateAutoSaveStatus(url, domain, fullURL);
+                            updatePriceUpdateStatus(url, domain, fullURL);
+                            updateExtensionAppearance(domain, url, false, fullURL);
                         }
                         callback(true);
                     });
@@ -402,7 +402,7 @@ function removeTrackedItem(url, currentURL, callback) {
     });
 }
 
-function undoRemoveTrackedItem(url, currentURL, callback) {
+function undoRemoveTrackedItem(url, currentURL, fullURL, callback) {
     let found = false;
     chrome.storage.local.get(null, result => {
         Object.keys(result).forEach(domain => {
@@ -416,7 +416,7 @@ function undoRemoveTrackedItem(url, currentURL, callback) {
                     item.updateTrackStatus(null, [ITEM_STATUS.WATCHED], null); // start watch again
                     domainItems[url] = item;
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
-                        if (currentURL === url) {
+                        if (currentURL === url || fullURL === url) {
                             updateAutoSaveStatus(url, domain);
                             updatePriceUpdateStatus(url, domain);
                             updateExtensionAppearance(domain, url, true);
@@ -689,9 +689,9 @@ function attachEvents() {
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
-            const {autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
+            const {autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, browserURL, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                case "AUTO_SAVE.ATTEMPT":
+                /*case "AUTO_SAVE.ATTEMPT":
                     if (autoSaveEnabled) {
                         const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor}
                             = StateManager.getState();
@@ -748,7 +748,7 @@ function attachEvents() {
                     } else {
                         sendResponse(false);
                     }
-                    break;
+                    break;*/
                 case "AUTO_SAVE.HIGHLIGHT.PRE_START":
                     if (autoSaveEnabled) {
                         const {selection} = StateManager.getState();
@@ -846,7 +846,7 @@ function attachEvents() {
                     getTrackedItemsSortedBy(_sortItemsBy, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.UNFOLLOW":
-                    removeTrackedItem(itemUrl, url, sendResponse);
+                    removeTrackedItem(itemUrl, url, browserURL, sendResponse);
                     return true;
                 case "TRACKED_ITEMS.CHANGE_SORT":
                     StateManager.updateSortItemsBy(SORT_BY_TYPES[sortByType]);
@@ -855,9 +855,9 @@ function attachEvents() {
                     if (_undoRemovedItems.length > 0) {
                         const undoRemovedItem = StateManager.getUndoRemovedItemsHead();
                         const State = StateManager.getState();
-                        undoRemoveTrackedItem(undoRemovedItem.url, State.currentURL, response => {
+                        const {currentURL, browserURL} = State;
+                        undoRemoveTrackedItem(undoRemovedItem.url, currentURL, browserURL, response => {
                             if (response) {
-
                                 const {_undoRemovedItems} = StateManager.removeUndoRemovedItem(State);
                                 _undoRemovedItems.length === 0 ?
                                     sendResponse({isUndoStatusActive: false}) :
