@@ -15,7 +15,6 @@ const Title = ({title}) => (
 chrome.runtime.onMessage.addListener(({type, payload}, sender, sendResponse) => {
     switch (type) {
         case CONFIRMATION_DISPLAY_LOAD:
-            console.log(new Date().getTime());
             const {documentTitle, title, message, buttons} = payload;
 
             render(createElement(Title, [{title: documentTitle}]), document.getElementById("document-title"));

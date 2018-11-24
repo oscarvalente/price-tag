@@ -1,5 +1,5 @@
 import {forkJoin} from "rxjs";
-import {filter, switchMap, mapTo, tap} from "rxjs/operators";
+import {filter, switchMap, mapTo} from "rxjs/operators";
 import StateManager from "../../state-manager";
 import {buildURLConfirmationPayload} from "../../../utils/view";
 import sendTabMessage$ from "../internal/tabs-send-message";
@@ -19,14 +19,12 @@ function onCreateItemConfirm(tabId, domain) {
     }).pipe(
         filter(({status}) => status === 1),
         switchMap(() => {
-            console.log(new Date().getTime());
             const {canonicalURL, browserURL} = StateManager.getState();
             const payload = buildURLConfirmationPayload(canonicalURL, browserURL, domain);
             return sendTabMessage$(tabId, {
                 type: CONFIRMATION_DISPLAY_LOAD,
                 payload
             }).pipe(
-                tap(() => console.log('LOAD RESPONSE', new Date().getTime())),
                 switchMap(({status, index}) => {
                     const message$ = sendTabMessage$(tabId, {
                         type: "CONFIRMATION_DISPLAY.REMOVE",

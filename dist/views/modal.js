@@ -20824,6 +20824,25 @@
 	  generateOnButtonClickCallback: ModalFooter.propTypes.generateOnButtonClickCallback
 	};
 
+	const EXTENSION_MESSAGES = {
+	  POPUP_STATUS: "POPUP.STATUS",
+	  RECORD_ATTEMPT: "RECORD.ATTEMPT",
+	  RECORD_START: "RECORD.START",
+	  RECORD_CANCEL: "RECORD.CANCEL",
+	  AUTO_SAVE_STATUS: "AUTO_SAVE.STATUS",
+	  AUTO_SAVE_CHECK_STATUS: "AUTO_SAVE.CHECK_STATUS",
+	  AUTO_SAVE_ATTEMPT: "AUTO_SAVE.ATTEMPT",
+	  AUTO_SAVE_HIGHLIGHT_PRE_START: "AUTO_SAVE.HIGHLIGHT.PRE_START",
+	  AUTO_SAVE_HIGHLIGHT_PRE_STOP: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
+	  PRICE_TAG_HIGHLIGHT_START: "PRICE_TAG.HIGHLIGHT.START",
+	  PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP",
+	  CONFIRMATION_DISPLAY_LOAD: "CONFIRMATION_DISPLAY.LOAD"
+	};
+
+	const {
+	  CONFIRMATION_DISPLAY_LOAD
+	} = EXTENSION_MESSAGES;
+
 	const Title = ({
 	  title
 	}) => react.createElement("title", null, title);
@@ -20833,8 +20852,7 @@
 	  payload
 	}, sender, sendResponse) => {
 	  switch (type) {
-	    case "CONFIRMATION_DISPLAY.LOAD":
-	      console.log(new Date().getTime());
+	    case CONFIRMATION_DISPLAY_LOAD:
 	      const {
 	        documentTitle,
 	        title,

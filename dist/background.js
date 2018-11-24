@@ -10386,7 +10386,7 @@
   function onMessage(matchingMessageType, handler$) {
     return fromEventPattern(addOnMessage).pipe(filter(([{
       type
-    }]) => type === matchingMessageType), tap(x => console.log('on message', x)), map(([payload, sender, sendResponse]) => ({
+    }]) => type === matchingMessageType), map(([payload, sender, sendResponse]) => ({
       payload,
       sender,
       sendResponse$: transformCallbackToObservable(sendResponse)
@@ -10395,10 +10395,7 @@
 
   function sendTabMessage(tabId, payload) {
     return fromEventPattern(sendResponse => {
-      chrome.tabs.sendMessage(tabId, payload, args => {
-        console.log('DEBUG', new Date().getTime(), payload, args);
-        sendResponse(args);
-      });
+      chrome.tabs.sendMessage(tabId, payload, sendResponse);
     }).pipe(take(1));
   }
 
@@ -10439,7 +10436,6 @@
     }).pipe(filter(({
       status
     }) => status === 1), switchMap(() => {
-      console.log(new Date().getTime());
       const {
         canonicalURL,
         browserURL
@@ -10448,7 +10444,7 @@
       return sendTabMessage(tabId, {
         type: CONFIRMATION_DISPLAY_LOAD,
         payload
-      }).pipe(tap(() => console.log('LOAD RESPONSE', new Date().getTime())), switchMap(({
+      }).pipe(switchMap(({
         status,
         index
       }) => {

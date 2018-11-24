@@ -282,6 +282,9 @@
             }
 
             break;
+
+          default:
+            break;
         }
       });
     }
