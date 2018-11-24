@@ -1,17 +1,20 @@
 import {fromEventPattern} from "rxjs";
-import {map, switchMap} from "rxjs/operators";
+import {map, switchMap, filter} from "rxjs/operators";
 import {transformCallbackToObservable} from "../../../utils/rx";
 
 function addOnMessage(handler) {
-    chrome.runtime.onMessage.addListener((payload, sender, sendResponse) => {
-        handler(payload, sender, sendResponse);
+    const handlerWrapper = (request, sender, sendResponse) => {
+        handler(request, sender, sendResponse);
         return true;
-    });
+    };
+    chrome.runtime.onMessage.addListener(handlerWrapper);
+    return handlerWrapper;
 }
 
-function onMessage(handler$) {
+function onMessage(matchingMessageType, handler$) {
     return fromEventPattern(addOnMessage)
         .pipe(
+            filter(([{type}]) => type === matchingMessageType),
             map(([payload, sender, sendResponse]) =>
                 ({payload, sender, sendResponse$: transformCallbackToObservable(sendResponse)})),
             switchMap(handler$)

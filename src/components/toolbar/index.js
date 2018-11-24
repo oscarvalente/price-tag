@@ -1,8 +1,11 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import {switchMap} from "rxjs/operators";
 
 import styles from "./toolbar.css";
 import ToolbarButton from "../toolbar-button/index";
+import queryActiveTab$ from "../../core/events/internal/query-active-tab";
+import sendRuntimeMessage$ from "../../core/events/internal/runtime-send-message";
 
 const BUTTON_STATUS = {
     active: "active",
@@ -78,9 +81,9 @@ class Toolbar extends Component {
     }
 
     onAutosaveClick() {
-        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.ATTEMPT", payload: {id}}, this.props.onAutosaveStatus);
-        });
+        return queryActiveTab$().pipe(
+            switchMap(([{id}]) => sendRuntimeMessage$({type: "AUTO_SAVE.ATTEMPT", payload: {id}}))
+        ).subscribe(this.props.onAutosaveStatus);
     }
 
     onAutosaveMouseover() {

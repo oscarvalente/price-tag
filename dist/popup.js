@@ -26285,216 +26285,6 @@
 	  onMouseOut: propTypes.func
 	};
 
-	const BUTTON_STATUS = {
-	  active: "active",
-	  inactive: "inactive",
-	  pending: "pending"
-	};
-
-	function getAutosaveButton(buttonStatus) {
-	  return buttonStatus === BUTTON_STATUS.active ? react.createElement(ToolbarButton, {
-	    id: "auto-save-btn",
-	    status: this.props.autosaveButtonStatus,
-	    title: "Save the detected price-tag in current page",
-	    onClick: this.onAutosaveClick,
-	    onMouseOver: this.onAutosaveMouseover,
-	    onMouseOut: this.onAutosaveMouseout
-	  }) : react.createElement(ToolbarButton, {
-	    id: "auto-save-btn",
-	    title: "Save the detected price-tag in current page",
-	    status: this.props.autosaveButtonStatus
-	  });
-	}
-
-	function getPriceUpdateButton(buttonStatus) {
-	  return buttonStatus === BUTTON_STATUS.active ? react.createElement(ToolbarButton, {
-	    id: "price-update-btn",
-	    status: this.props.priceUpdateButtonStatus,
-	    title: "Update price-tag to current value",
-	    onClick: this.onPriceUpdateClick,
-	    onMouseOver: this.onPriceUpdateMouseover,
-	    onMouseOut: this.onPriceUpdateMouseout
-	  }) : react.createElement(ToolbarButton, {
-	    id: "price-update-btn",
-	    title: "Update price-tag to current value",
-	    status: this.props.priceUpdateButtonStatus
-	  });
-	}
-
-	class Toolbar extends react_2 {
-	  constructor(props) {
-	    super(props);
-	    this.onRecordClick = this.onRecordClick.bind(this);
-	    this.onAutosaveClick = this.onAutosaveClick.bind(this);
-	    this.onAutosaveMouseover = this.onAutosaveMouseover.bind(this);
-	    this.onAutosaveMouseout = this.onAutosaveMouseout.bind(this);
-	    this.onPriceUpdateClick = this.onPriceUpdateClick.bind(this);
-	    this.onPriceUpdateMouseover = this.onPriceUpdateMouseover.bind(this);
-	    this.onPriceUpdateMouseout = this.onPriceUpdateMouseout.bind(this);
-	  }
-
-	  render() {
-	    const createAutosaveButton = getAutosaveButton.bind(this, this.props.autosaveButtonStatus);
-	    const createPriceUpdateButton = getPriceUpdateButton.bind(this, this.props.priceUpdateButtonStatus);
-	    return react.createElement("ul", {
-	      className: styles["tracking-buttons"]
-	    }, react.createElement("li", null, react.createElement(ToolbarButton, {
-	      id: "record-btn",
-	      status: this.props.recordButtonStatus,
-	      title: "Search for price-tag in current page",
-	      onClick: this.onRecordClick
-	    })), react.createElement("li", null, createAutosaveButton()), react.createElement("li", null, createPriceUpdateButton()));
-	  }
-
-	  onRecordClick() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id,
-	      url
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "RECORD.ATTEMPT",
-	        payload: {
-	          id,
-	          url
-	        }
-	      }, this.props.onPopupStatus);
-	    });
-	  }
-
-	  onAutosaveClick() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "AUTO_SAVE.ATTEMPT",
-	        payload: {
-	          id
-	        }
-	      }, this.props.onAutosaveStatus);
-	    });
-	  }
-
-	  onAutosaveMouseover() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "AUTO_SAVE.HIGHLIGHT.PRE_START",
-	        payload: {
-	          id
-	        }
-	      });
-	    });
-	  }
-
-	  onAutosaveMouseout() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
-	        payload: {
-	          id
-	        }
-	      });
-	    });
-	  }
-
-	  onPriceUpdateClick() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "PRICE_UPDATE.ATTEMPT",
-	        payload: {
-	          id
-	        }
-	      }, this.props.onPriceUpdateStatus);
-	    });
-	  }
-
-	  onPriceUpdateMouseover() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "PRICE_UPDATE.HIGHLIGHT.PRE_START",
-	        payload: {
-	          id
-	        }
-	      });
-	    });
-	  }
-
-	  onPriceUpdateMouseout() {
-	    chrome.tabs.query({
-	      active: true,
-	      currentWindow: true
-	    }, ([{
-	      id
-	    }]) => {
-	      chrome.runtime.sendMessage({
-	        type: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP",
-	        payload: {
-	          id
-	        }
-	      });
-	    });
-	  }
-
-	}
-
-	Toolbar.propTypes = {
-	  autosaveButtonStatus: propTypes.string,
-	  priceUpdateButtonStatus: propTypes.string,
-	  recordButtonStatus: propTypes.string,
-	  onPopupStatus: propTypes.func,
-	  onAutosaveStatus: propTypes.func,
-	  onPriceUpdateStatus: propTypes.func
-	};
-
-	var css$2 = ".icon-link_icon-link-container__Lgnuf {\n  display: block;\n  line-height: 18px;\n  height: 18px;\n  margin-top: 28px;\n  min-width: 116px;\n  cursor: pointer; }\n  .icon-link_icon-link-container__Lgnuf > * {\n    vertical-align: middle; }\n  .icon-link_icon-link-container__Lgnuf:hover {\n    text-decoration: underline; }\n  .icon-link_icon-link-container__Lgnuf .icon-link_title__18o0V {\n    font-size: 14px;\n    white-space: nowrap; }\n  .icon-link_icon-link-container__Lgnuf .icon-link_icon__35DIN {\n    display: inline-block;\n    height: 16px;\n    width: 16px;\n    padding-right: 6px; }\n    .icon-link_icon-link-container__Lgnuf .icon-link_icon__35DIN.icon-link_tracked-items__17aBO {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='m462 386c5.519531 0 10-4.480469 10-10s-4.480469-10-10-10-10 4.480469-10 10 4.480469 10 10 10zm0 0'/%3E %3Cpath d='m30 512h452c16.542969 0 30-13.457031 30-30v-372c0-5.523438-4.476562-10-10-10h-70c0-55.140625-44.859375-100-100-100-55.257812 0-100 44.699219-100 100h-76c-5.523438 0-10 4.476562-10 10v116h-136c-5.523438 0-10 4.476562-10 10v246c0 16.542969 13.457031 30 30 30zm-10-30v-36h232v36c0 5.515625-4.484375 10-10 10h-212c-5.515625 0-10-4.484375-10-10zm462 10h-211.71875c1.109375-3.128906 1.71875-6.492188 1.71875-10v-36h220v36c0 5.515625-4.484375 10-10 10zm-150-472c44.113281 0 80 35.886719 80 80h-160c0-44.210938 35.761719-80 80-80zm-166 100h66v46h-10c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10h40c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-10v-46h160v46h-10c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10h40c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-10v-46h60v306h-220v-190c0-5.523438-4.476562-10-10-10h-96zm86 126v180h-232v-180zm0 0'/%3E %3Cpath d='m76 306v20c0 33.148438 26.851562 60 60 60 33.085938 0 60-26.914062 60-60v-20c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-20c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10v20c0 22.054688-17.945312 40-40 40-22.09375 0-40-17.90625-40-40v-20c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-20c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10zm0 0'/%3E %3Cpath d='m462 346c5.523438 0 10-4.476562 10-10v-80c0-5.523438-4.476562-10-10-10s-10 4.476562-10 10v80c0 5.523438 4.476562 10 10 10zm0 0'/%3E %3C/svg%3E\") no-repeat; }\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImljb24tbGluay5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFpRTtFQUMvRCxlQUFlO0VBQ2Ysa0JBQWtCO0VBQ2xCLGFBQWE7RUFDYixpQkFBaUI7RUFDakIsaUJBQWlCO0VBQ2pCLGdCQUFnQixFQUFFO0VBQ2xCO0lBQ0UsdUJBQXVCLEVBQUU7RUFDM0I7SUFDRSwyQkFBMkIsRUFBRTtFQUMvQjtJQUNFLGdCQUFnQjtJQUNoQixvQkFBb0IsRUFBRTtFQUN4QjtJQUNFLHNCQUFzQjtJQUN0QixhQUFhO0lBQ2IsWUFBWTtJQUNaLG1CQUFtQixFQUFFO0lBQ3JCO01BQ0Usc2xEQUFxRCxFQUFFIiwiZmlsZSI6Imljb24tbGluay5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiQHN2Zy1sb2FkIHRyYWNrZWQtaXRlbXMtaWNvbiB1cmwoLi4vLi4vLi4vYXNzZXRzL3Nob3BwaW5nLnN2Zykge30uaWNvbi1saW5rLWNvbnRhaW5lciB7XG4gIGRpc3BsYXk6IGJsb2NrO1xuICBsaW5lLWhlaWdodDogMThweDtcbiAgaGVpZ2h0OiAxOHB4O1xuICBtYXJnaW4tdG9wOiAyOHB4O1xuICBtaW4td2lkdGg6IDExNnB4O1xuICBjdXJzb3I6IHBvaW50ZXI7IH1cbiAgLmljb24tbGluay1jb250YWluZXIgPiAqIHtcbiAgICB2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlOyB9XG4gIC5pY29uLWxpbmstY29udGFpbmVyOmhvdmVyIHtcbiAgICB0ZXh0LWRlY29yYXRpb246IHVuZGVybGluZTsgfVxuICAuaWNvbi1saW5rLWNvbnRhaW5lciAudGl0bGUge1xuICAgIGZvbnQtc2l6ZTogMTRweDtcbiAgICB3aGl0ZS1zcGFjZTogbm93cmFwOyB9XG4gIC5pY29uLWxpbmstY29udGFpbmVyIC5pY29uIHtcbiAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7XG4gICAgaGVpZ2h0OiAxNnB4O1xuICAgIHdpZHRoOiAxNnB4O1xuICAgIHBhZGRpbmctcmlnaHQ6IDZweDsgfVxuICAgIC5pY29uLWxpbmstY29udGFpbmVyIC5pY29uLnRyYWNrZWQtaXRlbXMge1xuICAgICAgYmFja2dyb3VuZDogc3ZnLWlubGluZSh0cmFja2VkLWl0ZW1zLWljb24pIG5vLXJlcGVhdDsgfVxuIl19 */";
-	var styles$2 = {"icon-link-container":"icon-link_icon-link-container__Lgnuf","title":"icon-link_title__18o0V","icon":"icon-link_icon__35DIN","tracked-items":"icon-link_tracked-items__17aBO"};
-	styleInject(css$2);
-
-	class IconLink extends react_2 {
-	  render() {
-	    return react.createElement("a", {
-	      className: styles$2["icon-link-container"],
-	      href: this.props.href
-	    }, react.createElement("span", {
-	      className: `${styles$2.icon} ${styles$2[this.props.icon]}`
-	    }), react.createElement("span", {
-	      className: styles$2.title
-	    }, this.props.title));
-	  }
-
-	}
-
-	IconLink.propTypes = {
-	  href: propTypes.string,
-	  icon: propTypes.string,
-	  title: propTypes.string
-	};
-
 	/** PURE_IMPORTS_START tslib,_AsyncAction PURE_IMPORTS_END */
 	var AnimationFrameAction = /*@__PURE__*/ (function (_super) {
 	    __extends(AnimationFrameAction, _super);
@@ -26784,6 +26574,211 @@
 	  }).pipe(take(1));
 	}
 
+	const BUTTON_STATUS = {
+	  active: "active",
+	  inactive: "inactive",
+	  pending: "pending"
+	};
+
+	function getAutosaveButton(buttonStatus) {
+	  return buttonStatus === BUTTON_STATUS.active ? react.createElement(ToolbarButton, {
+	    id: "auto-save-btn",
+	    status: this.props.autosaveButtonStatus,
+	    title: "Save the detected price-tag in current page",
+	    onClick: this.onAutosaveClick,
+	    onMouseOver: this.onAutosaveMouseover,
+	    onMouseOut: this.onAutosaveMouseout
+	  }) : react.createElement(ToolbarButton, {
+	    id: "auto-save-btn",
+	    title: "Save the detected price-tag in current page",
+	    status: this.props.autosaveButtonStatus
+	  });
+	}
+
+	function getPriceUpdateButton(buttonStatus) {
+	  return buttonStatus === BUTTON_STATUS.active ? react.createElement(ToolbarButton, {
+	    id: "price-update-btn",
+	    status: this.props.priceUpdateButtonStatus,
+	    title: "Update price-tag to current value",
+	    onClick: this.onPriceUpdateClick,
+	    onMouseOver: this.onPriceUpdateMouseover,
+	    onMouseOut: this.onPriceUpdateMouseout
+	  }) : react.createElement(ToolbarButton, {
+	    id: "price-update-btn",
+	    title: "Update price-tag to current value",
+	    status: this.props.priceUpdateButtonStatus
+	  });
+	}
+
+	class Toolbar extends react_2 {
+	  constructor(props) {
+	    super(props);
+	    this.onRecordClick = this.onRecordClick.bind(this);
+	    this.onAutosaveClick = this.onAutosaveClick.bind(this);
+	    this.onAutosaveMouseover = this.onAutosaveMouseover.bind(this);
+	    this.onAutosaveMouseout = this.onAutosaveMouseout.bind(this);
+	    this.onPriceUpdateClick = this.onPriceUpdateClick.bind(this);
+	    this.onPriceUpdateMouseover = this.onPriceUpdateMouseover.bind(this);
+	    this.onPriceUpdateMouseout = this.onPriceUpdateMouseout.bind(this);
+	  }
+
+	  render() {
+	    const createAutosaveButton = getAutosaveButton.bind(this, this.props.autosaveButtonStatus);
+	    const createPriceUpdateButton = getPriceUpdateButton.bind(this, this.props.priceUpdateButtonStatus);
+	    return react.createElement("ul", {
+	      className: styles["tracking-buttons"]
+	    }, react.createElement("li", null, react.createElement(ToolbarButton, {
+	      id: "record-btn",
+	      status: this.props.recordButtonStatus,
+	      title: "Search for price-tag in current page",
+	      onClick: this.onRecordClick
+	    })), react.createElement("li", null, createAutosaveButton()), react.createElement("li", null, createPriceUpdateButton()));
+	  }
+
+	  onRecordClick() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id,
+	      url
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "RECORD.ATTEMPT",
+	        payload: {
+	          id,
+	          url
+	        }
+	      }, this.props.onPopupStatus);
+	    });
+	  }
+
+	  onAutosaveClick() {
+	    return queryActiveTab().pipe(switchMap(([{
+	      id
+	    }]) => sendRuntimeMessage({
+	      type: "AUTO_SAVE.ATTEMPT",
+	      payload: {
+	        id
+	      }
+	    }))).subscribe(this.props.onAutosaveStatus);
+	  }
+
+	  onAutosaveMouseover() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "AUTO_SAVE.HIGHLIGHT.PRE_START",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
+	  onAutosaveMouseout() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
+	  onPriceUpdateClick() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "PRICE_UPDATE.ATTEMPT",
+	        payload: {
+	          id
+	        }
+	      }, this.props.onPriceUpdateStatus);
+	    });
+	  }
+
+	  onPriceUpdateMouseover() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "PRICE_UPDATE.HIGHLIGHT.PRE_START",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
+	  onPriceUpdateMouseout() {
+	    chrome.tabs.query({
+	      active: true,
+	      currentWindow: true
+	    }, ([{
+	      id
+	    }]) => {
+	      chrome.runtime.sendMessage({
+	        type: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP",
+	        payload: {
+	          id
+	        }
+	      });
+	    });
+	  }
+
+	}
+
+	Toolbar.propTypes = {
+	  autosaveButtonStatus: propTypes.string,
+	  priceUpdateButtonStatus: propTypes.string,
+	  recordButtonStatus: propTypes.string,
+	  onPopupStatus: propTypes.func,
+	  onAutosaveStatus: propTypes.func,
+	  onPriceUpdateStatus: propTypes.func
+	};
+
+	var css$2 = ".icon-link_icon-link-container__Lgnuf {\n  display: block;\n  line-height: 18px;\n  height: 18px;\n  margin-top: 28px;\n  min-width: 116px;\n  cursor: pointer; }\n  .icon-link_icon-link-container__Lgnuf > * {\n    vertical-align: middle; }\n  .icon-link_icon-link-container__Lgnuf:hover {\n    text-decoration: underline; }\n  .icon-link_icon-link-container__Lgnuf .icon-link_title__18o0V {\n    font-size: 14px;\n    white-space: nowrap; }\n  .icon-link_icon-link-container__Lgnuf .icon-link_icon__35DIN {\n    display: inline-block;\n    height: 16px;\n    width: 16px;\n    padding-right: 6px; }\n    .icon-link_icon-link-container__Lgnuf .icon-link_icon__35DIN.icon-link_tracked-items__17aBO {\n      background: url(\"data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E %3Cpath d='m462 386c5.519531 0 10-4.480469 10-10s-4.480469-10-10-10-10 4.480469-10 10 4.480469 10 10 10zm0 0'/%3E %3Cpath d='m30 512h452c16.542969 0 30-13.457031 30-30v-372c0-5.523438-4.476562-10-10-10h-70c0-55.140625-44.859375-100-100-100-55.257812 0-100 44.699219-100 100h-76c-5.523438 0-10 4.476562-10 10v116h-136c-5.523438 0-10 4.476562-10 10v246c0 16.542969 13.457031 30 30 30zm-10-30v-36h232v36c0 5.515625-4.484375 10-10 10h-212c-5.515625 0-10-4.484375-10-10zm462 10h-211.71875c1.109375-3.128906 1.71875-6.492188 1.71875-10v-36h220v36c0 5.515625-4.484375 10-10 10zm-150-472c44.113281 0 80 35.886719 80 80h-160c0-44.210938 35.761719-80 80-80zm-166 100h66v46h-10c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10h40c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-10v-46h160v46h-10c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10h40c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-10v-46h60v306h-220v-190c0-5.523438-4.476562-10-10-10h-96zm86 126v180h-232v-180zm0 0'/%3E %3Cpath d='m76 306v20c0 33.148438 26.851562 60 60 60 33.085938 0 60-26.914062 60-60v-20c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-20c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10v20c0 22.054688-17.945312 40-40 40-22.09375 0-40-17.90625-40-40v-20c5.523438 0 10-4.476562 10-10s-4.476562-10-10-10h-20c-5.523438 0-10 4.476562-10 10s4.476562 10 10 10zm0 0'/%3E %3Cpath d='m462 346c5.523438 0 10-4.476562 10-10v-80c0-5.523438-4.476562-10-10-10s-10 4.476562-10 10v80c0 5.523438 4.476562 10 10 10zm0 0'/%3E %3C/svg%3E\") no-repeat; }\n\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImljb24tbGluay5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFpRTtFQUMvRCxlQUFlO0VBQ2Ysa0JBQWtCO0VBQ2xCLGFBQWE7RUFDYixpQkFBaUI7RUFDakIsaUJBQWlCO0VBQ2pCLGdCQUFnQixFQUFFO0VBQ2xCO0lBQ0UsdUJBQXVCLEVBQUU7RUFDM0I7SUFDRSwyQkFBMkIsRUFBRTtFQUMvQjtJQUNFLGdCQUFnQjtJQUNoQixvQkFBb0IsRUFBRTtFQUN4QjtJQUNFLHNCQUFzQjtJQUN0QixhQUFhO0lBQ2IsWUFBWTtJQUNaLG1CQUFtQixFQUFFO0lBQ3JCO01BQ0Usc2xEQUFxRCxFQUFFIiwiZmlsZSI6Imljb24tbGluay5zY3NzIiwic291cmNlc0NvbnRlbnQiOlsiQHN2Zy1sb2FkIHRyYWNrZWQtaXRlbXMtaWNvbiB1cmwoLi4vLi4vLi4vYXNzZXRzL3Nob3BwaW5nLnN2Zykge30uaWNvbi1saW5rLWNvbnRhaW5lciB7XG4gIGRpc3BsYXk6IGJsb2NrO1xuICBsaW5lLWhlaWdodDogMThweDtcbiAgaGVpZ2h0OiAxOHB4O1xuICBtYXJnaW4tdG9wOiAyOHB4O1xuICBtaW4td2lkdGg6IDExNnB4O1xuICBjdXJzb3I6IHBvaW50ZXI7IH1cbiAgLmljb24tbGluay1jb250YWluZXIgPiAqIHtcbiAgICB2ZXJ0aWNhbC1hbGlnbjogbWlkZGxlOyB9XG4gIC5pY29uLWxpbmstY29udGFpbmVyOmhvdmVyIHtcbiAgICB0ZXh0LWRlY29yYXRpb246IHVuZGVybGluZTsgfVxuICAuaWNvbi1saW5rLWNvbnRhaW5lciAudGl0bGUge1xuICAgIGZvbnQtc2l6ZTogMTRweDtcbiAgICB3aGl0ZS1zcGFjZTogbm93cmFwOyB9XG4gIC5pY29uLWxpbmstY29udGFpbmVyIC5pY29uIHtcbiAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7XG4gICAgaGVpZ2h0OiAxNnB4O1xuICAgIHdpZHRoOiAxNnB4O1xuICAgIHBhZGRpbmctcmlnaHQ6IDZweDsgfVxuICAgIC5pY29uLWxpbmstY29udGFpbmVyIC5pY29uLnRyYWNrZWQtaXRlbXMge1xuICAgICAgYmFja2dyb3VuZDogc3ZnLWlubGluZSh0cmFja2VkLWl0ZW1zLWljb24pIG5vLXJlcGVhdDsgfVxuIl19 */";
+	var styles$2 = {"icon-link-container":"icon-link_icon-link-container__Lgnuf","title":"icon-link_title__18o0V","icon":"icon-link_icon__35DIN","tracked-items":"icon-link_tracked-items__17aBO"};
+	styleInject(css$2);
+
+	class IconLink extends react_2 {
+	  render() {
+	    return react.createElement("a", {
+	      className: styles$2["icon-link-container"],
+	      href: this.props.href
+	    }, react.createElement("span", {
+	      className: `${styles$2.icon} ${styles$2[this.props.icon]}`
+	    }), react.createElement("span", {
+	      className: styles$2.title
+	    }, this.props.title));
+	  }
+
+	}
+
+	IconLink.propTypes = {
+	  href: propTypes.string,
+	  icon: propTypes.string,
+	  title: propTypes.string
+	};
+
 	const EXTENSION_MESSAGES = {
 	  POPUP_STATUS: "POPUP.STATUS",
 	  RECORD_ATTEMPT: "RECORD.ATTEMPT",
@@ -26792,7 +26787,11 @@
 	  AUTO_SAVE_STATUS: "AUTO_SAVE.STATUS",
 	  AUTO_SAVE_CHECK_STATUS: "AUTO_SAVE.CHECK_STATUS",
 	  AUTO_SAVE_ATTEMPT: "AUTO_SAVE.ATTEMPT",
-	  PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP"
+	  AUTO_SAVE_HIGHLIGHT_PRE_START: "AUTO_SAVE.HIGHLIGHT.PRE_START",
+	  AUTO_SAVE_HIGHLIGHT_PRE_STOP: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
+	  PRICE_TAG_HIGHLIGHT_START: "PRICE_TAG.HIGHLIGHT.START",
+	  PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP",
+	  CONFIRMATION_DISPLAY_LOAD: "CONFIRMATION_DISPLAY.LOAD"
 	};
 
 	const {

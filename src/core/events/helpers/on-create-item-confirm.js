@@ -1,10 +1,15 @@
 import {forkJoin} from "rxjs";
-import {filter, switchMap, mapTo} from "rxjs/operators";
+import {filter, switchMap, mapTo, tap} from "rxjs/operators";
 import StateManager from "../../state-manager";
 import {buildURLConfirmationPayload} from "../../../utils/view";
 import sendTabMessage$ from "../internal/tabs-send-message";
 import getStorageDomain from "../internal/get-storage-domain";
 import setStorageDomain from "../internal/set-storage-domain";
+import {EXTENSION_MESSAGES} from "../../../config/background";
+
+const {
+    CONFIRMATION_DISPLAY_LOAD
+} = EXTENSION_MESSAGES;
 
 function onCreateItemConfirm(tabId, domain) {
     const modalElementId = "price-tag--url-confirmation";
@@ -14,12 +19,14 @@ function onCreateItemConfirm(tabId, domain) {
     }).pipe(
         filter(({status}) => status === 1),
         switchMap(() => {
+            console.log(new Date().getTime());
             const {canonicalURL, browserURL} = StateManager.getState();
             const payload = buildURLConfirmationPayload(canonicalURL, browserURL, domain);
             return sendTabMessage$(tabId, {
-                type: "CONFIRMATION_DISPLAY.LOAD",
+                type: CONFIRMATION_DISPLAY_LOAD,
                 payload
             }).pipe(
+                tap(() => console.log('LOAD RESPONSE', new Date().getTime())),
                 switchMap(({status, index}) => {
                     const message$ = sendTabMessage$(tabId, {
                         type: "CONFIRMATION_DISPLAY.REMOVE",

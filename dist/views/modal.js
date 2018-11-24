@@ -20834,6 +20834,7 @@
 	}, sender, sendResponse) => {
 	  switch (type) {
 	    case "CONFIRMATION_DISPLAY.LOAD":
+	      console.log(new Date().getTime());
 	      const {
 	        documentTitle,
 	        title,

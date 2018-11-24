@@ -1,5 +1,5 @@
 import {of, forkJoin} from "rxjs";
-import {switchMap, take} from "rxjs/operators";
+import {switchMap} from "rxjs/operators";
 
 import StateManager from "../state-manager";
 import {captureDomainFromURL, captureProtocolHostAndPathFromURL, isCanonicalURLRelevant} from "../../utils/lang";

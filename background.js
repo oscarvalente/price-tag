@@ -31,13 +31,8 @@ import {
     toPrice,
     matchesDomain,
     matchesHostname,
-    matchesURL,
-    captureHostAndPathFromURL
+    matchesURL
 } from "./src/utils/lang";
-import {
-    buildSaveConfirmationPayload,
-    buildURLConfirmationPayload
-} from "./src/utils/view";
 import {findURLKey} from "./src/utils/storage";
 import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
@@ -48,83 +43,16 @@ import listenNotificationsClosed$ from "./src/core/events/listen-notifications-c
 import listenNotificationsClicked$ from "./src/core/events/listen-notifications-clicked";
 import createNotification from "./src/core/events/create-custom-notification";
 import onTabContextChange$ from "./src/core/events/on-tab-context-change";
-import listenRuntimeMessages$ from "./src/core/events/listen-runtime-messages";
+import {
+    listenPopupStatus as listenPopupStatus$,
+    listenRecordAttempt as listenRecordAttempt$,
+    listenAutoSaveStatus as listenAutoSaveStatus$,
+    listenAutoSaveHighlightPreStart as listenAutoSaveHighlightPreStart$,
+    listenAutoSaveHighlightPreStop as listenAutoSaveHighlightPreStop$,
+    listenAutoSaveAttempt as listenAutoSaveAttempt$
+} from "./src/core/events/listen-runtime-messages";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
-
-function onConfirmURLForCreateItemAttempt(tabId, domain, url, selection, price, faviconURL, faviconAlt, callback) {
-    const modalElementId = "price-tag--url-confirmation";
-    chrome.tabs.sendMessage(tabId, {
-        type: "CONFIRMATION_DISPLAY.CREATE",
-        payload: {elementId: modalElementId}
-    }, ({status}) => {
-        if (status === 1) {
-            const {canonicalURL, browserURL} = StateManager.getState();
-            const payload = buildURLConfirmationPayload(canonicalURL, browserURL, domain);
-            chrome.tabs.sendMessage(tabId, {
-                type: "CONFIRMATION_DISPLAY.LOAD",
-                payload
-            }, ({status, index}) => {
-                chrome.tabs.sendMessage(tabId, {
-                    type: "CONFIRMATION_DISPLAY.REMOVE",
-                    payload: {elementId: modalElementId}
-                });
-
-                const {canonicalURL, browserURL} = StateManager.getState();
-
-                switch (status) {
-                    case 1:
-                        switch (index) {
-                            case 0:
-                                // said Yes, can use canonical and remember this option
-                                chrome.storage.local.get([domain], result => {
-                                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                                    domainState._canUseCanonical = true;
-                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    const {canonicalURL} = StateManager.getState();
-                                    StateManager.updateCurrentURL(canonicalURL);
-                                    callback(true, true);
-                                });
-                                break;
-                            case 1:
-                                // said Yes, but use canonical just this time
-                                StateManager.updateCurrentURL(canonicalURL);
-                                callback(true, true);
-                                break;
-                            case 2:
-                                // said No, use browser URL and remember this option
-                                chrome.storage.local.get([domain], result => {
-                                    const domainState = result && result[domain] && JSON.parse(result[domain]) || {};
-                                    domainState._canUseCanonical = false;
-                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                    const {browserURL} = StateManager.getState();
-                                    StateManager.updateCurrentURL(browserURL);
-                                    callback(true, false);
-                                });
-                                break;
-                            case 3:
-                                // said No, use browser URL but ask again
-                                StateManager.updateCurrentURL(browserURL);
-                                callback(true, false);
-                                break;
-                            default:
-                                // cannot recognize this modal button click
-                                callback(false);
-                                break;
-                        }
-                        break;
-                    case 2:
-                        // close modal
-                        callback(false);
-                        break;
-                    default:
-                        callback(false);
-                        break;
-                }
-            });
-        }
-    });
-}
 
 function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
     if (status >= 0) {
@@ -144,30 +72,6 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     if (status >= 0) {
         StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
     }
-}
-
-function createItem(domain, url, selection, price, faviconURL, faviconAlt, statuses, callback) {
-    chrome.storage.local.get([domain], result => {
-        const items = result && result[domain] ? JSON.parse(result[domain]) : {};
-        items[url] = ItemFactory.createItem(selection, toPrice(price), null, faviconURL, faviconAlt, statuses);
-
-        chrome.storage.local.set({[domain]: JSON.stringify(items)}, () => {
-            StateManager.disableAutoSave();
-            if (callback) {
-                callback();
-            }
-            // TODO: sendResponse("done"); // foi gravado ou não
-        });
-    });
-}
-
-function canDisplayURLConfirmation(state, domain, callback) {
-    chrome.storage.local.get([domain], result => {
-        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-        const isUseCanonicalPrefUnset = !domainState || domainState._canUseCanonical === undefined;
-        callback(isUseCanonicalPrefUnset && !!state.canonicalURL &&
-            state.canonicalURL !== state.browserURL);
-    });
 }
 
 function checkForPriceChanges() {
@@ -417,9 +321,9 @@ function undoRemoveTrackedItem(url, currentURL, fullURL, callback) {
                     domainItems[url] = item;
                     chrome.storage.local.set({[domain]: JSON.stringify(domainItems)}, () => {
                         if (currentURL === url || fullURL === url) {
-                            updateAutoSaveStatus(url, domain);
-                            updatePriceUpdateStatus(url, domain);
-                            updateExtensionAppearance(domain, url, true);
+                            updateAutoSaveStatus(url, domain, fullURL);
+                            updatePriceUpdateStatus(url, domain, fullURL);
+                            updateExtensionAppearance(domain, url, true, fullURL);
                         }
                         callback(true);
                     });
@@ -502,126 +406,6 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
     }
 }
 
-function searchForEqualPathWatchedItem(domainState, currentURL, callback) {
-    const currentHostAndPath = captureHostAndPathFromURL(currentURL);
-    let foundOne = false;
-    for (let url in domainState) {
-        if (domainState.hasOwnProperty(url) && matchesURL(url)) {
-            const item = ItemFactory.createItemFromObject(domainState[url]);
-            if (item.isWatched()) {
-                if (currentURL === url) {
-                    //    if they're exactly the same
-                    callback(null);
-                    return;
-                } else {
-                    const hostAndPath = captureHostAndPathFromURL(url);
-                    if (hostAndPath === currentHostAndPath) {
-                        foundOne = foundOne === false;
-                        callback(url);
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    callback(null);
-}
-
-function checkForURLSimilarity(tabId, domain, currentURL, callback) {
-    chrome.storage.local.get([domain], result => {
-        const domainState = result && result[domain] && JSON.parse(result[domain]) || null;
-        if (domainState) {
-            if (domainState._isPathEnoughToTrack === true) {
-                // since it's true we can say that that domain items' path is enough to track items in this domain
-                searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
-                    if (similarURL) {
-                        callback(false, false);
-                    } else {
-                        callback(true);
-                    }
-                });
-            } else if (domainState._isPathEnoughToTrack === false) {
-                callback(true);
-            } else {
-                // it's the first time user is being inquired about items similarity in this domain
-                searchForEqualPathWatchedItem(domainState, currentURL, similarURL => {
-                    if (similarURL) {
-                        // found an URL whose host and path are equals to the currentURL trying to be saved
-                        // prompt user to confirm if the item is the same
-
-                        const modalElementId = "price-tag--save-confirmation";
-                        chrome.tabs.sendMessage(tabId, {
-                            type: "CONFIRMATION_DISPLAY.CREATE",
-                            payload: {elementId: modalElementId}
-                        }, ({status}) => {
-                            if (status === 1) {
-                                const payload = buildSaveConfirmationPayload(currentURL, similarURL);
-                                chrome.tabs.sendMessage(tabId, {
-                                    type: "CONFIRMATION_DISPLAY.LOAD",
-                                    payload
-                                }, ({status, index}) => {
-                                    chrome.tabs.sendMessage(tabId, {
-                                        type: "CONFIRMATION_DISPLAY.REMOVE",
-                                        payload: {elementId: modalElementId}
-                                    });
-                                    switch (status) {
-                                        case 1:
-                                            switch (index) {
-                                                case 0:
-                                                    // said Yes: not the same item
-                                                    domainState._isPathEnoughToTrack = false;
-                                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                                    callback(true);
-                                                    break;
-                                                case 1:
-                                                    callback(false, true);
-                                                    break;
-                                                case 2:
-                                                    // said No: same item (path is enough for this site items)
-                                                    domainState._isPathEnoughToTrack = true;
-                                                    chrome.storage.local.set({[domain]: JSON.stringify(domainState)});
-                                                    callback(false, false);
-                                                    break;
-                                                case 3:
-                                                    // said Save this but for others Ask me later
-                                                    callback(true);
-                                                    break;
-                                                default:
-                                                    // cannot recognize this modal button click
-                                                    callback(false, true);
-                                                    break;
-                                            }
-                                            break;
-                                        case 2:
-                                            // close modal
-                                            callback(false, true);
-                                            break;
-                                        default:
-                                            // something wrong with modal interaction
-                                            callback(false, true);
-                                            break;
-                                    }
-                                });
-                            } else {
-                                // something went wrong creating the modal
-                                callback(false, true);
-                            }
-                        });
-                    }
-                    else {
-                        // no URL has host and path equals to the currentURL (can save the item)
-                        callback(true);
-                    }
-                });
-            }
-        } else {
-            // this means it's the first item being saved belonging to this domain (can save the item)
-            callback(true);
-        }
-    });
-}
-
 function onStatusAndAppearanceUpdate(statusUpdate = []) {
     if (isEmpty(statusUpdate)) {
         setDefaultAppearance();
@@ -683,90 +467,19 @@ function attachEvents() {
         switchMap(({id, url}) => onTabContextChange$(id, url))
     ).subscribe(onStatusAndAppearanceUpdate);
 
-    listenRuntimeMessages$().subscribe();
+    listenPopupStatus$().subscribe();
+    listenRecordAttempt$().subscribe();
+    listenAutoSaveStatus$().subscribe();
+    listenAutoSaveHighlightPreStart$().subscribe();
+    listenAutoSaveHighlightPreStop$().subscribe();
+    listenAutoSaveAttempt$().subscribe();
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
-            const {autoSaveEnabled, isPriceUpdateEnabled, currentURL: url, browserURL, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
+            const {isPriceUpdateEnabled, currentURL: url, browserURL, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                /*case "AUTO_SAVE.ATTEMPT":
-                    if (autoSaveEnabled) {
-                        const {domain, currentURL: stateUrl, selection, price, faviconURL, faviconAlt, originalBackgroundColor}
-                            = StateManager.getState();
-
-                        canDisplayURLConfirmation(StateManager.getState(), domain, canDisplay => {
-                            if (canDisplay) {
-                                onConfirmURLForCreateItemAttempt(id, domain, stateUrl, selection, price, faviconURL, faviconAlt, (canSave, useCaninocal) => {
-                                    if (canSave) {
-                                        const {canonicalURL, browserURL} = StateManager.getState();
-                                        const url = useCaninocal ? canonicalURL : browserURL;
-
-                                        checkForURLSimilarity(id, domain, url, (isToSave, autoSaveStatus) => {
-                                            if (isToSave) {
-                                                createItem(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                                                    chrome.tabs.sendMessage(id, {
-                                                        type: "PRICE_TAG.HIGHLIGHT.STOP",
-                                                        payload: {selection, originalBackgroundColor}
-                                                    }, onSimilarElementHighlight);
-
-                                                    updateExtensionAppearance(domain, url, true);
-                                                    StateManager.disableAutoSave();
-
-                                                    sendResponse(false);
-                                                });
-                                            } else {
-                                                // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
-                                                if (!autoSaveStatus) {
-                                                    StateManager.disableAutoSave();
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            } else {
-                                checkForURLSimilarity(id, domain, stateUrl, isToSave => {
-                                    if (isToSave) {
-                                        createItem(domain, stateUrl, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED], () => {
-                                            chrome.tabs.sendMessage(id, {
-                                                type: "PRICE_TAG.HIGHLIGHT.STOP",
-                                                payload: {selection, originalBackgroundColor}
-                                            }, onSimilarElementHighlight);
-
-                                            updateExtensionAppearance(domain, stateUrl, true);
-                                            StateManager.disableAutoSave();
-
-                                            sendResponse(false);
-                                        });
-                                    }
-                                });
-                            }
-                        });
-
-                        return true;
-                    } else {
-                        sendResponse(false);
-                    }
-                    break;*/
-                case "AUTO_SAVE.HIGHLIGHT.PRE_START":
-                    if (autoSaveEnabled) {
-                        const {selection} = StateManager.getState();
-                        chrome.tabs.sendMessage(id, {
-                            type: "PRICE_TAG.HIGHLIGHT.START",
-                            payload: {selection}
-                        }, onSimilarElementHighlight);
-                    }
-                    break;
-                case "AUTO_SAVE.HIGHLIGHT.PRE_STOP":
-                    if (autoSaveEnabled) {
-                        const {selection, originalBackgroundColor} = StateManager.getState();
-                        chrome.tabs.sendMessage(id, {
-                            type: "PRICE_TAG.HIGHLIGHT.STOP",
-                            payload: {selection, originalBackgroundColor}
-                        }, onSimilarElementHighlight);
-                    }
-                    break;
                 case "PRICE_UPDATE.STATUS":
                     chrome.storage.local.get([domain], result => {
                         const {domain, currentURL, browserURL, selection} = StateManager.getState();
