@@ -83,6 +83,16 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     }
 }
 
+function updateExtensionAppearance(isItemTracked) {
+    if (isItemTracked) {
+        setTrackedItemAppearance();
+        StateManager.enableCurrentPageTracked();
+    } else {
+        setDefaultAppearance();
+        StateManager.disableCurrentPageTracked();
+    }
+}
+
 function listenPopupStatus() {
     return onMessage$(POPUP_STATUS, ({sendResponse$}) => {
         const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = StateManager.getState();
@@ -108,14 +118,8 @@ function listenRecordAttempt() {
             }).pipe(
                 filter(({status}) => status > 0),
                 switchMap(onRecordDone$.bind(null, id, url, domain)),
-                tap(([, shouldUpdateAppearance]) => {
-                    if (shouldUpdateAppearance) {
-                        setTrackedItemAppearance();
-                        StateManager.enableCurrentPageTracked();
-                    } else {
-                        setDefaultAppearance();
-                        StateManager.disableCurrentPageTracked();
-                    }
+                tap(([, isItemTracked]) => {
+                    updateExtensionAppearance(isItemTracked);
                 })
             );
         } else {
@@ -209,15 +213,9 @@ function listenAutoSaveAttempt() {
                                                                     updateExtensionAppearance$(domain, url, true)
                                                                 )
                                                             ),
-                                                            tap(([highlightStopPayload, shouldUpdateAppearance]) => {
+                                                            tap(([highlightStopPayload, isItemTracked]) => {
                                                                 onSimilarElementHighlight(highlightStopPayload);
-                                                                if (shouldUpdateAppearance) {
-                                                                    setTrackedItemAppearance();
-                                                                    StateManager.enableCurrentPageTracked();
-                                                                } else {
-                                                                    setDefaultAppearance();
-                                                                    StateManager.disableCurrentPageTracked();
-                                                                }
+                                                                updateExtensionAppearance(isItemTracked);
                                                             }),
                                                             switchMap(() => sendResponse$(false)),
                                                             catchDisconnectedPort()
@@ -252,15 +250,9 @@ function listenAutoSaveAttempt() {
                                                 updateExtensionAppearance$(domain, currentURL, true)
                                             )
                                         ),
-                                        tap(([highlightStopPayload, shouldUpdateAppearance]) => {
+                                        tap(([highlightStopPayload, isItemTracked]) => {
                                             onSimilarElementHighlight(highlightStopPayload);
-                                            if (shouldUpdateAppearance) {
-                                                setTrackedItemAppearance();
-                                                StateManager.enableCurrentPageTracked();
-                                            } else {
-                                                setDefaultAppearance();
-                                                StateManager.disableCurrentPageTracked();
-                                            }
+                                            updateExtensionAppearance(isItemTracked);
                                         }),
                                         switchMap(() => sendResponse$(false)),
                                         catchDisconnectedPort()
