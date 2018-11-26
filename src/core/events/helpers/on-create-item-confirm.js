@@ -8,13 +8,15 @@ import setStorageDomain from "../internal/set-storage-domain";
 import {EXTENSION_MESSAGES} from "../../../config/background";
 
 const {
-    CONFIRMATION_DISPLAY_LOAD
+    CONFIRMATION_DISPLAY_CREATE,
+    CONFIRMATION_DISPLAY_LOAD,
+    CONFIRMATION_DISPLAY_REMOVE
 } = EXTENSION_MESSAGES;
 
 function onCreateItemConfirm(tabId, domain) {
     const modalElementId = "price-tag--url-confirmation";
     return sendTabMessage$(tabId, {
-        type: "CONFIRMATION_DISPLAY.CREATE",
+        type: CONFIRMATION_DISPLAY_CREATE,
         payload: {elementId: modalElementId}
     }).pipe(
         filter(({status}) => status === 1),
@@ -27,7 +29,7 @@ function onCreateItemConfirm(tabId, domain) {
             }).pipe(
                 switchMap(({status, index}) => {
                     const message$ = sendTabMessage$(tabId, {
-                        type: "CONFIRMATION_DISPLAY.REMOVE",
+                        type: CONFIRMATION_DISPLAY_REMOVE,
                         payload: {elementId: modalElementId}
                     });
 

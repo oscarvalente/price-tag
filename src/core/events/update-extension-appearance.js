@@ -6,11 +6,9 @@ import getStorageDomain from "./internal/get-storage-domain";
 
 function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
     if (forcePageTrackingTo === true) {
-        return of(true)
-            .pipe(take(1));
+        return of(true);
     } else if (forcePageTrackingTo === false) {
-        return of(false)
-            .pipe(take(1));
+        return of(false);
     } else if (!forcePageTrackingTo) {
         return getStorageDomain(currentDomain)
             .pipe(

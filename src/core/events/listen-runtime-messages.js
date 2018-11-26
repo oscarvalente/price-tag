@@ -1,5 +1,5 @@
-import {EMPTY, forkJoin} from "rxjs";
-import {switchMap, tap, filter, map, mapTo} from "rxjs/operators";
+import {EMPTY, forkJoin, of} from "rxjs";
+import {switchMap, tap, filter, map, catchError} from "rxjs/operators";
 import isEmpty from "lodash/isEmpty";
 import onMessage$ from "./internal/runtime-on-message";
 import StateManager from "../state-manager";
@@ -14,6 +14,7 @@ import updateExtensionAppearance$ from "./update-extension-appearance";
 import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
 import getStorageDomain from "./internal/get-storage-domain";
 import searchEqualPathWatchedItem from "../../utils/search-equal-path-watched-item";
+import {DISCONNECTED_PORT_MSG} from "../../constants/errors";
 
 const {
     POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
@@ -107,8 +108,8 @@ function listenRecordAttempt() {
             }).pipe(
                 filter(({status}) => status > 0),
                 switchMap(onRecordDone$.bind(null, id, url, domain)),
-                tap(([, forcePageTrackingTo]) => {
-                    if (forcePageTrackingTo) {
+                tap(([, shouldUpdateAppearance]) => {
+                    if (shouldUpdateAppearance) {
                         setTrackedItemAppearance();
                         StateManager.enableCurrentPageTracked();
                     } else {
@@ -168,6 +169,13 @@ function listenAutoSaveStatus() {
     });
 }
 
+function catchDisconnectedPort() {
+    return catchError(({message}) => (message === DISCONNECTED_PORT_MSG ?
+        of(false) :
+        EMPTY)
+    );
+}
+
 function listenAutoSaveAttempt() {
     return onMessage$(AUTO_SAVE_ATTEMPT, ({payload: data, sendResponse$}) => {
         const {payload = {}} = data;
@@ -197,19 +205,31 @@ function listenAutoSaveAttempt() {
                                                                     sendTabMessage$(id, {
                                                                         type: PRICE_TAG_HIGHLIGHT_STOP,
                                                                         payload: {selection, originalBackgroundColor}
-                                                                    }).pipe(tap(onSimilarElementHighlight)),
-                                                                    updateExtensionAppearance$(domain, url, true),
-                                                                    sendResponse$(false)
+                                                                    }),
+                                                                    updateExtensionAppearance$(domain, url, true)
                                                                 )
                                                             ),
-                                                            mapTo(([, , response]) => response)
+                                                            tap(([highlightStopPayload, shouldUpdateAppearance]) => {
+                                                                onSimilarElementHighlight(highlightStopPayload);
+                                                                if (shouldUpdateAppearance) {
+                                                                    setTrackedItemAppearance();
+                                                                    StateManager.enableCurrentPageTracked();
+                                                                } else {
+                                                                    setDefaultAppearance();
+                                                                    StateManager.disableCurrentPageTracked();
+                                                                }
+                                                            }),
+                                                            switchMap(() => sendResponse$(false)),
+                                                            catchDisconnectedPort()
                                                         );
                                                     } else {
                                                         // For Exceptions (including when there's similar item - should be caught by "AUTO_SAVE.STATUS")
                                                         if (!autoSaveStatus) {
                                                             StateManager.disableAutoSave();
                                                         }
-                                                        return sendResponse$(false);
+                                                        return sendResponse$(false).pipe(
+                                                            catchDisconnectedPort()
+                                                        );
                                                     }
                                                 }
                                             )
@@ -228,12 +248,22 @@ function listenAutoSaveAttempt() {
                                                 sendTabMessage$(id, {
                                                     type: PRICE_TAG_HIGHLIGHT_STOP,
                                                     payload: {selection, originalBackgroundColor}
-                                                }).pipe(tap(onSimilarElementHighlight)),
-                                                updateExtensionAppearance$(domain, currentURL, true),
-                                                sendResponse$(false)
+                                                }),
+                                                updateExtensionAppearance$(domain, currentURL, true)
                                             )
                                         ),
-                                        mapTo(([, , response]) => response)
+                                        tap(([highlightStopPayload, shouldUpdateAppearance]) => {
+                                            onSimilarElementHighlight(highlightStopPayload);
+                                            if (shouldUpdateAppearance) {
+                                                setTrackedItemAppearance();
+                                                StateManager.enableCurrentPageTracked();
+                                            } else {
+                                                setDefaultAppearance();
+                                                StateManager.disableCurrentPageTracked();
+                                            }
+                                        }),
+                                        switchMap(() => sendResponse$(false)),
+                                        catchDisconnectedPort()
                                     )
                                 )
                             );
@@ -242,7 +272,9 @@ function listenAutoSaveAttempt() {
                 )
             );
         } else {
-            return sendResponse$(false);
+            return sendResponse$(false).pipe(
+                catchDisconnectedPort()
+            );
         }
     });
 }
