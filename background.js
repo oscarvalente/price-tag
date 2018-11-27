@@ -49,24 +49,12 @@ import {
     listenAutoSaveStatus as listenAutoSaveStatus$,
     listenAutoSaveHighlightPreStart as listenAutoSaveHighlightPreStart$,
     listenAutoSaveHighlightPreStop as listenAutoSaveHighlightPreStop$,
-    listenAutoSaveAttempt as listenAutoSaveAttempt$
+    listenAutoSaveAttempt as listenAutoSaveAttempt$,
+    listenPriceUpdateStatus as listenPriceUpdateStatus$,
+    listenPriceUpdateAttempt as listenPriceUpdateAttempt$,
 } from "./src/core/events/listen-runtime-messages";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
-
-function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
-    if (status >= 0) {
-        const State = StateManager.getState();
-        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
-        if (toPrice(price) !== trackedPrice) {
-            sendResponse(true);
-            return;
-        }
-    }
-
-    sendResponse(false);
-}
 
 function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
     if (status >= 0) {
@@ -473,63 +461,15 @@ function attachEvents() {
     listenAutoSaveHighlightPreStart$().subscribe();
     listenAutoSaveHighlightPreStop$().subscribe();
     listenAutoSaveAttempt$().subscribe();
+    listenPriceUpdateStatus$().subscribe();
+    listenPriceUpdateAttempt$().subscribe();
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
             let isUndoStatusActive;
             const {id, url: itemUrl, sortByType} = payload;
-            const {isPriceUpdateEnabled, currentURL: url, browserURL, domain, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
+            const {isPriceUpdateEnabled, currentURL: url, browserURL, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                case "PRICE_UPDATE.STATUS":
-                    chrome.storage.local.get([domain], result => {
-                        const {domain, currentURL, browserURL, selection} = StateManager.getState();
-                        const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-                        const item = (domainItems[currentURL] && ItemFactory.createItemFromObject(domainItems[currentURL])) ||
-                            (domainItems[browserURL] && ItemFactory.createItemFromObject(domainItems[browserURL]));
-                        if (item) {
-                            chrome.tabs.sendMessage(id, {
-                                type: "PRICE_UPDATE.CHECK_STATUS",
-                                payload: {selection}
-                            }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
-                        } else {
-                            sendResponse(false);
-                        }
-                    });
-                    return true;
-                case "PRICE_UPDATE.ATTEMPT":
-                    if (isPriceUpdateEnabled) {
-                        const {selection, price: updatedPrice, originalBackgroundColor} =
-                            StateManager.getState();
-                        const price = updatedPrice && toPrice(updatedPrice);
-                        chrome.storage.local.get([domain], result => {
-                            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-
-                            const item = ItemFactory.createItemFromObject(domainItems[url]);
-
-                            item.updateTrackStatus(price,
-                                null,
-                                [
-                                    ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE,
-                                    ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED,
-                                    ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE,
-                                    ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED,
-                                    ITEM_STATUS.NOT_FOUND
-                                ]);
-                            item.updateDiffPercentage();
-
-                            domainItems[url] = item;
-                            chrome.storage.local.set({[domain]: JSON.stringify(domainItems)});
-
-                            chrome.tabs.sendMessage(id, {
-                                type: "PRICE_TAG.HIGHLIGHT.STOP",
-                                payload: {selection, originalBackgroundColor}
-                            }, onSimilarElementHighlight);
-
-                            StateManager.disablePriceUpdate();
-                            sendResponse(false);
-                        });
-                    }
-                    return true;
                 case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
                     if (isPriceUpdateEnabled) {
                         const {selection} = StateManager.getState();

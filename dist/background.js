@@ -6815,6 +6815,9 @@
     AUTO_SAVE_HIGHLIGHT_PRE_STOP: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
     PRICE_TAG_HIGHLIGHT_START: "PRICE_TAG.HIGHLIGHT.START",
     PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP",
+    PRICE_UPDATE_STATUS: "PRICE_UPDATE.STATUS",
+    PRICE_UPDATE_CHECK_STATUS: "PRICE_UPDATE.CHECK_STATUS",
+    PRICE_UPDATE_ATTEMPT: "PRICE_UPDATE.ATTEMPT",
     CONFIRMATION_DISPLAY_CREATE: "CONFIRMATION_DISPLAY.CREATE",
     CONFIRMATION_DISPLAY_LOAD: "CONFIRMATION_DISPLAY.LOAD",
     CONFIRMATION_DISPLAY_REMOVE: "CONFIRMATION_DISPLAY.REMOVE"
@@ -10673,7 +10676,10 @@
     AUTO_SAVE_HIGHLIGHT_PRE_START,
     AUTO_SAVE_HIGHLIGHT_PRE_STOP,
     PRICE_TAG_HIGHLIGHT_START,
-    PRICE_TAG_HIGHLIGHT_STOP
+    PRICE_TAG_HIGHLIGHT_STOP,
+    PRICE_UPDATE_STATUS,
+    PRICE_UPDATE_CHECK_STATUS,
+    PRICE_UPDATE_ATTEMPT
   } = EXTENSION_MESSAGES;
 
   function onRecordDone$(tabId, url, domain, payload) {
@@ -10717,6 +10723,26 @@
     }
   }
 
+  function onPriceUpdateCheckStatus(trackedPrice, {
+    status,
+    selection,
+    price,
+    faviconURL,
+    faviconAlt
+  } = {}) {
+    if (status >= 0) {
+      const State = StateManager.getState();
+      StateManager.updateFaviconURL(State.faviconURL || faviconURL);
+      StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
+
+      if (toPrice(price) !== trackedPrice) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function triggerAutoSaveCheckStatus$(tabId, url, selection, sendResponse$) {
     return sendTabMessage(tabId, {
       type: AUTO_SAVE_CHECK_STATUS,
@@ -10737,8 +10763,8 @@
     }
   }
 
-  function updateExtensionAppearance$1(isItemTracked) {
-    if (isItemTracked) {
+  function updateExtensionAppearance$1(enableTrackedItemAppearance) {
+    if (enableTrackedItemAppearance) {
       setTrackedItemAppearance();
       StateManager.enableCurrentPageTracked();
     } else {
@@ -11009,28 +11035,79 @@
     });
   }
 
-  StateManager.initState(TIME);
-
-  function onPriceUpdateCheckStatus(sendResponse, trackedPrice, {
-    status,
-    selection,
-    price,
-    faviconURL,
-    faviconAlt
-  } = {}) {
-    if (status >= 0) {
-      const State = StateManager.getState();
-      StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-      StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
-
-      if (toPrice(price) !== trackedPrice) {
-        sendResponse(true);
-        return;
-      }
-    }
-
-    sendResponse(false);
+  function listenPriceUpdateStatus() {
+    return onMessage(PRICE_UPDATE_STATUS, ({
+      payload: data,
+      sendResponse$
+    }) => {
+      const {
+        payload = {}
+      } = data;
+      const {
+        id
+      } = payload;
+      const {
+        domain
+      } = StateManager.getState();
+      return getStorageDomain(domain).pipe(switchMap(domainState => {
+        const {
+          currentURL,
+          browserURL,
+          selection
+        } = StateManager.getState();
+        const item = domainState[currentURL] && ItemFactory.createItemFromObject(domainState[currentURL]) || domainState[browserURL] && ItemFactory.createItemFromObject(domainState[browserURL]);
+        return item ? sendTabMessage(id, {
+          type: PRICE_UPDATE_CHECK_STATUS,
+          payload: {
+            selection
+          }
+        }).pipe(map(onPriceUpdateCheckStatus.bind(null, item.price)), switchMap(buttonEnabled => sendResponse$(buttonEnabled))) : sendResponse$(false);
+      }));
+    });
   }
+
+  function listenPriceUpdateAttempt() {
+    return onMessage(PRICE_UPDATE_ATTEMPT, ({
+      payload: data,
+      sendResponse$
+    }) => {
+      const {
+        payload = {}
+      } = data;
+      const {
+        id
+      } = payload;
+      const {
+        isPriceUpdateEnabled,
+        currentURL,
+        domain
+      } = StateManager.getState();
+
+      if (isPriceUpdateEnabled) {
+        const {
+          selection,
+          price: updatedPrice,
+          originalBackgroundColor
+        } = StateManager.getState();
+        const price = updatedPrice && toPrice(updatedPrice);
+        return getStorageDomain(domain).pipe(switchMap(domainState => {
+          const item = ItemFactory.createItemFromObject(domainState[currentURL]);
+          item.updateTrackStatus(price, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND]);
+          item.updateDiffPercentage();
+          domainState[currentURL] = item;
+          return forkJoin(setStorageDomain(domain, domainState), sendTabMessage(id, {
+            type: PRICE_TAG_HIGHLIGHT_STOP,
+            payload: {
+              selection,
+              originalBackgroundColor
+            }
+          }).pipe(tap(onSimilarElementHighlight))).pipe(tap(StateManager.disablePriceUpdate), switchMap(() => sendResponse$(false)), catchDisconnectedPort());
+        }));
+      }
+    });
+  }
+
+  StateManager.initState(TIME);
 
   function onSimilarElementHighlight$1({
     status,
@@ -11470,6 +11547,8 @@
     listenAutoSaveHighlightPreStart().subscribe();
     listenAutoSaveHighlightPreStop().subscribe();
     listenAutoSaveAttempt().subscribe();
+    listenPriceUpdateStatus().subscribe();
+    listenPriceUpdateAttempt().subscribe();
     chrome.runtime.onMessage.addListener(({
       type,
       payload = {}
@@ -11484,67 +11563,11 @@
         isPriceUpdateEnabled,
         currentURL: url,
         browserURL,
-        domain,
         _sortItemsBy,
         _undoRemovedItems
       } = StateManager.getState();
 
       switch (type) {
-        case "PRICE_UPDATE.STATUS":
-          chrome.storage.local.get([domain], result => {
-            const {
-              domain,
-              currentURL,
-              browserURL,
-              selection
-            } = StateManager.getState();
-            const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-            const item = domainItems[currentURL] && ItemFactory.createItemFromObject(domainItems[currentURL]) || domainItems[browserURL] && ItemFactory.createItemFromObject(domainItems[browserURL]);
-
-            if (item) {
-              chrome.tabs.sendMessage(id, {
-                type: "PRICE_UPDATE.CHECK_STATUS",
-                payload: {
-                  selection
-                }
-              }, onPriceUpdateCheckStatus.bind(null, sendResponse, item.price));
-            } else {
-              sendResponse(false);
-            }
-          });
-          return true;
-
-        case "PRICE_UPDATE.ATTEMPT":
-          if (isPriceUpdateEnabled) {
-            const {
-              selection,
-              price: updatedPrice,
-              originalBackgroundColor
-            } = StateManager.getState();
-            const price = updatedPrice && toPrice(updatedPrice);
-            chrome.storage.local.get([domain], result => {
-              const domainItems = result && result[domain] ? JSON.parse(result[domain]) : {};
-              const item = ItemFactory.createItemFromObject(domainItems[url]);
-              item.updateTrackStatus(price, null, [ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE, ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND]);
-              item.updateDiffPercentage();
-              domainItems[url] = item;
-              chrome.storage.local.set({
-                [domain]: JSON.stringify(domainItems)
-              });
-              chrome.tabs.sendMessage(id, {
-                type: "PRICE_TAG.HIGHLIGHT.STOP",
-                payload: {
-                  selection,
-                  originalBackgroundColor
-                }
-              }, onSimilarElementHighlight$1);
-              StateManager.disablePriceUpdate();
-              sendResponse(false);
-            });
-          }
-
-          return true;
-
         case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
           if (isPriceUpdateEnabled) {
             const {

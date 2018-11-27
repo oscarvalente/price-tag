@@ -15,11 +15,14 @@ import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
 import getStorageDomain from "./internal/get-storage-domain";
 import searchEqualPathWatchedItem from "../../utils/search-equal-path-watched-item";
 import {DISCONNECTED_PORT_MSG} from "../../constants/errors";
+import ItemFactory from "../factories/item";
+import {toPrice} from "../../utils/lang";
+import setStorageDomain from "./internal/set-storage-domain";
 
 const {
     POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
     AUTO_SAVE_ATTEMPT, AUTO_SAVE_HIGHLIGHT_PRE_START, AUTO_SAVE_HIGHLIGHT_PRE_STOP, PRICE_TAG_HIGHLIGHT_START,
-    PRICE_TAG_HIGHLIGHT_STOP
+    PRICE_TAG_HIGHLIGHT_STOP, PRICE_UPDATE_STATUS, PRICE_UPDATE_CHECK_STATUS, PRICE_UPDATE_ATTEMPT
 } = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
@@ -67,6 +70,19 @@ function onAutoSaveCheckStatus({status, selection, price, faviconURL, faviconAlt
     }
 }
 
+function onPriceUpdateCheckStatus(trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
+    if (status >= 0) {
+        const State = StateManager.getState();
+        StateManager.updateFaviconURL(State.faviconURL || faviconURL);
+        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
+        if (toPrice(price) !== trackedPrice) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function triggerAutoSaveCheckStatus$(tabId, url, selection, sendResponse$) {
     return sendTabMessage$(tabId, {
         type: AUTO_SAVE_CHECK_STATUS,
@@ -83,8 +99,8 @@ function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighl
     }
 }
 
-function updateExtensionAppearance(isItemTracked) {
-    if (isItemTracked) {
+function updateExtensionAppearance(enableTrackedItemAppearance) {
+    if (enableTrackedItemAppearance) {
         setTrackedItemAppearance();
         StateManager.enableCurrentPageTracked();
     } else {
@@ -309,11 +325,81 @@ function listenAutoSaveHighlightPreStop() {
     });
 }
 
+function listenPriceUpdateStatus() {
+    return onMessage$(PRICE_UPDATE_STATUS, ({payload: data, sendResponse$}) => {
+        const {payload = {}} = data;
+        const {id} = payload;
+        const {domain} = StateManager.getState();
+        return getStorageDomain(domain).pipe(
+            switchMap(domainState => {
+                const {currentURL, browserURL, selection} = StateManager.getState();
+                const item = (domainState[currentURL] && ItemFactory.createItemFromObject(domainState[currentURL])) ||
+                    (domainState[browserURL] && ItemFactory.createItemFromObject(domainState[browserURL]));
+                return item ?
+                    sendTabMessage$(id, {
+                        type: PRICE_UPDATE_CHECK_STATUS,
+                        payload: {selection}
+                    }).pipe(
+                        map(onPriceUpdateCheckStatus.bind(null, item.price)),
+                        switchMap(buttonEnabled => sendResponse$(buttonEnabled))
+                    ) :
+                    sendResponse$(false);
+            })
+        );
+    });
+}
+
+function listenPriceUpdateAttempt() {
+    return onMessage$(PRICE_UPDATE_ATTEMPT, ({payload: data, sendResponse$}) => {
+        const {payload = {}} = data;
+        const {id} = payload;
+        const {isPriceUpdateEnabled, currentURL, domain} = StateManager.getState();
+        if (isPriceUpdateEnabled) {
+            const {selection, price: updatedPrice, originalBackgroundColor} =
+                StateManager.getState();
+            const price = updatedPrice && toPrice(updatedPrice);
+            return getStorageDomain(domain).pipe(
+                switchMap(domainState => {
+                    const item = ItemFactory.createItemFromObject(domainState[currentURL]);
+
+                    item.updateTrackStatus(price,
+                        null,
+                        [
+                            ITEM_STATUS.INCREASED, ITEM_STATUS.ACK_INCREASE,
+                            ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED,
+                            ITEM_STATUS.DECREASED, ITEM_STATUS.ACK_DECREASE,
+                            ITEM_STATUS.DECREASED, ITEM_STATUS.DECREASED,
+                            ITEM_STATUS.NOT_FOUND
+                        ]);
+                    item.updateDiffPercentage();
+
+                    domainState[currentURL] = item;
+                    return forkJoin(
+                        setStorageDomain(domain, domainState),
+                        sendTabMessage$(id, {
+                            type: PRICE_TAG_HIGHLIGHT_STOP,
+                            payload: {selection, originalBackgroundColor}
+                        }).pipe(
+                            tap(onSimilarElementHighlight)
+                        )
+                    ).pipe(
+                        tap(StateManager.disablePriceUpdate),
+                        switchMap(() => sendResponse$(false)),
+                        catchDisconnectedPort()
+                    );
+                })
+            );
+        }
+    });
+}
+
 export {
     listenPopupStatus,
     listenRecordAttempt,
     listenAutoSaveStatus,
     listenAutoSaveHighlightPreStart,
     listenAutoSaveHighlightPreStop,
-    listenAutoSaveAttempt
+    listenAutoSaveAttempt,
+    listenPriceUpdateStatus,
+    listenPriceUpdateAttempt
 };

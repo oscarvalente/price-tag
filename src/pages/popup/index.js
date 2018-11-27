@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from "react";
-import {map, filter, tap, switchMap} from "rxjs/operators";
+import {of} from "rxjs";
+import {map, filter, tap, switchMap, share} from "rxjs/operators";
 
 import Toolbar from "../../components/toolbar/index";
 import IconLink from "../../components/icon-link/index";
@@ -8,7 +9,7 @@ import sendRuntimeMessage$ from "../../core/events/internal/runtime-send-message
 import {EXTENSION_MESSAGES} from "../../config/background";
 
 
-const {POPUP_STATUS, AUTO_SAVE_STATUS} = EXTENSION_MESSAGES;
+const {POPUP_STATUS, AUTO_SAVE_STATUS, PRICE_UPDATE_STATUS} = EXTENSION_MESSAGES;
 const BUTTON_STATUS = {
     active: "active",
     inactive: "inactive",
@@ -68,6 +69,9 @@ class Popup extends Component {
         super(props);
         this.onPopupStatus = this.onPopupStatus.bind(this);
         this.triggerPopupStatus$ = this.triggerPopupStatus$.bind(this);
+        this.triggerAutoSaveStatus$ = this.triggerAutoSaveStatus$.bind(this);
+        this.triggerPriceUpdateStatus$ = this.triggerPriceUpdateStatus$.bind(this);
+
         this.updateRecordButton = updateRecordButton.bind(this);
         this.updateAutosaveButton = updateAutosaveButton.bind(this);
         this.setPendingAutosave = setPendingAutosave.bind(this);
@@ -80,7 +84,13 @@ class Popup extends Component {
             priceUpdateButtonStatus: BUTTON_STATUS.inactive
         };
 
-        this.triggerPopupStatus$().subscribe(this.updateAutosaveButton);
+        this.triggerPopupStatus$().pipe(
+            switchMap(statuses => this.triggerAutoSaveStatus$(statuses))
+        ).subscribe(this.updateAutosaveButton);
+
+        this.triggerPopupStatus$().pipe(
+            switchMap(statuses => this.triggerPriceUpdateStatus$(statuses))
+        ).subscribe(this.updatePriceUpdateButton);
     }
 
     render() {
@@ -108,21 +118,35 @@ class Popup extends Component {
         }
 
         this.setPendingPriceUpdate();
-        chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "PRICE_UPDATE.STATUS", payload: {id}},
-                this.updatePriceUpdateButton);
-        });
     }
 
     triggerPopupStatus$() {
         return sendRuntimeMessage$({type: POPUP_STATUS}).pipe(
             tap(this.onPopupStatus),
-            map(({state}) => state.autoSaveEnabled),
+            map(({state}) => ({
+                autoSaveEnabled: state.autoSaveEnabled,
+                isPriceUpdateEnabled: state.isPriceUpdateEnabled
+            })),
+            share()
+        );
+    }
+
+    triggerAutoSaveStatus$({autoSaveEnabled}) {
+        return of(autoSaveEnabled).pipe(
             filter(autoSaveEnabled => autoSaveEnabled),
             tap(this.setPendingAutosave),
             switchMap(() => queryActiveTab$()),
             switchMap(([{id}]) =>
                 sendRuntimeMessage$({type: AUTO_SAVE_STATUS, payload: {id}})
+            )
+        );
+    }
+
+    triggerPriceUpdateStatus$({isPriceUpdateEnabled}) {
+        return of(isPriceUpdateEnabled).pipe(
+            switchMap(() => queryActiveTab$()),
+            switchMap(([{id}]) =>
+                sendRuntimeMessage$({type: PRICE_UPDATE_STATUS, payload: {id}})
             )
         );
     }
