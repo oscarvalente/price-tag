@@ -22,7 +22,8 @@ import setStorageDomain from "./internal/set-storage-domain";
 const {
     POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
     AUTO_SAVE_ATTEMPT, AUTO_SAVE_HIGHLIGHT_PRE_START, AUTO_SAVE_HIGHLIGHT_PRE_STOP, PRICE_TAG_HIGHLIGHT_START,
-    PRICE_TAG_HIGHLIGHT_STOP, PRICE_UPDATE_STATUS, PRICE_UPDATE_CHECK_STATUS, PRICE_UPDATE_ATTEMPT
+    PRICE_TAG_HIGHLIGHT_STOP, PRICE_UPDATE_STATUS, PRICE_UPDATE_CHECK_STATUS, PRICE_UPDATE_ATTEMPT,
+    PRICE_UPDATE_HIGHLIGHT_PRE_START, PRICE_UPDATE_HIGHLIGHT_PRE_STOP, TRACKED_ITEMS_OPEN
 } = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
@@ -393,6 +394,52 @@ function listenPriceUpdateAttempt() {
     });
 }
 
+function listenPriceUpdateHighlightPreStart() {
+    return onMessage$(PRICE_UPDATE_HIGHLIGHT_PRE_START, ({payload: data}) => {
+        const {payload = {}} = data;
+        const {id} = payload;
+        const {isPriceUpdateEnabled} = StateManager.getState();
+        if (isPriceUpdateEnabled) {
+            const {selection} = StateManager.getState();
+            return sendTabMessage$(id, {
+                type: PRICE_TAG_HIGHLIGHT_START,
+                payload: {selection}
+            }).pipe(
+                tap(onSimilarElementHighlight)
+            );
+        } else {
+            return EMPTY;
+        }
+    });
+}
+
+function listenPriceUpdateHighlightPreStop() {
+    return onMessage$(PRICE_UPDATE_HIGHLIGHT_PRE_STOP, ({payload: data}) => {
+        const {payload = {}} = data;
+        const {id} = payload;
+        const {isPriceUpdateEnabled} = StateManager.getState();
+        if (isPriceUpdateEnabled) {
+            const {selection, originalBackgroundColor} = StateManager.getState();
+            return sendTabMessage$(id, {
+                type: PRICE_TAG_HIGHLIGHT_STOP,
+                payload: {selection, originalBackgroundColor}
+            }).pipe(
+                tap(onSimilarElementHighlight)
+            );
+        } else {
+            return EMPTY;
+        }
+    });
+}
+
+function listenTrackedItemsOpen(sortItemsByType) {
+    return onMessage$(TRACKED_ITEMS_OPEN, ({sendResponse$}) => {
+        const State = StateManager.updateSortItemsBy(sortItemsByType);
+        const isUndoStatusActive = State._undoRemovedItems.length > 0;
+        return sendResponse$({isUndoStatusActive});
+    });
+}
+
 export {
     listenPopupStatus,
     listenRecordAttempt,
@@ -401,5 +448,8 @@ export {
     listenAutoSaveHighlightPreStop,
     listenAutoSaveAttempt,
     listenPriceUpdateStatus,
-    listenPriceUpdateAttempt
+    listenPriceUpdateAttempt,
+    listenPriceUpdateHighlightPreStart,
+    listenPriceUpdateHighlightPreStop,
+    listenTrackedItemsOpen
 };

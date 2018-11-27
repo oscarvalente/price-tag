@@ -52,15 +52,12 @@ import {
     listenAutoSaveAttempt as listenAutoSaveAttempt$,
     listenPriceUpdateStatus as listenPriceUpdateStatus$,
     listenPriceUpdateAttempt as listenPriceUpdateAttempt$,
+    listenPriceUpdateHighlightPreStart as listenPriceUpdateHighlightPreStart$,
+    listenPriceUpdateHighlightPreStop as listenPriceUpdateHighlightPreStop$,
+    listenTrackedItemsOpen as listenTrackedItemsOpen$
 } from "./src/core/events/listen-runtime-messages";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
-
-function onSimilarElementHighlight({status, isHighlighted: isSimilarElementHighlighted, originalBackgroundColor = null}) {
-    if (status >= 0) {
-        StateManager.setSimilarElementHighlight(isSimilarElementHighlighted, originalBackgroundColor);
-    }
-}
 
 function checkForPriceChanges() {
     chrome.storage.local.get(null, result => {
@@ -463,38 +460,15 @@ function attachEvents() {
     listenAutoSaveAttempt$().subscribe();
     listenPriceUpdateStatus$().subscribe();
     listenPriceUpdateAttempt$().subscribe();
+    listenPriceUpdateHighlightPreStart$().subscribe();
+    listenPriceUpdateHighlightPreStop$().subscribe();
+    listenTrackedItemsOpen$(SORT_ITEMS_BY_TIME).subscribe();
 
     chrome.runtime.onMessage.addListener(
         ({type, payload = {}}, sender, sendResponse) => {
-            let isUndoStatusActive;
-            const {id, url: itemUrl, sortByType} = payload;
-            const {isPriceUpdateEnabled, currentURL: url, browserURL, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
+            const {url: itemUrl, sortByType} = payload;
+            const {currentURL: url, browserURL, _sortItemsBy, _undoRemovedItems} = StateManager.getState();
             switch (type) {
-                case "PRICE_UPDATE.HIGHLIGHT.PRE_START":
-                    if (isPriceUpdateEnabled) {
-                        const {selection} = StateManager.getState();
-                        chrome.tabs.sendMessage(id, {
-                            type: "PRICE_TAG.HIGHLIGHT.START",
-                            payload: {selection}
-                        }, onSimilarElementHighlight);
-                    }
-                    break;
-                case "PRICE_UPDATE.HIGHLIGHT.PRE_STOP":
-                    if (isPriceUpdateEnabled) {
-                        const {selection, originalBackgroundColor} = StateManager.getState();
-                        chrome.tabs.sendMessage(id, {
-                            type: "PRICE_TAG.HIGHLIGHT.STOP",
-                            payload: {selection, originalBackgroundColor}
-                        }, onSimilarElementHighlight);
-                    }
-                    break;
-                case "TRACKED_ITEMS.OPEN":
-                    /* eslint-disable no-case-declarations */
-                    const State = StateManager.updateSortItemsBy(SORT_ITEMS_BY_TIME);
-                    /* eslint-enable no-case-declarations */
-                    isUndoStatusActive = State._undoRemovedItems.length > 0;
-                    sendResponse({isUndoStatusActive});
-                    break;
                 case "TRACKED_ITEMS.GET":
                     getTrackedItemsSortedBy(_sortItemsBy, sendResponse);
                     return true;
