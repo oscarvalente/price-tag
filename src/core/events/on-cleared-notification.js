@@ -5,9 +5,9 @@ import isFunction from "lodash/isFunction";
 import isEmpty from "lodash/isEmpty";
 import clearNotification from "./internal/notifications-clear";
 import StateManager from "../state-manager";
-import getStorageDomain from "./internal/get-storage-domain";
+import getStorageDomain$ from "./internal/get-storage-domain";
 import ItemFactory from "../factories/item";
-import setStorageDomain from "./internal/set-storage-domain";
+import setStorageDomain$ from "./internal/set-storage-domain";
 import ITEM_STATUS from "../../config/item-statuses";
 
 const onUpdateItemMapping = {
@@ -39,14 +39,14 @@ function onClearedNotification(notificationId, wasClosedByUser) {
         filter(notifcation => !isEmpty(notifcation)),
         switchMap(notification => {
             const {domain} = notification;
-            return getStorageDomain(domain).pipe(
+            return getStorageDomain$(domain).pipe(
                 map(domainState => {
                     const {url, type} = notification;
                     const item = ItemFactory.createItemFromObject(domainState[url]);
                     const updateItemFn = get(onUpdateItemMapping, [type]);
                     if (isFunction(updateItemFn)) {
                         domainState[url] = updateItemFn(item);
-                        return setStorageDomain(domain, domainState);
+                        return setStorageDomain$(domain, domainState);
                     } else {
                         return of();
                     }

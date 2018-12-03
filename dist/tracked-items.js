@@ -23332,6 +23332,42 @@
 	  onClick: propTypes.func
 	};
 
+	const EXTENSION_MESSAGES = {
+	  POPUP_STATUS: "POPUP.STATUS",
+	  RECORD_ATTEMPT: "RECORD.ATTEMPT",
+	  RECORD_START: "RECORD.START",
+	  RECORD_CANCEL: "RECORD.CANCEL",
+	  AUTO_SAVE_STATUS: "AUTO_SAVE.STATUS",
+	  AUTO_SAVE_CHECK_STATUS: "AUTO_SAVE.CHECK_STATUS",
+	  AUTO_SAVE_ATTEMPT: "AUTO_SAVE.ATTEMPT",
+	  AUTO_SAVE_HIGHLIGHT_PRE_START: "AUTO_SAVE.HIGHLIGHT.PRE_START",
+	  AUTO_SAVE_HIGHLIGHT_PRE_STOP: "AUTO_SAVE.HIGHLIGHT.PRE_STOP",
+	  PRICE_TAG_HIGHLIGHT_START: "PRICE_TAG.HIGHLIGHT.START",
+	  PRICE_TAG_HIGHLIGHT_STOP: "PRICE_TAG.HIGHLIGHT.STOP",
+	  PRICE_UPDATE_STATUS: "PRICE_UPDATE.STATUS",
+	  PRICE_UPDATE_CHECK_STATUS: "PRICE_UPDATE.CHECK_STATUS",
+	  PRICE_UPDATE_ATTEMPT: "PRICE_UPDATE.ATTEMPT",
+	  PRICE_UPDATE_HIGHLIGHT_PRE_START: "PRICE_UPDATE.HIGHLIGHT.PRE_START",
+	  PRICE_UPDATE_HIGHLIGHT_PRE_STOP: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP",
+	  TRACKED_ITEMS_OPEN: "TRACKED_ITEMS.OPEN",
+	  TRACKED_ITEMS_GET: "TRACKED_ITEMS.GET",
+	  TRACKED_ITEMS_UNFOLLOW: "TRACKED_ITEMS.UNFOLLOW",
+	  TRACKED_ITEMS_SET_UNDO_STATUS: "TRACKED_ITEMS.SET_UNDO_STATUS",
+	  TRACKED_ITEMS_CHANGE_SORT: "TRACKED_ITEMS.CHANGE_SORT",
+	  TRACKED_ITEMS_UNDO_ATTEMPT: "TRACKED_ITEMS.UNDO_ATTEMPT",
+	  CONFIRMATION_DISPLAY_CREATE: "CONFIRMATION_DISPLAY.CREATE",
+	  CONFIRMATION_DISPLAY_LOAD: "CONFIRMATION_DISPLAY.LOAD",
+	  CONFIRMATION_DISPLAY_REMOVE: "CONFIRMATION_DISPLAY.REMOVE"
+	};
+
+	const {
+	  TRACKED_ITEMS_GET,
+	  TRACKED_ITEMS_UNFOLLOW,
+	  TRACKED_ITEMS_OPEN,
+	  TRACKED_ITEMS_SET_UNDO_STATUS,
+	  TRACKED_ITEMS_CHANGE_SORT,
+	  TRACKED_ITEMS_UNDO_ATTEMPT
+	} = EXTENSION_MESSAGES;
 	const UNDO_STATUS = {
 	  ACTIVE: "active",
 	  INACTIVE: "inactive"
@@ -23344,7 +23380,7 @@
 
 	function updateTrackedItems() {
 	  chrome.runtime.sendMessage({
-	    type: "TRACKED_ITEMS.GET"
+	    type: TRACKED_ITEMS_GET
 	  }, this.onTrackedItems);
 	}
 
@@ -23355,7 +23391,7 @@
 	    id: sortByType
 	  } = currentTarget;
 	  chrome.runtime.sendMessage({
-	    type: "TRACKED_ITEMS.CHANGE_SORT",
+	    type: TRACKED_ITEMS_CHANGE_SORT,
 	    payload: {
 	      sortByType
 	    }
@@ -23393,7 +23429,7 @@
 	function generateOnItemRemovedCallback(url) {
 	  return () => {
 	    chrome.runtime.sendMessage({
-	      type: "TRACKED_ITEMS.UNFOLLOW",
+	      type: TRACKED_ITEMS_UNFOLLOW,
 	      payload: {
 	        url
 	      }
@@ -23404,7 +23440,7 @@
 	function generateOnUndoRemoveClickCallback() {
 	  return () => {
 	    chrome.runtime.sendMessage({
-	      type: "TRACKED_ITEMS.UNDO_ATTEMPT"
+	      type: TRACKED_ITEMS_UNDO_ATTEMPT
 	    }, this.onUndoAttemptResponse);
 	  };
 	}
@@ -23496,7 +23532,7 @@
 
 	  onOpenedTrackedItems() {
 	    chrome.runtime.sendMessage({
-	      type: "TRACKED_ITEMS.OPEN"
+	      type: TRACKED_ITEMS_OPEN
 	    }, this.onOpenTrackedItemsResponse);
 	    chrome.runtime.onMessage.addListener(({
 	      type,
@@ -23507,7 +23543,7 @@
 	      } = payload;
 
 	      switch (type) {
-	        case "TRACKED_ITEMS.UNDO_STATUS":
+	        case TRACKED_ITEMS_SET_UNDO_STATUS:
 	          this.setState({
 	            undoStatus: isUndoStatusActive ? UNDO_STATUS.ACTIVE : UNDO_STATUS.INACTIVE
 	          });

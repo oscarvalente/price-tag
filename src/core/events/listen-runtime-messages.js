@@ -12,18 +12,24 @@ import checkURLSimilarity$ from "./helpers/check-url-similarity";
 import createItem$ from "./helpers/create-item";
 import updateExtensionAppearance$ from "./update-extension-appearance";
 import {setDefaultAppearance, setTrackedItemAppearance} from "./appearance";
-import getStorageDomain from "./internal/get-storage-domain";
+import getStorageDomain$ from "./internal/get-storage-domain";
 import searchEqualPathWatchedItem from "../../utils/search-equal-path-watched-item";
 import {DISCONNECTED_PORT_MSG} from "../../constants/errors";
 import ItemFactory from "../factories/item";
 import {toPrice} from "../../utils/lang";
-import setStorageDomain from "./internal/set-storage-domain";
+import setStorageDomain$ from "./internal/set-storage-domain";
+import getTrackedItemsSortedBy$ from "./helpers/get-tracked-items-sorted-by";
+import removeTrackedItem$ from "./helpers/remove-tracked-item";
+import * as SORT_BY_TYPES from "../../config/sort-tracked-items";
+import undoRemoveTrackedItem$ from "./helpers/undo-remove-tracked-item";
+import onStatusAndAppearanceUpdate from "./helpers/on-status-and-appearance-update";
 
 const {
     POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
     AUTO_SAVE_ATTEMPT, AUTO_SAVE_HIGHLIGHT_PRE_START, AUTO_SAVE_HIGHLIGHT_PRE_STOP, PRICE_TAG_HIGHLIGHT_START,
     PRICE_TAG_HIGHLIGHT_STOP, PRICE_UPDATE_STATUS, PRICE_UPDATE_CHECK_STATUS, PRICE_UPDATE_ATTEMPT,
-    PRICE_UPDATE_HIGHLIGHT_PRE_START, PRICE_UPDATE_HIGHLIGHT_PRE_STOP, TRACKED_ITEMS_OPEN
+    PRICE_UPDATE_HIGHLIGHT_PRE_START, PRICE_UPDATE_HIGHLIGHT_PRE_STOP, TRACKED_ITEMS_OPEN, TRACKED_ITEMS_GET,
+    TRACKED_ITEMS_UNFOLLOW, TRACKED_ITEMS_CHANGE_SORT, TRACKED_ITEMS_UNDO_ATTEMPT
 } = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
@@ -161,7 +167,7 @@ function listenAutoSaveStatus() {
         const {payload = {}} = data;
         const {id} = payload;
         const {domain, currentURL} = StateManager.getState();
-        return getStorageDomain(domain).pipe(
+        return getStorageDomain$(domain).pipe(
             switchMap(domainState => {
                     if (!isEmpty(domainState)) {
                         if (domainState._isPathEnoughToTrack === true) {
@@ -174,8 +180,7 @@ function listenAutoSaveStatus() {
                             } else {
                                 return sendResponse$({status: -1});
                             }
-                        }
-                        else {
+                        } else {
                             const {selection} = StateManager.getState();
                             return triggerAutoSaveCheckStatus$(id, currentURL, selection, sendResponse$);
                         }
@@ -331,7 +336,7 @@ function listenPriceUpdateStatus() {
         const {payload = {}} = data;
         const {id} = payload;
         const {domain} = StateManager.getState();
-        return getStorageDomain(domain).pipe(
+        return getStorageDomain$(domain).pipe(
             switchMap(domainState => {
                 const {currentURL, browserURL, selection} = StateManager.getState();
                 const item = (domainState[currentURL] && ItemFactory.createItemFromObject(domainState[currentURL])) ||
@@ -359,7 +364,7 @@ function listenPriceUpdateAttempt() {
             const {selection, price: updatedPrice, originalBackgroundColor} =
                 StateManager.getState();
             const price = updatedPrice && toPrice(updatedPrice);
-            return getStorageDomain(domain).pipe(
+            return getStorageDomain$(domain).pipe(
                 switchMap(domainState => {
                     const item = ItemFactory.createItemFromObject(domainState[currentURL]);
 
@@ -376,7 +381,7 @@ function listenPriceUpdateAttempt() {
 
                     domainState[currentURL] = item;
                     return forkJoin(
-                        setStorageDomain(domain, domainState),
+                        setStorageDomain$(domain, domainState),
                         sendTabMessage$(id, {
                             type: PRICE_TAG_HIGHLIGHT_STOP,
                             payload: {selection, originalBackgroundColor}
@@ -440,6 +445,60 @@ function listenTrackedItemsOpen(sortItemsByType) {
     });
 }
 
+function listenTrackedItemsGet() {
+    return onMessage$(TRACKED_ITEMS_GET, ({sendResponse$}) => {
+        const {_sortItemsBy} = StateManager.getState();
+        return getTrackedItemsSortedBy$(_sortItemsBy).pipe(
+            switchMap(sortedItemsList => sendResponse$(sortedItemsList))
+        );
+    });
+}
+
+function listenTrackedItemsUnfollow() {
+    return onMessage$(TRACKED_ITEMS_UNFOLLOW, ({payload: data, sendResponse$}) => {
+        const {payload = {}} = data;
+        const {url} = payload;
+        const {currentURL, browserURL} = StateManager.getState();
+        return removeTrackedItem$(url, currentURL, browserURL).pipe(
+            tap(onStatusAndAppearanceUpdate),
+            switchMap(sortedItemsList => sendResponse$(sortedItemsList))
+        );
+    });
+}
+
+function listenTrackedItemsChangeSort() {
+    return onMessage$(TRACKED_ITEMS_CHANGE_SORT, handler$ => of(handler$)).pipe(
+        tap(({payload: data}) => {
+            const {payload = {}} = data;
+            const {sortByType} = payload;
+            StateManager.updateSortItemsBy(SORT_BY_TYPES[sortByType]);
+        }),
+        switchMap(({sendResponse$}) => sendResponse$())
+    );
+}
+
+function listenTrackedItemsUndoAttempt() {
+    return onMessage$(TRACKED_ITEMS_UNDO_ATTEMPT, ({sendResponse$}) => {
+        const {_undoRemovedItems} = StateManager.getState();
+        if (_undoRemovedItems.length > 0) {
+            const undoRemovedItem = StateManager.getUndoRemovedItemsHead();
+            const State = StateManager.getState();
+            const {currentURL, browserURL} = State;
+            return undoRemoveTrackedItem$(undoRemovedItem.url, currentURL, browserURL).pipe(
+                tap(onStatusAndAppearanceUpdate),
+                switchMap(() => {
+                    const {_undoRemovedItems} = StateManager.removeUndoRemovedItem(State);
+                    return _undoRemovedItems.length === 0 ?
+                        sendResponse$({isUndoStatusActive: false}) :
+                        sendResponse$({isUndoStatusActive: true});
+                })
+            );
+        } else {
+            return sendResponse$({isUndoStatusActive: false})
+        }
+    });
+}
+
 export {
     listenPopupStatus,
     listenRecordAttempt,
@@ -451,5 +510,9 @@ export {
     listenPriceUpdateAttempt,
     listenPriceUpdateHighlightPreStart,
     listenPriceUpdateHighlightPreStop,
-    listenTrackedItemsOpen
+    listenTrackedItemsOpen,
+    listenTrackedItemsGet,
+    listenTrackedItemsUnfollow,
+    listenTrackedItemsChangeSort,
+    listenTrackedItemsUndoAttempt
 };

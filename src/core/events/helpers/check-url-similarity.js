@@ -2,13 +2,13 @@ import isEmpty from "lodash/isEmpty";
 import {of, forkJoin} from "rxjs";
 import {switchMap, mapTo} from "rxjs/operators";
 import {buildSaveConfirmationPayload} from "../../../utils/view";
-import getStorageDomain from "../internal/get-storage-domain";
+import getStorageDomain$ from "../internal/get-storage-domain";
 import sendTabMessage$ from "../internal/tabs-send-message";
 import searchEqualPathWatchedItem from "../../../utils/search-equal-path-watched-item";
-import setStorageDomain from "../internal/set-storage-domain";
+import setStorageDomain$ from "../internal/set-storage-domain";
 
 function checkURLSimilarity(tabId, domain, currentURL) {
-    return getStorageDomain(domain).pipe(
+    return getStorageDomain$(domain).pipe(
         switchMap(domainState => {
             if (!isEmpty(domainState)) {
                 if (domainState._isPathEnoughToTrack === true) {
@@ -64,7 +64,7 @@ function checkURLSimilarity(tabId, domain, currentURL) {
                                                             domainState._isPathEnoughToTrack = true;
                                                             return forkJoin(
                                                                 message$,
-                                                                setStorageDomain(domain, domainState)
+                                                                setStorageDomain$(domain, domainState)
                                                             ).pipe(
                                                                 mapTo([currentURL, false, false])
                                                             );

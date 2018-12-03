@@ -3,8 +3,8 @@ import {filter, switchMap, mapTo} from "rxjs/operators";
 import StateManager from "../../state-manager";
 import {buildURLConfirmationPayload} from "../../../utils/view";
 import sendTabMessage$ from "../internal/tabs-send-message";
-import getStorageDomain from "../internal/get-storage-domain";
-import setStorageDomain from "../internal/set-storage-domain";
+import getStorageDomain$ from "../internal/get-storage-domain";
+import setStorageDomain$ from "../internal/set-storage-domain";
 import {EXTENSION_MESSAGES} from "../../../config/background";
 
 const {
@@ -40,14 +40,14 @@ function onCreateItemConfirm(tabId, domain) {
                             switch (index) {
                                 case 0:
                                     // said Yes, can use canonical and remember this option
-                                    return getStorageDomain(domain).pipe(
+                                    return getStorageDomain$(domain).pipe(
                                         switchMap(domainState => {
                                             domainState._canUseCanonical = true;
                                             const {canonicalURL} = StateManager.getState();
                                             StateManager.updateCurrentURL(canonicalURL);
                                             return forkJoin(
                                                 message$,
-                                                setStorageDomain(domain, domainState)
+                                                setStorageDomain$(domain, domainState)
                                             );
                                         }),
                                         mapTo([true, true])
@@ -60,14 +60,14 @@ function onCreateItemConfirm(tabId, domain) {
                                     );
                                 case 2:
                                     // said No, use browser URL and remember this option
-                                    return getStorageDomain(domain).pipe(
+                                    return getStorageDomain$(domain).pipe(
                                         switchMap(domainState => {
                                             domainState._canUseCanonical = false;
                                             const {browserURL} = StateManager.getState();
                                             StateManager.updateCurrentURL(browserURL);
                                             return forkJoin(
                                                 message$,
-                                                setStorageDomain(domain, domainState)
+                                                setStorageDomain$(domain, domainState)
                                             );
                                         }),
                                         mapTo([true, false])

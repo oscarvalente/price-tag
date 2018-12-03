@@ -5,10 +5,10 @@ import isFunction from "lodash/isFunction";
 
 import onNotificationsButtonClicked from "./internal/notifications-button-clicked";
 import ITEM_STATUS from "../../config/item-statuses";
-import getStorageDomain from "./internal/get-storage-domain";
+import getStorageDomain$ from "./internal/get-storage-domain";
 import ItemFactory from "../factories/item";
 import StateManager from "../state-manager";
-import setStorageDomain from "./internal/set-storage-domain";
+import setStorageDomain$ from "./internal/set-storage-domain";
 
 const onUpdateItemMapping = [
     {
@@ -56,7 +56,7 @@ function listenNotificationsButtonClicked() {
         // get domain state for the item if exists
         switchMap(({notification, buttonIndex}) => {
             const {domain, url, type} = notification;
-            return getStorageDomain(domain).pipe(
+            return getStorageDomain$(domain).pipe(
                 filter(domainState => domainState[url]),
                 map(domainState => ({
                         domainState,
@@ -74,7 +74,7 @@ function listenNotificationsButtonClicked() {
             const updateItemFn = get(onUpdateItemMapping, [buttonIndex, type]);
             if (isFunction(updateItemFn)) {
                 domainState[url] = updateItemFn(item);
-                return setStorageDomain(domain, domainState)
+                return setStorageDomain$(domain, domainState)
                     .pipe(
                         map(() => hasStoppedWatch(buttonIndex))
                     );

@@ -1,10 +1,10 @@
 import {map, take} from "rxjs/operators";
 import ItemFactory from "../../factories/item";
 import {findURLKey} from "../../../utils/storage";
-import getStorageDomain from "../internal/get-storage-domain";
+import getStorageDomain$ from "../internal/get-storage-domain";
 
 function updateAutoSaveStatus(url, domain, fullURL) {
-    return getStorageDomain(domain).pipe(
+    return getStorageDomain$(domain).pipe(
         map(domainState => {
             const item = domainState[url] && ItemFactory.createItemFromObject(domainState[url]);
             const itemFallback = domainState[fullURL] && ItemFactory.createItemFromObject(domainState[fullURL]);

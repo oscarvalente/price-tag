@@ -2,7 +2,7 @@ import {of} from "rxjs";
 import {map, take} from "rxjs/operators";
 import isEmpty from "lodash/isEmpty";
 import ItemFactory from "../factories/item";
-import getStorageDomain from "./internal/get-storage-domain";
+import getStorageDomain$ from "./internal/get-storage-domain";
 
 function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
     if (forcePageTrackingTo === true) {
@@ -10,7 +10,7 @@ function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingT
     } else if (forcePageTrackingTo === false) {
         return of(false);
     } else if (!forcePageTrackingTo) {
-        return getStorageDomain(currentDomain)
+        return getStorageDomain$(currentDomain)
             .pipe(
                 map(domainState => {
                     if (!isEmpty(domainState)) {

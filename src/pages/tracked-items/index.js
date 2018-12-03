@@ -11,6 +11,16 @@ import IconTitle from "../../components/icon-title";
 import ItemsList from "../../components/items-list";
 import OptionsList, {Option} from "../../components/options-list";
 import IconButton from "../../components/icon-button";
+import {EXTENSION_MESSAGES} from "../../config/background";
+
+const {
+    TRACKED_ITEMS_GET,
+    TRACKED_ITEMS_UNFOLLOW,
+    TRACKED_ITEMS_OPEN,
+    TRACKED_ITEMS_SET_UNDO_STATUS,
+    TRACKED_ITEMS_CHANGE_SORT,
+    TRACKED_ITEMS_UNDO_ATTEMPT
+} = EXTENSION_MESSAGES;
 
 const UNDO_STATUS = {
     ACTIVE: "active",
@@ -23,12 +33,12 @@ function formatDate(timestamp) {
 }
 
 function updateTrackedItems() {
-    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.GET"}, this.onTrackedItems);
+    chrome.runtime.sendMessage({type: TRACKED_ITEMS_GET}, this.onTrackedItems);
 }
 
 function onSortChange({currentTarget}) {
     const {id: sortByType} = currentTarget;
-    chrome.runtime.sendMessage({type: "TRACKED_ITEMS.CHANGE_SORT", payload: {sortByType}}, this.updateTrackedItems);
+    chrome.runtime.sendMessage({type: TRACKED_ITEMS_CHANGE_SORT, payload: {sortByType}}, this.updateTrackedItems);
 }
 
 function onOpenTrackedItemsResponse({isUndoStatusActive}) {
@@ -55,7 +65,7 @@ BackButton.propTypes = {
 function generateOnItemRemovedCallback(url) {
     return () => {
         chrome.runtime.sendMessage({
-            type: "TRACKED_ITEMS.UNFOLLOW",
+            type: TRACKED_ITEMS_UNFOLLOW,
             payload: {url}
         }, this.updateTrackedItems);
     };
@@ -64,7 +74,7 @@ function generateOnItemRemovedCallback(url) {
 function generateOnUndoRemoveClickCallback() {
     return () => {
         chrome.runtime.sendMessage({
-            type: "TRACKED_ITEMS.UNDO_ATTEMPT"
+            type: TRACKED_ITEMS_UNDO_ATTEMPT
         }, this.onUndoAttemptResponse);
     };
 }
@@ -150,11 +160,11 @@ class TrackedItems extends Component {
     }
 
     onOpenedTrackedItems() {
-        chrome.runtime.sendMessage({type: "TRACKED_ITEMS.OPEN"}, this.onOpenTrackedItemsResponse);
+        chrome.runtime.sendMessage({type: TRACKED_ITEMS_OPEN}, this.onOpenTrackedItemsResponse);
         chrome.runtime.onMessage.addListener(({type, payload = {}}) => {
             const {isUndoStatusActive} = payload;
             switch (type) {
-                case "TRACKED_ITEMS.UNDO_STATUS":
+                case TRACKED_ITEMS_SET_UNDO_STATUS:
                     this.setState({
                         undoStatus: isUndoStatusActive ? UNDO_STATUS.ACTIVE : UNDO_STATUS.INACTIVE
                     });
