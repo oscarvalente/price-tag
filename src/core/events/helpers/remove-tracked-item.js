@@ -7,7 +7,7 @@ import {EXTENSION_MESSAGES, MAX_UNDO_REMOVED_ITEMS, UNDO_REMOVED_ITEMS_TIMEOUT} 
 import ITEM_STATUS from "../../../config/item-statuses";
 import getStorage from "../internal/get-storage";
 import sendRuntimeMessage$ from "../internal/runtime-send-message";
-import updateStatusAndAppearance$ from "./update-status-and-appearance";
+import updateStatusAndAppearance$ from "../update-status-and-appearance";
 import setStorageDomain$ from "../internal/set-storage-domain";
 
 const {TRACKED_ITEMS_SET_UNDO_STATUS} = EXTENSION_MESSAGES;

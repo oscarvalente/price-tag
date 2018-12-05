@@ -1,5 +1,5 @@
 import {of} from "rxjs";
-import {switchMap} from "rxjs/operators";
+import {switchMap, filter} from "rxjs/operators";
 import {TIME as SORT_ITEMS_BY_TIME} from "./src/config/sort-tracked-items";
 import {
     PRICE_CHECKING_INTERVAL,
@@ -13,8 +13,7 @@ import {
 } from "./src/config/assets";
 import MATCHES from "./src/constants/regexp";
 import {
-    setDefaultAppearance,
-    setTrackedItemAppearance
+    setDefaultAppearance
 } from "./src/core/events/appearance";
 import {
     syncStorageState
@@ -53,6 +52,7 @@ import {
     listenTrackedItemsChangeSort as listenTrackedItemsChangeSort$,
     listenTrackedItemsUndoAttempt as listenTrackedItemsUndoAttempt$
 } from "./src/core/events/listen-runtime-messages";
+import updateStatusAndAppearance$ from "./src/core/events/update-status-and-appearance";
 import onStatusAndAppearanceUpdate from "./src/core/events/helpers/on-status-and-appearance-update";
 
 StateManager.initState(SORT_ITEMS_BY_TIME);
@@ -211,36 +211,6 @@ function setupTrackingPolling() {
     setInterval(checkForPriceChanges, PRICE_CHECKING_INTERVAL);
 }
 
-function updateExtensionAppearance(currentDomain, currentURL, forcePageTrackingTo, fullURL) {
-    if (forcePageTrackingTo === true) {
-        setTrackedItemAppearance();
-        StateManager.enableCurrentPageTracked();
-    } else if (forcePageTrackingTo === false) {
-        setDefaultAppearance();
-        StateManager.disableCurrentPageTracked();
-    } else if (!forcePageTrackingTo) {
-        chrome.storage.local.get([currentDomain], result => {
-            const domainState = result && result[currentDomain] && JSON.parse(result[currentDomain]) || null;
-            if (domainState) {
-                // NOTE: Making sure that full URL is also checked because item may have been saved with full URL
-                // in the past
-                const itemObject = domainState[currentURL] || domainState[fullURL];
-                const item = itemObject && ItemFactory.createItemFromObject(itemObject);
-                if (item && item.isWatched()) {
-                    setTrackedItemAppearance();
-                    StateManager.enableCurrentPageTracked();
-                } else {
-                    setDefaultAppearance();
-                    StateManager.disableCurrentPageTracked();
-                }
-            } else {
-                setDefaultAppearance();
-                StateManager.disableCurrentPageTracked();
-            }
-        });
-    }
-}
-
 // TODO: break this down into smaller functions
 function attachEvents() {
     onInstalled$().subscribe(() => console.log("Price tag installed."));
@@ -290,13 +260,14 @@ function attachEvents() {
 
     listenNotificationsClicked$().subscribe();
 
-    listenNotificationsButtonClicked$().subscribe(hasStoppedWatch => {
-        if (hasStoppedWatch) {
-            // is case click was "Stop watch"
-            const {domain, currentURL} = StateManager.getState();
-            updateExtensionAppearance(domain, currentURL, false);
-        }
-    });
+    listenNotificationsButtonClicked$().pipe(
+        filter(hasStoppedWatch => hasStoppedWatch),
+        switchMap(() => {
+            // in case user clicked "Stop watch"
+            const {domain, currentURL, browserURL} = StateManager.getState();
+            return updateStatusAndAppearance$(currentURL, domain, false, browserURL);
+        }),
+    ).subscribe(onStatusAndAppearanceUpdate);
 
     listenNotificationsClosed$().subscribe();
 }

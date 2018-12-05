@@ -3,6 +3,8 @@
 #0.21.5
 * Fix tab context change update (caused by my Rx implementation)
 * Listen to notifications buttons click through Rx
+* Listen to even messages through Rx
+* Update status and appearance on Stop watch notification click and on remaining situations
 
 #0.21.4
 * Add Rx to installed and basic tab change-related events

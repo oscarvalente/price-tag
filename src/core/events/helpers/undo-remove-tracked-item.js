@@ -5,7 +5,7 @@ import ItemFactory from "../../factories/item";
 import ITEM_STATUS from "../../../config/item-statuses";
 import getStorage from "../internal/get-storage";
 import setStorageDomain from "../internal/set-storage-domain";
-import updateStatusAndAppearance$ from "./update-status-and-appearance";
+import updateStatusAndAppearance$ from "../update-status-and-appearance";
 
 function undoRemoveTrackedItem(url, currentURL, fullURL) {
     return getStorage().pipe(

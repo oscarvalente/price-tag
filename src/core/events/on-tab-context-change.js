@@ -5,7 +5,7 @@ import {captureDomainFromURL, captureProtocolHostAndPathFromURL, isCanonicalURLR
 import {getCanonicalPathFromSource} from "../../utils/dom";
 import {onXHR$} from "../../utils/http";
 import getStorageDomain$ from "./internal/get-storage-domain";
-import updateStatusAndAppearance$ from "./helpers/update-status-and-appearance";
+import updateStatusAndAppearance$ from "./update-status-and-appearance";
 
 function onTabContextChange(tabId, url) {
     const domain = captureDomainFromURL(url);
