@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+#0.21.6
+* Check price changes through Rx
+* Bug fix: when price goes back to normal remove item statuses regarding different price
+
 #0.21.5
 * Fix tab context change update (caused by my Rx implementation)
 * Listen to notifications buttons click through Rx

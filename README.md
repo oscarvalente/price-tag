@@ -152,13 +152,13 @@ but there's a lot more, and more to come.
         * refactor modal ✅
         * modal dist ✅
         * evaluate folder containers vs components
- * Refactor background script ❗❗ `(wip)`
+ * Refactor background script ✅
     * Independent functions code split ✅
-    * Reactive architecture/behaviours (remaining functions) ❗❗ `(wip)`
+    * Reactive architecture/behaviours (remaining functions) ✅
  * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
  * BUG: Price-update status with full URL not updating properly ✅
  * Use Docker for build ❗❗
- * feature: aggregate similar items (track panel) with drag n' drop ❗
+ * feature request: aggregate similar items (track panel) with drag n' drop (categorize items) ❗
  
  **Legend:**
  * ❗️ urgent/priority development

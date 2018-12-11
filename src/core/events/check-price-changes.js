@@ -33,9 +33,8 @@ function checkPriceChanges(freq) {
                     const item = ItemFactory.createItemFromObject(domainItems[url]);
 
                     if (item.isWatched()) {
-                        const {price: targetPrice, currentPrice} = item;
                         return onXHR$(url).pipe(
-                            mergeMap(template => onPageFetch$(template, domain, url, domainItems, item, targetPrice, currentPrice))
+                            mergeMap(template => onPageFetch$(template, domain, url, domainItems, item))
                         );
                     } else {
                         return EMPTY;

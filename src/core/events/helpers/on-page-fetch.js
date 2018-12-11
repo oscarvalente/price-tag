@@ -1,5 +1,5 @@
 import {of} from "rxjs";
-import {switchMap} from "rxjs/operators";
+import {mergeMap} from "rxjs/operators";
 import MATCHES from "../../../constants/regexp";
 import {toPrice} from "../../../utils/lang";
 import ITEM_STATUS from "../../../config/item-statuses";
@@ -8,7 +8,8 @@ import StateManager from "../../state-manager";
 import createNotification$ from "../create-custom-notification";
 import {PRICE_FIX_ICON, PRICE_NOT_FOUND_ICON, PRICE_UPDATE_ICON} from "../../../config/assets";
 
-function onPageFetch(template, domain, url, domainItems, item, targetPrice, currentPrice) {
+function onPageFetch(template, domain, url, domainItems, item) {
+    const {price: targetPrice, currentPrice} = item;
     try {
         let newPrice = null;
         const {textContent} = template.querySelector(domainItems[url].selection);
@@ -26,7 +27,7 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
                             [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
                         domainItems[url] = item;
                         return setStorageDomain$(domain, domainItems).pipe(
-                            switchMap(() => {
+                            mergeMap(() => {
                                 // TODO: sendResponse("done"); // foi actualizado ou não
                                 const {notificationsCounter} = StateManager.getState();
                                 const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
@@ -41,7 +42,7 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
                         [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
                     domainItems[url] = item;
                     return setStorageDomain$(domain, domainItems).pipe(
-                        switchMap(() => {
+                        mergeMap(() => {
                             const {notificationsCounter} = StateManager.getState();
                             const notificationId = `TRACK.PRICE_FIXED-${notificationsCounter}`;
                             return createNotification$(notificationId, PRICE_FIX_ICON, "Fixed price",
@@ -51,12 +52,12 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
                 } else if (newPrice < currentPrice) {
                     item.updateCurrentPrice(newPrice);
                     item.updateTrackStatus(null,
-                        [ITEM_STATUS.DECREASED],
+                        newPrice === targetPrice ? null : [ITEM_STATUS.DECREASED],
                         [ITEM_STATUS.INCREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_DECREASE]);
                     domainItems[url] = item;
 
                     return setStorageDomain$(domain, domainItems).pipe(
-                        switchMap(() => {
+                        mergeMap(() => {
                             // TODO: sendResponse("done"); // foi actualizado ou não
                             if (newPrice < targetPrice && !item.hasAcknowledgeDecrease()) {
                                 const {notificationsCounter} = StateManager.getState();
@@ -81,12 +82,12 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
                 } else if (newPrice > currentPrice) {
                     item.updateCurrentPrice(newPrice); // update current price and previous
                     item.updateTrackStatus(null,
-                        [ITEM_STATUS.INCREASED],
+                        newPrice === targetPrice ? null : [ITEM_STATUS.INCREASED],
                         [ITEM_STATUS.DECREASED, ITEM_STATUS.NOT_FOUND, ITEM_STATUS.ACK_INCREASE]);
 
                     domainItems[url] = item;
                     return setStorageDomain$(domain, domainItems).pipe(
-                        switchMap(() => {
+                        mergeMap(() => {
                             // TODO: sendResponse("done"); // foi actualizado ou não
 
                             if (!item.hasAcknowledgeIncrease()) {
@@ -137,7 +138,7 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
             domainItems[url] = item;
 
             return setStorageDomain$(domain, domainItems).pipe(
-                switchMap(() => {
+                mergeMap(() => {
                     const {notificationsCounter} = StateManager.getState();
                     const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
                     const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
