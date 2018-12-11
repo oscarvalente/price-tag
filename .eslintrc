@@ -14,7 +14,8 @@
         "clearTimeout": true,
         "setTimeout": true,
         "setInterval": true,
-        "location": true
+        "location": true,
+        "Promise": true
     },
     "rules": {
         "func-names": "off",

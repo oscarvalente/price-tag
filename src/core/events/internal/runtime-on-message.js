@@ -1,5 +1,5 @@
 import {fromEventPattern} from "rxjs";
-import {map, switchMap, filter} from "rxjs/operators";
+import {map, mergeMap, filter} from "rxjs/operators";
 import {transformCallbackToObservable} from "../../../utils/rx";
 
 function addOnMessage(handler) {
@@ -17,7 +17,7 @@ function onMessage(matchingMessageType, handler$) {
             filter(([{type}]) => type === matchingMessageType),
             map(([payload, sender, sendResponse]) =>
                 ({payload, sender, sendResponse$: transformCallbackToObservable(sendResponse)})),
-            switchMap(handler$)
+            mergeMap(handler$)
         );
 }
 

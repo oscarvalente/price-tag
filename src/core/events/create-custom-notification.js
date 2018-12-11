@@ -19,7 +19,7 @@ function createCustomNotification(notificationId, iconUrl, title, message, conte
                 StateManager.incrementNotificationsCounter();
                 StateManager.updateNotificationsItem(id, {url, domain, type});
             })
-        ).subscribe();
+        );
 }
 
 export default createCustomNotification;

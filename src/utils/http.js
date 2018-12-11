@@ -1,26 +1,26 @@
-import {fromEventPattern} from "rxjs";
+import {from} from "rxjs";
 import {take} from "rxjs/operators";
 import {createHTMLTemplate} from "./dom";
 
-function onXHR(url, callback) {
-    const request = new XMLHttpRequest();
-    request.onload = function () {
-        const template = createHTMLTemplate(this.response);
-        callback(template);
-    };
-    request.open("GET", url);
-    request.send();
+function makeXHR(url) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.addEventListener("load", function () {
+            const template = createHTMLTemplate(xhr.response);
+            resolve(template);
+        });
+        xhr.addEventListener("error", reject);
+        xhr.open("GET", url);
+        xhr.send();
+    });
 }
 
 function onXHR$(url) {
-    return fromEventPattern(handler => {
-        onXHR(url, handler);
-    }).pipe(
+    return from(makeXHR(url)).pipe(
         take(1)
     );
 }
 
 export {
-    onXHR,
     onXHR$
 };
