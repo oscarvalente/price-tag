@@ -19,7 +19,24 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
 
                 newPrice = toPrice(newPrice);
 
-                if (!targetPrice) {
+                if (item.price && !newPrice) {
+                    if (!item.isNotFound()) {
+                        item.updateTrackStatus(null,
+                            [ITEM_STATUS.NOT_FOUND],
+                            [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
+                        domainItems[url] = item;
+                        return setStorageDomain$(domain, domainItems).pipe(
+                            switchMap(() => {
+                                // TODO: sendResponse("done"); // foi actualizado ou não
+                                const {notificationsCounter} = StateManager.getState();
+                                const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
+                                const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
+                                return createNotification$(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
+                                    `Price tag no longer found${previousPrice}`, url, url, domain);
+                            })
+                        );
+                    }
+                } else if (!targetPrice) {
                     item.updateTrackStatus(newPrice,
                         [ITEM_STATUS.FIXED], [ITEM_STATUS.NOT_FOUND]);
                     domainItems[url] = item;
@@ -109,25 +126,6 @@ function onPageFetch(template, domain, url, domainItems, item, targetPrice, curr
                     domainItems[url] = item;
                     return setStorageDomain$(domain, domainItems);
                 }
-            }
-        }
-
-        if (item.price && !newPrice) {
-            if (!item.isNotFound()) {
-                item.updateTrackStatus(null,
-                    [ITEM_STATUS.NOT_FOUND],
-                    [ITEM_STATUS.DECREASED, ITEM_STATUS.INCREASED, ITEM_STATUS.FIXED, ITEM_STATUS.ACK_DECREASE]);
-                domainItems[url] = item;
-                return setStorageDomain$(domain, domainItems).pipe(
-                    switchMap(() => {
-                        // TODO: sendResponse("done"); // foi actualizado ou não
-                        const {notificationsCounter} = StateManager.getState();
-                        const notificationId = `TRACK.PRICE_NOT_FOUND-${notificationsCounter}`;
-                        const previousPrice = targetPrice ? ` (previous ${targetPrice})` : "";
-                        return createNotification$(notificationId, PRICE_NOT_FOUND_ICON, "Price gone",
-                            `Price tag no longer found${previousPrice}`, url, url, domain);
-                    })
-                );
             }
         }
     } catch (e) {
