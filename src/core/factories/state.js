@@ -201,6 +201,16 @@ class StateFactory {
         };
     }
 
+    static removeUndoRemovedItemByURL(state, url) {
+        const _undoRemovedItems = [...state._undoRemovedItems]
+            .filter(({url: itemURL}) => itemURL !== url);
+
+        return {
+            ...state,
+            _undoRemovedItems
+        };
+    }
+
     static resetUndoRemovedItems(state) {
         return {
             ...state,

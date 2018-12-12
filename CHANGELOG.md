@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.21.7
+* Fix undo remove item icon still there after saving item bug
+
 #0.21.6
 * Check price changes through Rx
 * Bug fix: when price goes back to normal remove item statuses regarding different price

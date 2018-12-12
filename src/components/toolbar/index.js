@@ -6,6 +6,17 @@ import styles from "./toolbar.css";
 import ToolbarButton from "../toolbar-button/index";
 import queryActiveTab$ from "../../core/events/internal/query-active-tab";
 import sendRuntimeMessage$ from "../../core/events/internal/runtime-send-message";
+import {EXTENSION_MESSAGES} from "../../config/background";
+
+const {
+    RECORD_ATTEMPT,
+    AUTO_SAVE_ATTEMPT,
+    AUTO_SAVE_HIGHLIGHT_PRE_START,
+    AUTO_SAVE_HIGHLIGHT_PRE_STOP,
+    PRICE_UPDATE_ATTEMPT,
+    PRICE_UPDATE_HIGHLIGHT_PRE_START,
+    PRICE_UPDATE_HIGHLIGHT_PRE_STOP
+} = EXTENSION_MESSAGES;
 
 const BUTTON_STATUS = {
     active: "active",
@@ -76,43 +87,43 @@ class Toolbar extends Component {
 
     onRecordClick() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id, url}]) => {
-            chrome.runtime.sendMessage({type: "RECORD.ATTEMPT", payload: {id, url}}, this.props.onPopupStatus);
+            chrome.runtime.sendMessage({type: RECORD_ATTEMPT, payload: {id, url}}, this.props.onPopupStatus);
         });
     }
 
     onAutosaveClick() {
         return queryActiveTab$().pipe(
-            switchMap(([{id}]) => sendRuntimeMessage$({type: "AUTO_SAVE.ATTEMPT", payload: {id}}))
+            switchMap(([{id}]) => sendRuntimeMessage$({type: AUTO_SAVE_ATTEMPT, payload: {id}}))
         ).subscribe(this.props.onAutosaveStatus);
     }
 
     onAutosaveMouseover() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_START", payload: {id}});
+            chrome.runtime.sendMessage({type: AUTO_SAVE_HIGHLIGHT_PRE_START, payload: {id}});
         });
     }
 
     onAutosaveMouseout() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "AUTO_SAVE.HIGHLIGHT.PRE_STOP", payload: {id}});
+            chrome.runtime.sendMessage({type: AUTO_SAVE_HIGHLIGHT_PRE_STOP, payload: {id}});
         });
     }
 
     onPriceUpdateClick() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "PRICE_UPDATE.ATTEMPT", payload: {id}}, this.props.onPriceUpdateStatus);
+            chrome.runtime.sendMessage({type: PRICE_UPDATE_ATTEMPT, payload: {id}}, this.props.onPriceUpdateStatus);
         });
     }
 
     onPriceUpdateMouseover() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_START", payload: {id}});
+            chrome.runtime.sendMessage({type: PRICE_UPDATE_HIGHLIGHT_PRE_START, payload: {id}});
         });
     }
 
     onPriceUpdateMouseout() {
         chrome.tabs.query({active: true, currentWindow: true}, ([{id}]) => {
-            chrome.runtime.sendMessage({type: "PRICE_UPDATE.HIGHLIGHT.PRE_STOP", payload: {id}});
+            chrome.runtime.sendMessage({type: PRICE_UPDATE_HIGHLIGHT_PRE_STOP, payload: {id}});
         });
     }
 }

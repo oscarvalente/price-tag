@@ -53,6 +53,7 @@ function onRecordDone$(tabId, url, domain, payload) {
                 checkURLSimilarity$(tabId, domain, url)
         ),
         filter(([, isToSave]) => isToSave),
+        tap(([url]) => StateManager.removeUndoRemovedItemByURL(url)),
         switchMap(([url]) =>
             forkJoin(
                 createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]),
@@ -224,6 +225,7 @@ function listenAutoSaveAttempt() {
                                         return checkURLSimilarity$(id, domain, url).pipe(
                                             switchMap(([url, isToSave, autoSaveStatus]) => {
                                                     if (isToSave) {
+                                                        StateManager.removeUndoRemovedItemByURL(url);
                                                         return createItem$(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
                                                             tap(StateManager.disableAutoSave),
                                                             switchMap(() =>
@@ -260,8 +262,9 @@ function listenAutoSaveAttempt() {
                         } else {
                             return checkURLSimilarity$(id, domain, currentURL).pipe(
                                 filter(([, isToSave]) => isToSave),
-                                switchMap(([currentURL]) =>
-                                    createItem$(domain, currentURL, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
+                                tap(([url]) => StateManager.removeUndoRemovedItemByURL(url)),
+                                switchMap(([url]) =>
+                                    createItem$(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
                                         tap(StateManager.disableAutoSave),
                                         switchMap(() =>
                                             forkJoin(
@@ -269,7 +272,7 @@ function listenAutoSaveAttempt() {
                                                     type: PRICE_TAG_HIGHLIGHT_STOP,
                                                     payload: {selection, originalBackgroundColor}
                                                 }),
-                                                updateExtensionAppearance$(domain, currentURL, true)
+                                                updateExtensionAppearance$(domain, url, true)
                                             )
                                         ),
                                         tap(([highlightStopPayload, isItemTracked]) => {

@@ -134,6 +134,11 @@ class StateManager {
         return State;
     }
 
+    static removeUndoRemovedItemByURL(url){
+        State = StateFactory.removeUndoRemovedItemByURL(State, url);
+        return State;
+    }
+
     static resetUndoRemovedItems() {
         State = StateFactory.resetUndoRemovedItems(State);
         return State;
