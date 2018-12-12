@@ -147,6 +147,8 @@ function onPageFetch(template, domain, url, domainItems, item) {
                 })
             );
         }
+
+        return of(e);
     }
 }
 
