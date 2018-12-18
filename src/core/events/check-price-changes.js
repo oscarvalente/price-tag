@@ -3,7 +3,7 @@ import {switchMap, mergeMap, filter, startWith, map} from "rxjs/operators";
 import {matchesDomain, matchesURL} from "../../utils/lang";
 import ItemFactory from "../factories/item";
 import {onXHR$} from "../../utils/http";
-import getStorage$ from "./internal/get-storage";
+import getStorage$ from "./internal/get-storage-local";
 import onPageFetch$ from "./helpers/on-page-fetch";
 
 function checkPriceChanges(freq) {

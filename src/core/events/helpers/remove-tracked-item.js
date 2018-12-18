@@ -5,7 +5,7 @@ import ItemFactory from "../../factories/item";
 import StateManager from "../../state-manager";
 import {EXTENSION_MESSAGES, MAX_UNDO_REMOVED_ITEMS, UNDO_REMOVED_ITEMS_TIMEOUT} from "../../../config/background";
 import ITEM_STATUS from "../../../config/item-statuses";
-import getStorage from "../internal/get-storage";
+import getStorageLocal from "../internal/get-storage-local";
 import sendRuntimeMessage$ from "../internal/runtime-send-message";
 import updateStatusAndAppearance$ from "../update-status-and-appearance";
 import setStorageDomain$ from "../internal/set-storage-domain";
@@ -13,7 +13,7 @@ import setStorageDomain$ from "../internal/set-storage-domain";
 const {TRACKED_ITEMS_SET_UNDO_STATUS} = EXTENSION_MESSAGES;
 
 function removeTrackedItem(url, currentURL, fullURL) {
-    return getStorage().pipe(
+    return getStorageLocal().pipe(
         switchMap(result => {
             const resultKeys = Object.keys(result);
             for (let i = 0; i < resultKeys.length; i++) {

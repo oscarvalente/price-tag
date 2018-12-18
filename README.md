@@ -90,9 +90,9 @@ but there's a lot more, and more to come.
      * Add overlay shadow behind modal
      * Allow HTML modal messages ✅
      * BUG: change link "target" inside modal to blank ✅
-     * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ❗
+     * error handling: Check storage.sync "QUOTA_BYTES_PER_ITEM quota exceeded" error ✅
      * add cancel button to warning modals ✅
-     * BUG: if item is removed then saved, item is removed from undo items (undo must be disabled) ❗❗
+     * BUG: if item is removed then saved, item is removed from undo items (undo must be disabled) ✅
      * add button to stop following item in main toolbar ❗
      * use doc title as item name ❗
      * tech debt: record action doesn't deal with domain and url; state manages them ✅
@@ -157,7 +157,7 @@ but there's a lot more, and more to come.
     * Reactive architecture/behaviours (remaining functions) ✅
  * BUG: Auto-save status with full URL and undo remove item not updating properly ✅
  * BUG: Price-update status with full URL not updating properly ✅
- * Use Docker for build ❗❗
+ * Use Docker for build ❗
  * feature request: aggregate similar items (track panel) with drag n' drop (categorize items) ❗
  
  **Legend:**

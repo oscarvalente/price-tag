@@ -2,10 +2,10 @@ import {map} from "rxjs/operators";
 import {matchesDomain, matchesHostname} from "../../../utils/lang";
 import ItemFactory from "../../factories/item";
 import sortTrackedItemsBy from "../../../utils/sort-tracked-items";
-import getStorage from "../internal/get-storage";
+import getStorageLocal from "../internal/get-storage-local";
 
 function getTrackedItemsSortedBy(sortType) {
-    return getStorage().pipe(
+    return getStorageLocal().pipe(
         map(result => {
             let trackedItems = [];
             Object.keys(result).forEach(key => {

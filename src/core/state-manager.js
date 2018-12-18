@@ -1,5 +1,6 @@
 import {of} from "rxjs";
 import {map, take} from "rxjs/operators";
+import mapValues from "lodash/mapValues";
 
 import StateFactory from "./factories/state";
 
@@ -134,7 +135,7 @@ class StateManager {
         return State;
     }
 
-    static removeUndoRemovedItemByURL(url){
+    static removeUndoRemovedItemByURL(url) {
         State = StateFactory.removeUndoRemovedItemByURL(State, url);
         return State;
     }
@@ -149,9 +150,19 @@ class StateManager {
         return State;
     }
 
-    static toStorageStateFormat() {
-        State = StateFactory.toStorageStateFormat(State);
-        return State;
+    static toStorageLocalStateFormat(localState) {
+        return Object.keys(localState).reduce((newState, domain) => {
+            return {
+                ...newState,
+                [domain]: JSON.stringify(localState[domain])
+            }
+        }, {});
+    }
+
+    static toStorageSyncStateFormat(syncState) {
+        return mapValues(syncState, v => {
+            return JSON.stringify(v);
+        })
     }
 
     static getNotifications$() {

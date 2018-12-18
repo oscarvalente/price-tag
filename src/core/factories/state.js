@@ -224,15 +224,6 @@ class StateFactory {
             _undoRemovedItemsResetTask: task
         };
     }
-
-    static toStorageStateFormat(state) {
-        return Object.keys(state).reduce((newState, domain) => {
-            return {
-                ...newState,
-                [domain]: JSON.stringify(state[domain])
-            }
-        }, {});
-    }
 }
 
 export default StateFactory;

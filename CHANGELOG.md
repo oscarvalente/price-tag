@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#0.21.8
+* Fix "QUOTA_BYTES_PER_ITEM quota exceeded" by restructuring storage.sync data
+
 #0.21.7
 * Fix undo remove item icon still there after saving item bug
 

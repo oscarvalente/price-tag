@@ -1,12 +1,12 @@
 import {fromEventPattern} from "rxjs";
 import {take} from "rxjs/operators";
 
-function getStorage() {
+function setStorageSync(state) {
     return fromEventPattern(handler => {
-        chrome.storage.local.get(null, handler);
+        chrome.storage.sync.set(state, handler);
     }).pipe(
         take(1)
     );
 }
 
-export default getStorage;
+export default setStorageSync;

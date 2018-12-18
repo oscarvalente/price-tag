@@ -8,9 +8,7 @@ import {
 import {
     setDefaultAppearance
 } from "./src/core/events/appearance";
-import {
-    syncStorageState
-} from "./src/core/events/storage";
+import {syncStorageState as syncStorageState$} from "./src/core/events/storage";
 import StateManager from "./src/core/state-manager";
 import onInstalled$ from "./src/core/events/internal/installed";
 import onUpdated$ from "./src/core/events/internal/updated";
@@ -110,8 +108,7 @@ function attachEvents() {
 }
 
 function setupSyncStorageState() {
-    syncStorageState();
-    setInterval(syncStorageState, SYNCHING_INTERVAL);
+    syncStorageState$(SYNCHING_INTERVAL).subscribe();
 }
 
 function bootstrap() {
