@@ -94,7 +94,7 @@ but there's a lot more, and more to come.
      * add cancel button to warning modals ✅
      * BUG: if item is removed then saved, item is removed from undo items (undo must be disabled) ✅
      * add button to stop following item in main toolbar ❗
-     * use doc title as item name ❗
+     * use doc title as item name ✅
      * tech debt: record action doesn't deal with domain and url; state manages them ✅
      * allow naming item ❗
         * toggle on
@@ -161,7 +161,7 @@ but there's a lot more, and more to come.
  * feature request: aggregate similar items (track panel) with drag n' drop (categorize items) ❗
  
  **Legend:**
- * ❗️ urgent/priority development
+ * [❗]️ urgent/priority development
  * ⚠️ unsolvable issue
  * ✅️ solved
  

@@ -31,7 +31,7 @@ function evaluatePriceTag(selection, sendResponse) {
                 selection,
                 price,
                 faviconURL: getFaviconURL(),
-                faviconAlt: document.title
+                name: document.title
             });
         } else {
             sendResponse({status: -2});
@@ -103,7 +103,7 @@ function attachEvents() {
                                 selection,
                                 price,
                                 faviconURL: getFaviconURL(),
-                                faviconAlt: document.title
+                                name: document.title
                             });
                         } else {
                             sendResponse({status: -3});

@@ -33,7 +33,7 @@ const {
 } = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
-    const {selection, price, faviconURL, faviconAlt} = payload;
+    const {selection, price, faviconURL, name} = payload;
     const State = StateManager.getState();
     StateManager.updateFaviconURL(State.faviconURL || faviconURL);
     StateManager.disableRecord();
@@ -41,7 +41,7 @@ function onRecordDone$(tabId, url, domain, payload) {
     return canDisplayURLConfirmation$(State, domain).pipe(
         switchMap(canDisplay =>
             canDisplay ?
-                onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, faviconAlt)
+                onCreateItemConfirm$(tabId, domain, url, selection, price, faviconURL, name)
                     .pipe(
                         filter(([canSave]) => canSave),
                         switchMap(([, useCanonical]) => {
@@ -56,7 +56,7 @@ function onRecordDone$(tabId, url, domain, payload) {
         tap(([url]) => StateManager.removeUndoRemovedItemByURL(url)),
         switchMap(([url]) =>
             forkJoin(
-                createItem$(domain, url, selection, price, State.faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]),
+                createItem$(domain, url, selection, price, State.faviconURL, name, [ITEM_STATUS.WATCHED]),
                 updateExtensionAppearance$(domain, url, true)
             )
         )
@@ -67,22 +67,22 @@ function onRecordCancel() {
     StateManager.disableRecord();
 }
 
-function onAutoSaveCheckStatus({status, selection, price, faviconURL, faviconAlt} = {}) {
+function onAutoSaveCheckStatus({status, selection, price, faviconURL, name} = {}) {
     if (status >= 0) {
         const State = StateManager.getState();
         StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
+        StateManager.setSelectionInfo(selection, price, State.faviconURL, name);
         return true;
     } else {
         return false;
     }
 }
 
-function onPriceUpdateCheckStatus(trackedPrice, {status, selection, price, faviconURL, faviconAlt} = {}) {
+function onPriceUpdateCheckStatus(trackedPrice, {status, selection, price, faviconURL, name} = {}) {
     if (status >= 0) {
         const State = StateManager.getState();
         StateManager.updateFaviconURL(State.faviconURL || faviconURL);
-        StateManager.setSelectionInfo(selection, price, State.faviconURL, faviconAlt);
+        StateManager.setSelectionInfo(selection, price, State.faviconURL, name);
         if (toPrice(price) !== trackedPrice) {
             return true;
         }
@@ -210,13 +210,13 @@ function listenAutoSaveAttempt() {
         const {autoSaveEnabled, domain, currentURL} = StateManager.getState();
         if (autoSaveEnabled) {
             const state = StateManager.getState();
-            const {selection, price, faviconURL, faviconAlt, originalBackgroundColor}
+            const {selection, price, faviconURL, name, originalBackgroundColor}
                 = state;
 
             return canDisplayURLConfirmation$(state, domain).pipe(
                 switchMap(canDisplay => {
                         if (canDisplay) {
-                            return onCreateItemConfirm$(id, domain, currentURL, selection, price, faviconURL, faviconAlt).pipe(
+                            return onCreateItemConfirm$(id, domain, currentURL, selection, price, faviconURL, name).pipe(
                                 filter(([canSave]) => canSave),
                                 switchMap(([, useCaninocal]) => {
                                         const {canonicalURL, browserURL} = state;
@@ -226,7 +226,7 @@ function listenAutoSaveAttempt() {
                                             switchMap(([url, isToSave, autoSaveStatus]) => {
                                                     if (isToSave) {
                                                         StateManager.removeUndoRemovedItemByURL(url);
-                                                        return createItem$(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
+                                                        return createItem$(domain, url, selection, price, faviconURL, name, [ITEM_STATUS.WATCHED]).pipe(
                                                             tap(StateManager.disableAutoSave),
                                                             switchMap(() =>
                                                                 forkJoin(
@@ -264,7 +264,7 @@ function listenAutoSaveAttempt() {
                                 filter(([, isToSave]) => isToSave),
                                 tap(([url]) => StateManager.removeUndoRemovedItemByURL(url)),
                                 switchMap(([url]) =>
-                                    createItem$(domain, url, selection, price, faviconURL, faviconAlt, [ITEM_STATUS.WATCHED]).pipe(
+                                    createItem$(domain, url, selection, price, faviconURL, name, [ITEM_STATUS.WATCHED]).pipe(
                                         tap(StateManager.disableAutoSave),
                                         switchMap(() =>
                                             forkJoin(

@@ -30,7 +30,7 @@ function transformLocalToSyncStateFormat(localState, urlToDomainMap, cleanDomain
         };
     }, {});
 
-    // add _domain prop
+    // adds _domain prop
     return defaultsDeep(syncStateWithoutDomains, urlToDomainMap);
 }
 

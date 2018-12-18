@@ -7,6 +7,7 @@ class StateFactory {
             autoSaveEnabled: false,
             isPriceUpdateEnabled: false,
             selection: null,
+            name: null,
             isSimilarElementHighlighted: false,
             originalBackgroundColor: null,
             isCurrentPageTracked: false,
@@ -126,13 +127,13 @@ class StateFactory {
         };
     }
 
-    static setSelectionInfo(state, selection, price, faviconURL, faviconAlt) {
+    static setSelectionInfo(state, selection, price, faviconURL, name) {
         return {
             ...state,
             selection,
             price,
             faviconURL,
-            faviconAlt
+            name
         };
     }
 

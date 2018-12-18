@@ -9,10 +9,10 @@ const ItemContext = React.createContext();
 const IconContainer = () => {
     return (
         <ItemContext.Consumer>
-            {({faviconURL, faviconAlt}) => (
+            {({faviconURL, name}) => (
                 <div className={styles["item-icon-container"]}>
                     {faviconURL &&
-                    <img className={styles["item-icon"]} src={faviconURL} title={faviconAlt}/>
+                    <img className={styles["item-icon"]} src={faviconURL} title={name}/>
                     }
                 </div>
             )}

@@ -91,8 +91,8 @@ class StateManager {
         return State;
     }
 
-    static setSelectionInfo(selection, price, faviconURL, faviconAlt) {
-        State = StateFactory.setSelectionInfo(State, selection, price, faviconURL, faviconAlt);
+    static setSelectionInfo(selection, price, faviconURL, itemName) {
+        State = StateFactory.setSelectionInfo(State, selection, price, faviconURL, itemName);
         return State;
     }
 

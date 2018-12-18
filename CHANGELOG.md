@@ -1,5 +1,8 @@
 ### CHANGELOG
 
+#1.0.0
+* Change faviconAlt property to generic item name
+
 #0.21.8
 * Fix "QUOTA_BYTES_PER_ITEM quota exceeded" by restructuring storage.sync data
 
