@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import {Subject} from "rxjs";
 import {switchMap} from "rxjs/operators";
 
 import styles from "./toolbar.css";
@@ -15,7 +16,8 @@ const {
     AUTO_SAVE_HIGHLIGHT_PRE_STOP,
     PRICE_UPDATE_ATTEMPT,
     PRICE_UPDATE_HIGHLIGHT_PRE_START,
-    PRICE_UPDATE_HIGHLIGHT_PRE_STOP
+    PRICE_UPDATE_HIGHLIGHT_PRE_STOP,
+    STOP_FOLLOW_ATTEMPT
 } = EXTENSION_MESSAGES;
 
 const BUTTON_STATUS = {
@@ -34,7 +36,7 @@ function getAutosaveButton(buttonStatus) {
                        onMouseOut={this.onAutosaveMouseout}
         /> :
         <ToolbarButton id="auto-save-btn"
-                       title="Save the detected price-tag in current page"
+                       title="Can't save any price-tag in current page"
                        status={this.props.autosaveButtonStatus}/>;
 }
 
@@ -48,8 +50,20 @@ function getPriceUpdateButton(buttonStatus) {
                        onMouseOut={this.onPriceUpdateMouseout}
         /> :
         <ToolbarButton id="price-update-btn"
-                       title="Update price-tag to current value"
+                       title="Can't update price-tag in current page"
                        status={this.props.priceUpdateButtonStatus}/>;
+}
+
+function getStopFollowButton(buttonStatus) {
+    return buttonStatus === BUTTON_STATUS.active ?
+        <ToolbarButton id="stop-follow-btn"
+                       status={this.props.stopFollowButtonStatus}
+                       title="Stop following current current page item"
+                       onClick={this.onStopFollowClick}
+        /> :
+        <ToolbarButton id="stop-follow-btn"
+                       title="You're not following the current page item"
+                       status={this.props.stopFollowButtonStatus}/>;
 }
 
 class Toolbar extends Component {
@@ -62,11 +76,19 @@ class Toolbar extends Component {
         this.onPriceUpdateClick = this.onPriceUpdateClick.bind(this);
         this.onPriceUpdateMouseover = this.onPriceUpdateMouseover.bind(this);
         this.onPriceUpdateMouseout = this.onPriceUpdateMouseout.bind(this);
+        this.onStopFollowClick = this.onStopFollowClick.bind(this);
+
+        this.stopFollowClick$ = new Subject();
+        this.listenStopFollowClick$ = this.listenStopFollowClick$.bind(this);
+
+        this.listenStopFollowClick$().subscribe(this.props.onItemChangedTrackStatus);
     }
 
     render() {
         const createAutosaveButton = getAutosaveButton.bind(this, this.props.autosaveButtonStatus);
         const createPriceUpdateButton = getPriceUpdateButton.bind(this, this.props.priceUpdateButtonStatus);
+        const createStopFollowButton = getStopFollowButton.bind(this, this.props.stopFollowButtonStatus);
+
         return (
             <ul className={styles["tracking-buttons"]}>
                 <li>
@@ -81,6 +103,9 @@ class Toolbar extends Component {
                 <li>
                     {createPriceUpdateButton()}
                 </li>
+                <li>
+                    {createStopFollowButton()}
+                </li>
             </ul>
         );
     }
@@ -94,7 +119,7 @@ class Toolbar extends Component {
     onAutosaveClick() {
         return queryActiveTab$().pipe(
             switchMap(([{id}]) => sendRuntimeMessage$({type: AUTO_SAVE_ATTEMPT, payload: {id}}))
-        ).subscribe(this.props.onAutosaveStatus);
+        ).subscribe(this.props.onItemChangedTrackStatus);
     }
 
     onAutosaveMouseover() {
@@ -126,14 +151,28 @@ class Toolbar extends Component {
             chrome.runtime.sendMessage({type: PRICE_UPDATE_HIGHLIGHT_PRE_STOP, payload: {id}});
         });
     }
+
+    listenStopFollowClick$() {
+        return this.stopFollowClick$.pipe(
+            switchMap(() => queryActiveTab$()),
+            switchMap(([{id}]) =>
+                sendRuntimeMessage$({type: STOP_FOLLOW_ATTEMPT, payload: {id}})
+            )
+        );
+    }
+
+    onStopFollowClick(e) {
+        this.stopFollowClick$.next(e);
+    }
 }
 
 Toolbar.propTypes = {
     autosaveButtonStatus: PropTypes.string,
     priceUpdateButtonStatus: PropTypes.string,
     recordButtonStatus: PropTypes.string,
+    stopFollowButtonStatus: PropTypes.string,
     onPopupStatus: PropTypes.func,
-    onAutosaveStatus: PropTypes.func,
+    onItemChangedTrackStatus: PropTypes.func,
     onPriceUpdateStatus: PropTypes.func
 };
 

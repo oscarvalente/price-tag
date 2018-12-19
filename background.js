@@ -29,6 +29,8 @@ import {
     listenPriceUpdateAttempt as listenPriceUpdateAttempt$,
     listenPriceUpdateHighlightPreStart as listenPriceUpdateHighlightPreStart$,
     listenPriceUpdateHighlightPreStop as listenPriceUpdateHighlightPreStop$,
+    listenStopFollowStatus as listenStopFollowStatus$,
+    listenStopFollowAttempt as listenStopFollowAttempt$,
     listenTrackedItemsOpen as listenTrackedItemsOpen$,
     listenTrackedItemsGet as listenTrackedItemsGet$,
     listenTrackedItemsUnfollow as listenTrackedItemsUnfollow$,
@@ -87,6 +89,8 @@ function attachEvents() {
     listenPriceUpdateAttempt$().subscribe();
     listenPriceUpdateHighlightPreStart$().subscribe();
     listenPriceUpdateHighlightPreStop$().subscribe();
+    listenStopFollowStatus$().subscribe();
+    listenStopFollowAttempt$().subscribe();
     listenTrackedItemsOpen$(SORT_ITEMS_BY_TIME).subscribe();
     listenTrackedItemsGet$().subscribe();
     listenTrackedItemsUnfollow$().subscribe();

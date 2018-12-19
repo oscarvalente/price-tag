@@ -1,5 +1,9 @@
 ### CHANGELOG
 
+#1.1.0
+* Stop following button in toolbar to stop
+tracking and receiving updates from the current page item
+
 #1.0.0
 * Change faviconAlt property to generic item name
 

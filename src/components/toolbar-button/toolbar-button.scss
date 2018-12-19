@@ -1,3 +1,5 @@
+$stop-button-dimm: 30px;
+
 @svg-load record-inactive url(../../../assets/search.svg) {
   fill: #54575e;
 }
@@ -30,6 +32,24 @@
   fill: #62656c;
 }
 
+@svg-load stop-follow-inactive url(../../../assets/stop-button.svg) {
+  fill: #878a91;
+  height: $stop-button-dimm;
+  width: $stop-button-dimm;
+}
+
+@svg-load stop-follow-active url(../../../assets/stop-button.svg) {
+  fill: #f2071e;
+  height: $stop-button-dimm;
+  width: $stop-button-dimm;
+}
+
+@svg-load stop-follow-pending url(../../../assets/stop-button.svg) {
+  fill: #62656c;
+  height: $stop-button-dimm;
+  width: $stop-button-dimm;
+}
+
 .toolbar-button-container {
   height: 30px;
   width: 30px;
@@ -39,6 +59,7 @@
     &:hover {
       cursor: pointer;
     }
+
     &.inactive {
       background: svg-inline(record-inactive) no-repeat;
     }
@@ -53,10 +74,12 @@
       background: svg-inline(auto-save-inactive) no-repeat;
       cursor: initial;
     }
+
     &.active {
       background: svg-inline(auto-save-active) no-repeat;
       cursor: pointer;
     }
+
     &.pending {
       background: svg-inline(auto-save-pending) no-repeat;
     }
@@ -67,12 +90,30 @@
       background: svg-inline(price-update-inactive) no-repeat;
       cursor: initial;
     }
+
     &.active {
       background: svg-inline(price-update-active) no-repeat;
       cursor: pointer;
     }
+
     &.pending {
       background: svg-inline(price-update-pending) no-repeat;
+    }
+  }
+
+  &.stop-follow-btn {
+    &.inactive {
+      background: svg-inline(stop-follow-inactive) no-repeat;
+      cursor: initial;
+    }
+
+    &.active {
+      background: svg-inline(stop-follow-active) no-repeat;
+      cursor: pointer;
+    }
+
+    &.pending {
+      background: svg-inline(stop-follow-pending) no-repeat;
     }
   }
 }

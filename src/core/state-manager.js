@@ -30,6 +30,16 @@ class StateManager {
         return State;
     }
 
+    static enableStopFollow() {
+        State = StateFactory.enableStopFollow(State);
+        return State;
+    }
+
+    static disableStopFollow() {
+        State = StateFactory.disableStopFollow(State);
+        return State;
+    }
+
     static updateCurrentDomain(domain) {
         State = StateFactory.updateCurrentDomain(State, domain);
         return State;

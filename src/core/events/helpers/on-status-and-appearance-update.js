@@ -23,9 +23,11 @@ function onStatusAndAppearanceUpdate(statusUpdate = []) {
         if (enableTrackedItemAppearance) {
             setTrackedItemAppearance();
             StateManager.enableCurrentPageTracked();
+            StateManager.enableStopFollow();
         } else {
             setDefaultAppearance();
             StateManager.disableCurrentPageTracked();
+            StateManager.disableStopFollow();
         }
     }
 }

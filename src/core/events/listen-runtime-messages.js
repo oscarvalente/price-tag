@@ -28,8 +28,8 @@ const {
     POPUP_STATUS, RECORD_ATTEMPT, RECORD_START, RECORD_CANCEL, AUTO_SAVE_STATUS, AUTO_SAVE_CHECK_STATUS,
     AUTO_SAVE_ATTEMPT, AUTO_SAVE_HIGHLIGHT_PRE_START, AUTO_SAVE_HIGHLIGHT_PRE_STOP, PRICE_TAG_HIGHLIGHT_START,
     PRICE_TAG_HIGHLIGHT_STOP, PRICE_UPDATE_STATUS, PRICE_UPDATE_CHECK_STATUS, PRICE_UPDATE_ATTEMPT,
-    PRICE_UPDATE_HIGHLIGHT_PRE_START, PRICE_UPDATE_HIGHLIGHT_PRE_STOP, TRACKED_ITEMS_OPEN, TRACKED_ITEMS_GET,
-    TRACKED_ITEMS_UNFOLLOW, TRACKED_ITEMS_CHANGE_SORT, TRACKED_ITEMS_UNDO_ATTEMPT
+    PRICE_UPDATE_HIGHLIGHT_PRE_START, PRICE_UPDATE_HIGHLIGHT_PRE_STOP, STOP_FOLLOW_STATUS, STOP_FOLLOW_ATTEMPT,
+    TRACKED_ITEMS_OPEN, TRACKED_ITEMS_GET, TRACKED_ITEMS_UNFOLLOW, TRACKED_ITEMS_CHANGE_SORT, TRACKED_ITEMS_UNDO_ATTEMPT
 } = EXTENSION_MESSAGES;
 
 function onRecordDone$(tabId, url, domain, payload) {
@@ -119,8 +119,11 @@ function updateExtensionAppearance(enableTrackedItemAppearance) {
 
 function listenPopupStatus() {
     return onMessage$(POPUP_STATUS, ({sendResponse$}) => {
-        const {recordActive, autoSaveEnabled, isPriceUpdateEnabled} = StateManager.getState();
-        return sendResponse$({status: 1, state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled}});
+        const {recordActive, autoSaveEnabled, isPriceUpdateEnabled, isStopFollowEnabled} = StateManager.getState();
+        return sendResponse$({
+            status: 1,
+            state: {recordActive, autoSaveEnabled, isPriceUpdateEnabled, isStopFollowEnabled}
+        });
     });
 }
 
@@ -241,7 +244,10 @@ function listenAutoSaveAttempt() {
                                                                 onSimilarElementHighlight(highlightStopPayload);
                                                                 updateExtensionAppearance(isItemTracked);
                                                             }),
-                                                            switchMap(() => sendResponse$(false)),
+                                                            switchMap(() => sendResponse$({
+                                                                isAutoSaveEnabled: false,
+                                                                isStopFollowEnabled: true
+                                                            })),
                                                             catchDisconnectedPort()
                                                         );
                                                     } else {
@@ -249,9 +255,11 @@ function listenAutoSaveAttempt() {
                                                         if (!autoSaveStatus) {
                                                             StateManager.disableAutoSave();
                                                         }
-                                                        return sendResponse$(false).pipe(
-                                                            catchDisconnectedPort()
-                                                        );
+
+                                                        return sendResponse$({
+                                                            isAutoSaveEnabled: false,
+                                                            isStopFollowEnabled: false
+                                                        }).pipe(catchDisconnectedPort());
                                                     }
                                                 }
                                             )
@@ -279,7 +287,10 @@ function listenAutoSaveAttempt() {
                                             onSimilarElementHighlight(highlightStopPayload);
                                             updateExtensionAppearance(isItemTracked);
                                         }),
-                                        switchMap(() => sendResponse$(false)),
+                                        switchMap(() => sendResponse$({
+                                            isAutoSaveEnabled: false,
+                                            isStopFollowEnabled: true
+                                        })),
                                         catchDisconnectedPort()
                                     )
                                 )
@@ -289,9 +300,10 @@ function listenAutoSaveAttempt() {
                 )
             );
         } else {
-            return sendResponse$(false).pipe(
-                catchDisconnectedPort()
-            );
+            return sendResponse$({
+                isAutoSaveEnabled: false,
+                isStopFollowEnabled: false
+            }).pipe(catchDisconnectedPort());
         }
     });
 }
@@ -440,6 +452,39 @@ function listenPriceUpdateHighlightPreStop() {
     });
 }
 
+function listenStopFollowStatus() {
+    return onMessage$(STOP_FOLLOW_STATUS, ({sendResponse$}) => {
+        const {domain} = StateManager.getState();
+        return getStorageDomain$(domain).pipe(
+            switchMap(domainState => {
+                const {currentURL, browserURL} = StateManager.getState();
+                const item = (domainState[currentURL] && ItemFactory.createItemFromObject(domainState[currentURL])) ||
+                    (domainState[browserURL] && ItemFactory.createItemFromObject(domainState[browserURL]));
+                if (item && item.isWatched()) {
+                    StateManager.enableStopFollow();
+                    return sendResponse$(true);
+                } else {
+                    StateManager.disableStopFollow();
+                    return sendResponse$(false);
+                }
+            })
+        );
+    });
+}
+
+function listenStopFollowAttempt() {
+    return onMessage$(STOP_FOLLOW_ATTEMPT, ({sendResponse$}) => {
+        const {currentURL, browserURL} = StateManager.getState();
+        return removeTrackedItem$(currentURL, currentURL, browserURL).pipe(
+            tap(onStatusAndAppearanceUpdate),
+            switchMap(() => {
+                const {autoSaveEnabled: isAutoSaveEnabled, isStopFollowEnabled} = StateManager.getState();
+                return sendResponse$({isAutoSaveEnabled, isStopFollowEnabled});
+            })
+        );
+    });
+}
+
 function listenTrackedItemsOpen(sortItemsByType) {
     return onMessage$(TRACKED_ITEMS_OPEN, ({sendResponse$}) => {
         const State = StateManager.updateSortItemsBy(sortItemsByType);
@@ -513,6 +558,8 @@ export {
     listenPriceUpdateAttempt,
     listenPriceUpdateHighlightPreStart,
     listenPriceUpdateHighlightPreStop,
+    listenStopFollowStatus,
+    listenStopFollowAttempt,
     listenTrackedItemsOpen,
     listenTrackedItemsGet,
     listenTrackedItemsUnfollow,

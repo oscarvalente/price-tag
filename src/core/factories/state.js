@@ -6,6 +6,7 @@ class StateFactory {
             notificationsCounter: 0,
             autoSaveEnabled: false,
             isPriceUpdateEnabled: false,
+            isStopFollowEnabled: false,
             selection: null,
             name: null,
             isSimilarElementHighlighted: false,
@@ -34,6 +35,20 @@ class StateFactory {
         return {
             ...state,
             recordActive: false
+        }
+    }
+
+    static enableStopFollow(state) {
+        return {
+            ...state,
+            isStopFollowEnabled: true
+        }
+    }
+
+    static disableStopFollow(state) {
+        return {
+            ...state,
+            isStopFollowEnabled: false
         }
     }
 
